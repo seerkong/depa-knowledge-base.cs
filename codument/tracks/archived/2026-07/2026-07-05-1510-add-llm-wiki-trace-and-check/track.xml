@@ -1,0 +1,4 @@
+<Track id="add-llm-wiki-trace-and-check" version="1" xmlns:cdt="urn:codument:v1">
+  <Metadata><Status>completed</Status><Goal>提供带置信度和深度边界的调用路径追踪及确定性循环检测。</Goal><Description>从 cozo 源 track 裁剪迁入；保留 Cozo 图查询 API，排除 agent 工具注册与名称消歧 UI。</Description><QuestionMode>decision-tree</QuestionMode><QuestionSeverity>light</QuestionSeverity><CommitMode>manual</CommitMode><CreatedAt>2026-07-05T15:10:00Z</CreatedAt><UpdatedAt>2026-07-26T15:00:00Z</UpdatedAt></Metadata>
+  <TaskSpace id="space_add_llm_wiki_trace_and_check" name="add-llm-wiki-trace-and-check" version="1"><Description>历史迁移：trace 与 cycles。</Description><SubNodes><TaskGroup id="P1" name="图查询 API" status="DONE" order="0"><SubNodes><Task id="T1.1" name="Dijkstra 路径和 SCC 环检测" status="DONE" order="0"/></SubNodes></TaskGroup></SubNodes></TaskSpace><Schedule><Parallel max-concurrent="1" spot-check="true"/></Schedule>
+</Track>

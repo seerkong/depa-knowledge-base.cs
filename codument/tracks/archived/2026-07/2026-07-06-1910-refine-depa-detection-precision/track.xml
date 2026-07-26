@@ -1,0 +1,4 @@
+<Track id="refine-depa-detection-precision" version="1" xmlns:cdt="urn:codument:v1">
+  <Metadata><Status>completed</Status><Goal>降低 DEPA V-F2 检测的纯委托 facade 误报。</Goal><Description>从 cozo 源 track 裁剪迁入；仅保留 V-F2 豁免及其回归验证，排除 CallResolver 的 private/arity 解析改动。</Description><QuestionMode>decision-tree</QuestionMode><QuestionSeverity>light</QuestionSeverity><CommitMode>manual</CommitMode><CreatedAt>2026-07-06T19:10:00Z</CreatedAt><UpdatedAt>2026-07-26T15:00:00Z</UpdatedAt></Metadata>
+  <TaskSpace id="space_refine_depa_detection_precision" name="refine-depa-detection-precision" version="1"><Description>历史迁移：检测精度。</Description><SubNodes><TaskGroup id="P1" name="V-F2 豁免" status="DONE" order="0"><SubNodes><Task id="T1.1" name="纯委托豁免和复扫" status="DONE" order="0"/></SubNodes></TaskGroup></SubNodes></TaskSpace><Schedule><Parallel max-concurrent="1" spot-check="true"/></Schedule>
+</Track>

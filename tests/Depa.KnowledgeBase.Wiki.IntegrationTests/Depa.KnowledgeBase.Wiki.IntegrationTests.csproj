@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>Depa.KnowledgeBase.Wiki.IntegrationTests</AssemblyName>
+    <RootNamespace>Depa.KnowledgeBase.Wiki.IntegrationTests</RootNamespace>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+    <UseSharedCompilation>false</UseSharedCompilation>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../src/Depa.KnowledgeBase.Wiki.Core/Depa.KnowledgeBase.Wiki.Core.csproj" />
+    <ProjectReference Include="../../src/Depa.KnowledgeBase.Wiki.SemanticParsing/Depa.KnowledgeBase.Wiki.SemanticParsing.csproj" />
+    <ProjectReference Include="../../src/Depa.KnowledgeBase.Wiki.Roslyn/Depa.KnowledgeBase.Wiki.Roslyn.csproj" />
+    <ProjectReference Include="../../src/Depa.KnowledgeBase.Wiki.VectorSearch/Depa.KnowledgeBase.Wiki.VectorSearch.csproj" />
+    <ProjectReference Include="../../src/Depa.KnowledgeBase.Wiki.Indexing/Depa.KnowledgeBase.Wiki.Indexing.csproj" />
+  </ItemGroup>
+</Project>

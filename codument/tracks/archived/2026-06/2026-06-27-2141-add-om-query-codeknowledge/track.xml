@@ -1,0 +1,4 @@
+<Track id="add-om-query-codeknowledge" version="1" xmlns:cdt="urn:codument:v1">
+  <Metadata><Status>completed</Status><Goal>建立 CodeKnowledge 的 schema、事实写入和面向 agent 的查询 API。</Goal><Description>从 cozo 源 track 裁剪迁入；保留原 P2 与对应测试/文档，排除 Om.Query runtime。</Description><QuestionMode>decision-tree</QuestionMode><QuestionSeverity>light</QuestionSeverity><CommitMode>manual</CommitMode><CreatedAt>2026-06-27T21:41:00Z</CreatedAt><UpdatedAt>2026-07-26T15:00:00Z</UpdatedAt></Metadata>
+  <TaskSpace id="space_add_om_query_codeknowledge" name="add-om-query-codeknowledge" version="1"><Description>历史迁移：CodeKnowledge MVP。</Description><SubNodes><TaskGroup id="P1" name="CodeKnowledge 图谱能力" status="DONE" order="0"><SubNodes><Task id="T1.1" name="schema、批量索引与查询 facade" status="DONE" order="0"/></SubNodes></TaskGroup></SubNodes></TaskSpace><Schedule><Parallel max-concurrent="1" spot-check="true"/></Schedule>
+</Track>

@@ -1,0 +1,32 @@
+<module #packages.depa_knowledge_base_packages { kind = "module" depends_on = "[ modeling://domain/depa_ontology_dotnet_packages/runtime ]" } [
+  <desc ?01KYFKR946FRQRA94RBSXPQVZV>
+  知识库扩展边界：CodeKnowledge 负责代码事实、投影与影响分析；Depa 包负责基于这些事实执行 DEPA 一致性扫描。
+  </?01KYFKR946FRQRA94RBSXPQVZV>
+  <capsule-tree ?tree>
+  src/Depa.KnowledgeBase.CodeKnowledge/
+  CodeKnowledgeModels.cs        # 代码事实、图查询与分析结果的公开类型
+  CodeKnowledgeSchema.cs        # ck_* Cozo relation schema 与初始化规则
+  CozoOmCodeKnowledgeExtensions.cs # 索引、查询与影响分析的 Cozo OM 扩展入口
+  CodeGraphProjections.cs       # 调用图、导入图与聚类输入投影
+  ProcessExtraction.cs          # 入口点和流程步骤的派生提取
+  DeepImpact.cs                 # 多层影响分析与风险归类
+  EffectApiBuiltins.cs          # CodeKnowledge 到 Depa 的 effect API 公开词汇
+
+  src/Depa.KnowledgeBase.Depa/
+  DepaConfigModels.cs           # capsule、层级与 effect 规则配置类型
+  DepaScanModels.cs             # 扫描选项、发现与结果类型
+  DepaScanPipeline.cs           # 从代码知识事实组装 DEPA 扫描输入
+  DepaViolationDetectors.cs     # DEPA 违规规则检测器
+  DepaEffectCatalog.cs          # effect 分类目录
+  DepaReportModels.cs           # 一致性报告与健康度投影类型
+  DepaReportQueries.cs          # 报告查询
+  CozoOmDepaExtensions.cs       # DEPA 扫描与报告的 Cozo OM 扩展入口
+  </?tree>
+  <types ?t>
+  Depa.KnowledgeBase.CodeKnowledge: package
+  Depa.KnowledgeBase.Depa: package
+  </?t>
+  <fact-source ?01KYFKR946FRQRA94RBSXPQVZW>
+  对象模型事实由 Depa.Ontology 运行时存储；CodeKnowledge 写入代码观察，Depa 只读观察并生成一致性结论。
+  </?01KYFKR946FRQRA94RBSXPQVZW>
+]>

@@ -1,0 +1,4 @@
+<Track id="deepen-llm-wiki-context-impact" version="1" xmlns:cdt="urn:codument:v1">
+  <Metadata><Status>completed</Status><Goal>提供分层、带方向和风险评级的影响分析，并富化符号上下文。</Goal><Description>从 cozo 源 track 裁剪迁入；保留 DeepImpactAsync、process/community 关联和 SymbolContext，排除解析器的 caller 归属修复及工具面。</Description><QuestionMode>decision-tree</QuestionMode><QuestionSeverity>light</QuestionSeverity><CommitMode>manual</CommitMode><CreatedAt>2026-07-05T17:20:00Z</CreatedAt><UpdatedAt>2026-07-26T15:00:00Z</UpdatedAt></Metadata>
+  <TaskSpace id="space_deepen_llm_wiki_context_impact" name="deepen-llm-wiki-context-impact" version="1"><Description>历史迁移：深层影响分析。</Description><SubNodes><TaskGroup id="P1" name="影响与上下文 API" status="DONE" order="0"><SubNodes><Task id="T1.1" name="分层影响、风险和上下文富化" status="DONE" order="0"/></SubNodes></TaskGroup></SubNodes></TaskSpace><Schedule><Parallel max-concurrent="1" spot-check="true"/></Schedule>
+</Track>

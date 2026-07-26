@@ -1,0 +1,4 @@
+<decisions #extract_knowledge_base_packages [
+  <decision #knowledge_base_outside_ontology_core { status = "accepted" } ?>CodeKnowledge 与 DEPA 扩展独立于 Depa.Ontology core。 </?>
+  <decision #effect_api_contract { status = "accepted" } ?>Effect API vocabulary 是 CodeKnowledge 到 Depa 的公开跨包契约。 </?>
+]>

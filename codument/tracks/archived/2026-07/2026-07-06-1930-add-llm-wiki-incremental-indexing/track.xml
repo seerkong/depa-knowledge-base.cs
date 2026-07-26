@@ -1,0 +1,4 @@
+<Track id="add-llm-wiki-incremental-indexing" version="1" xmlns:cdt="urn:codument:v1">
+  <Metadata><Status>completed</Status><Goal>为 CodeKnowledge 提供按文件清理的可重建事实合同。</Goal><Description>从 cozo 源 track 裁剪迁入；保留 observation facts 的 file-scoped cleanup，排除 Git diff、增量调度与 indexer orchestration。</Description><QuestionMode>decision-tree</QuestionMode><QuestionSeverity>light</QuestionSeverity><CommitMode>manual</CommitMode><CreatedAt>2026-07-06T19:30:00Z</CreatedAt><UpdatedAt>2026-07-26T15:00:00Z</UpdatedAt></Metadata>
+  <TaskSpace id="space_add_llm_wiki_incremental_indexing" name="add-llm-wiki-incremental-indexing" version="1"><Description>历史迁移：文件级事实清理。</Description><SubNodes><TaskGroup id="P1" name="file-scoped cleanup contract" status="DONE" order="0"><SubNodes><Task id="T1.1" name="事务清理所有由文件拥有的观测事实" status="DONE" order="0"/></SubNodes></TaskGroup></SubNodes></TaskSpace><Schedule><Parallel max-concurrent="1" spot-check="true"/></Schedule>
+</Track>

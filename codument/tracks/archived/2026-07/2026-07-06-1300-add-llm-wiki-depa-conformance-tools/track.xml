@@ -1,0 +1,4 @@
+<Track id="add-llm-wiki-depa-conformance-tools" version="1" xmlns:cdt="urn:codument:v1">
+  <Metadata><Status>completed</Status><Goal>检测 DEPA 违规、物化证据，并聚合一致性报告。</Goal><Description>从 cozo 源 track 裁剪迁入；保留检测器、depa_violation 和报告 API，排除 CLI 与 tool runner。</Description><QuestionMode>decision-tree</QuestionMode><QuestionSeverity>light</QuestionSeverity><CommitMode>manual</CommitMode><CreatedAt>2026-07-06T13:00:00Z</CreatedAt><UpdatedAt>2026-07-26T15:00:00Z</UpdatedAt></Metadata>
+  <TaskSpace id="space_add_llm_wiki_depa_conformance_tools" name="add-llm-wiki-depa-conformance-tools" version="1"><Description>历史迁移：DEPA conformance。</Description><SubNodes><TaskGroup id="P1" name="检测、物化和报告" status="DONE" order="0"><SubNodes><Task id="T1.1" name="违规检测与证据物化" status="DONE" order="0"/><Task id="T1.2" name="一致性、事实分级和健康度聚合" status="DONE" order="1"/></SubNodes></TaskGroup></SubNodes></TaskSpace><Schedule><Parallel max-concurrent="1" spot-check="true"/></Schedule>
+</Track>

@@ -1,0 +1,21 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Depa.KnowledgeBase.CodeKnowledge/Depa.KnowledgeBase.CodeKnowledge.csproj" />
+    <Project Path="src/Depa.KnowledgeBase.Depa/Depa.KnowledgeBase.Depa.csproj" />
+    <Project Path="src/Depa.KnowledgeBase.Wiki.Core/Depa.KnowledgeBase.Wiki.Core.csproj" />
+    <Project Path="src/Depa.KnowledgeBase.Wiki.SemanticParsing/Depa.KnowledgeBase.Wiki.SemanticParsing.csproj" />
+    <Project Path="src/Depa.KnowledgeBase.Wiki.Roslyn/Depa.KnowledgeBase.Wiki.Roslyn.csproj" />
+    <Project Path="src/Depa.KnowledgeBase.Wiki.VectorSearch/Depa.KnowledgeBase.Wiki.VectorSearch.csproj" />
+    <Project Path="src/Depa.KnowledgeBase.Wiki.Indexing/Depa.KnowledgeBase.Wiki.Indexing.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Depa.KnowledgeBase.IntegrationTests/Depa.KnowledgeBase.IntegrationTests.csproj" />
+    <Project Path="tests/Depa.KnowledgeBase.Wiki.IntegrationTests/Depa.KnowledgeBase.Wiki.IntegrationTests.csproj" />
+  </Folder>
+  <Project Path="../cozo/depa-cozo-csharp/Depa.Cozo.csproj" />
+  <Project Path="../depa-ontology.cs/src/Depa.Ontology.Portability.Yaml/Depa.Ontology.Portability.Yaml.csproj" />
+  <Project Path="../depa-ontology.cs/src/Depa.Ontology.Scripting.Jint/Depa.Ontology.Scripting.Jint.csproj" />
+  <Project Path="../depa-ontology.cs/src/Depa.Datalog.Core/Depa.Datalog.Core.csproj" />
+  <Project Path="../depa-ontology.cs/src/Depa.Datalog.Cozo/Depa.Datalog.Cozo.csproj" />
+  <Project Path="../depa-ontology.cs/src/Depa.Ontology/Depa.Ontology.csproj" />
+</Solution>

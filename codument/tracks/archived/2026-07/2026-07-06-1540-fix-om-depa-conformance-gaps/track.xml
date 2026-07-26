@@ -1,0 +1,4 @@
+<Track id="fix-om-depa-conformance-gaps" version="1" xmlns:cdt="urn:codument:v1">
+  <Metadata><Status>completed</Status><Goal>使 DEPA scan 的配置解析、标注和清理行为显式且可验证。</Goal><Description>从 cozo 源 track 裁剪迁入；仅保留 scan 入口配置、depa-map 标注和 DEPA 清理语义，排除 Depa.Ontology 的 DeleteEntityAsync 与 TimeProvider。</Description><QuestionMode>decision-tree</QuestionMode><QuestionSeverity>light</QuestionSeverity><CommitMode>manual</CommitMode><CreatedAt>2026-07-06T15:40:00Z</CreatedAt><UpdatedAt>2026-07-26T15:00:00Z</UpdatedAt></Metadata>
+  <TaskSpace id="space_fix_om_depa_conformance_gaps" name="fix-om-depa-conformance-gaps" version="1"><Description>历史迁移：DEPA scan 收敛。</Description><SubNodes><TaskGroup id="P1" name="配置和标注显式化" status="DONE" order="0"><SubNodes><Task id="T1.1" name="入口配置、已知例外和 scan 清理" status="DONE" order="0"/></SubNodes></TaskGroup></SubNodes></TaskSpace><Schedule><Parallel max-concurrent="1" spot-check="true"/></Schedule>
+</Track>

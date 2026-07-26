@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <PackageId>Depa.KnowledgeBase.Wiki.Core</PackageId>
+    <AssemblyName>Depa.KnowledgeBase.Wiki.Core</AssemblyName>
+    <RootNamespace>Depa.KnowledgeBase.Wiki.Core</RootNamespace>
+    <Description>Shared product models and repository configuration for Depa KnowledgeBase Wiki.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Depa.KnowledgeBase.Wiki.Tools" />
+    <InternalsVisibleTo Include="Depa.KnowledgeBase.Wiki.Indexing" />
+    <InternalsVisibleTo Include="Depa.KnowledgeBase.Wiki.Generation" />
+    <InternalsVisibleTo Include="Depa.KnowledgeBase.Wiki.IntegrationTests" />
+  </ItemGroup>
+</Project>

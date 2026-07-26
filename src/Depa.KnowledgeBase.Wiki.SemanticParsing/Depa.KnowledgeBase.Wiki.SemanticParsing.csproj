@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <PackageId>Depa.KnowledgeBase.Wiki.SemanticParsing</PackageId>
+    <AssemblyName>Depa.KnowledgeBase.Wiki.SemanticParsing</AssemblyName>
+    <RootNamespace>Depa.KnowledgeBase.Wiki.SemanticParsing</RootNamespace>
+    <Description>Tree-sitter based semantic parsing for Depa KnowledgeBase Wiki.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Depa.KnowledgeBase.Wiki.Core/Depa.KnowledgeBase.Wiki.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Depa.KnowledgeBase.Wiki.IntegrationTests" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="runtimes/osx-arm64/native/*" Exclude="**/.gitkeep" Pack="true" PackagePath="runtimes/osx-arm64/native/" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

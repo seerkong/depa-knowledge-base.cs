@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../src/Depa.KnowledgeBase.CodeKnowledge/Depa.KnowledgeBase.CodeKnowledge.csproj" />
+    <ProjectReference Include="../../src/Depa.KnowledgeBase.Depa/Depa.KnowledgeBase.Depa.csproj" />
+    <ProjectReference Include="../../../depa-ontology.cs/src/Depa.Datalog.Core/Depa.Datalog.Core.csproj" />
+    <ProjectReference Include="../../../depa-ontology.cs/src/Depa.Datalog.Cozo/Depa.Datalog.Cozo.csproj" />
+    <ProjectReference Include="../../../depa-ontology.cs/src/Depa.Ontology/Depa.Ontology.csproj" />
+    <ProjectReference Include="../../../depa-ontology.cs/src/Depa.Ontology.Portability.Yaml/Depa.Ontology.Portability.Yaml.csproj" />
+    <ProjectReference Include="../../../depa-ontology.cs/src/Depa.Ontology.Scripting.Jint/Depa.Ontology.Scripting.Jint.csproj" />
+    <ProjectReference Include="../../../cozo/depa-cozo-csharp/Depa.Cozo.csproj" />
+  </ItemGroup>
+</Project>

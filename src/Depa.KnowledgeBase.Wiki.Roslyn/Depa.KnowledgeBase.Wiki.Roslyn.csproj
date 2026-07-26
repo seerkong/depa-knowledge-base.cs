@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <PackageId>Depa.KnowledgeBase.Wiki.Roslyn</PackageId>
+    <AssemblyName>Depa.KnowledgeBase.Wiki.Roslyn</AssemblyName>
+    <RootNamespace>Depa.KnowledgeBase.Wiki.Roslyn</RootNamespace>
+    <Description>Roslyn semantic enrichment for Depa KnowledgeBase Wiki.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.6.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Depa.KnowledgeBase.Wiki.IntegrationTests" />
+  </ItemGroup>
+</Project>

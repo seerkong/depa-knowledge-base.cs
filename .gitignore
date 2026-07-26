@@ -1,0 +1,33 @@
+# .NET build and package outputs
+[Bb]in/
+[Oo]bj/
+*.nupkg
+*.snupkg
+TestResults/
+*.trx
+coverage/
+
+# Local IDE and operating-system state
+.vs/
+.idea/
+.claude/
+.eidolon/
+.sparrow/
+*.user
+*.suo
+*.userosscache
+.DS_Store
+
+# Node/browser build outputs
+node_modules/
+dist/
+*.tsbuildinfo
+
+# Local runtime state, logs, and temporary work
+.depa-wiki/
+.tmp/
+*.log
+
+# Ephemeral Codument execution evidence
+codument/**/analysis
+codument/**/reports

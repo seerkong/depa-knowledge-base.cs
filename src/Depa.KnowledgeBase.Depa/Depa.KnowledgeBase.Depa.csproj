@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <PackageId>Depa.KnowledgeBase.Depa</PackageId>
+    <Description>DEPA conformance analysis for Depa knowledge-base models.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Depa.Cozo" Version="0.1.0" />
+    <PackageReference Include="Depa.Ontology" Version="0.1.0" />
+    <ProjectReference Include="../Depa.KnowledgeBase.CodeKnowledge/Depa.KnowledgeBase.CodeKnowledge.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Depa.KnowledgeBase.IntegrationTests" />
+    <!-- Ship the conformance rubrics with the package for downstream audit workflows. -->
+    <None Include="rubrics/**/*.md" Pack="true" PackagePath="contentFiles/any/any/rubrics/" />
+  </ItemGroup>
+</Project>

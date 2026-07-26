@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <PackageId>Depa.KnowledgeBase.Wiki.Indexing</PackageId>
+    <AssemblyName>Depa.KnowledgeBase.Wiki.Indexing</AssemblyName>
+    <RootNamespace>Depa.KnowledgeBase.Wiki.Indexing</RootNamespace>
+    <Description>Repository indexing orchestration for Depa KnowledgeBase Wiki.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Depa.KnowledgeBase.Wiki.Core/Depa.KnowledgeBase.Wiki.Core.csproj" />
+    <ProjectReference Include="../Depa.KnowledgeBase.Wiki.SemanticParsing/Depa.KnowledgeBase.Wiki.SemanticParsing.csproj" />
+    <ProjectReference Include="../Depa.KnowledgeBase.Wiki.Roslyn/Depa.KnowledgeBase.Wiki.Roslyn.csproj" />
+    <ProjectReference Include="../Depa.KnowledgeBase.Wiki.VectorSearch/Depa.KnowledgeBase.Wiki.VectorSearch.csproj" />
+    <ProjectReference Include="../Depa.KnowledgeBase.CodeKnowledge/Depa.KnowledgeBase.CodeKnowledge.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Depa.KnowledgeBase.Wiki.IntegrationTests" />
+  </ItemGroup>
+</Project>

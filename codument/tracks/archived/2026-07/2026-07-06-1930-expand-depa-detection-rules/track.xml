@@ -1,0 +1,4 @@
+<Track id="expand-depa-detection-rules" version="1" xmlns:cdt="urn:codument:v1">
+  <Metadata><Status>completed</Status><Goal>扩展 DEPA 规则真源、检测器和八维健康报告。</Goal><Description>从 cozo 源 track 裁剪迁入；保留 rubrics、rule map、批次检测器和复扫，排除全局 skill 反哺。</Description><QuestionMode>decision-tree</QuestionMode><QuestionSeverity>light</QuestionSeverity><CommitMode>manual</CommitMode><CreatedAt>2026-07-06T19:30:00Z</CreatedAt><UpdatedAt>2026-07-26T15:00:00Z</UpdatedAt></Metadata>
+  <TaskSpace id="space_expand_depa_detection_rules" name="expand-depa-detection-rules" version="1"><Description>历史迁移：DEPA 检测规则。</Description><SubNodes><TaskGroup id="P1" name="规则真源、检测与复扫" status="DONE" order="0"><SubNodes><Task id="T1.1" name="rubrics、rule map 和维度口径" status="DONE" order="0"/><Task id="T1.2" name="批次一和批次二检测器" status="DONE" order="1"/></SubNodes></TaskGroup></SubNodes></TaskSpace><Schedule><Parallel max-concurrent="1" spot-check="true"/></Schedule>
+</Track>

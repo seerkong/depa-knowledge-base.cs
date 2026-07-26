@@ -1,0 +1,14 @@
+<behavior-patch capability="depa-knowledge-base" version="1">
+  <upsert selector="behavior://depa-knowledge-base/requirements/extracted-extension-packages">
+    <requirement id="extracted-extension-packages">
+      <statement>系统 SHALL 将 CodeKnowledge 与 DEPA conformance 扩展作为 Depa.KnowledgeBase.CodeKnowledge 和 Depa.KnowledgeBase.Depa 独立包发布，并 SHALL 依赖 Depa.Ontology 作为对象模型运行时。</statement>
+      <suite id="solution-build" name="解决方案构建">
+        <case id="knowledge-base-packages-build-and-pack">
+          <given>本地 feed 中存在 Depa.Cozo、Depa.Datalog.Cozo 和 Depa.Ontology</given>
+          <when>构建并打包 Depa.KnowledgeBase.slnx</when>
+          <then>系统 SHALL 编译两个知识库包并生成 nupkg</then>
+        </case>
+      </suite>
+    </requirement>
+  </upsert>
+</behavior-patch>
