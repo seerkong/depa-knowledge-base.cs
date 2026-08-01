@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<EnumType fqn="ontology.maker-space.enum-types.reservation-state" id="MakerSpace.Type.ReservationState">
+  <Description>Lifecycle states for a tool reservation.</Description>
+  <Members>
+    <Member id="Requested" value="requested" />
+    <Member id="Approved" value="approved" />
+    <Member id="CheckedOut" value="checkedOut" />
+    <Member id="Returned" value="returned" />
+    <Member id="Cancelled" value="cancelled" />
+  </Members>
+</EnumType>

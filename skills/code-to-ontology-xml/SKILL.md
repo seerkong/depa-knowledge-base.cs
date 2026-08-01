@@ -5,7 +5,7 @@ description: Read revision-pinned application source and author a BO-first, evid
 
 # Code To BO-First Ontology XML
 
-Read `../ontology-xml-dsl/SKILL.md` before authoring. It owns the grammar.
+Read `../ontology-exchange-xml-standard/SKILL.md` before authoring. It owns the grammar.
 
 1. Pin repository, revision, scope, exclusions, and expected business areas.
 2. Read source and trace representative flows before interpreting anything. Deterministic inventories, `ck_*`, routes, names, and topology only accelerate navigation.

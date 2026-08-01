@@ -1,0 +1,55 @@
+apiVersion: fs-native/v1
+kind: KindDefinition
+metadata:
+  name: business-object
+spec:
+  resourceKind: BusinessObject
+  sourceShapes:
+    - manifest
+  descriptorSchema:
+    rootElement: BusinessObject
+    requiredAttributes:
+      - fqn
+      - id
+    requiredChildren:
+      - Description
+      - Purpose
+    allowedCatalogs:
+      - ManifestResourceCatalog
+  identity:
+    fqn:
+      from: "@fqn"
+      required: true
+  description:
+    path: Description
+    required: true
+    nonEmpty: true
+  entries:
+    manifest:
+      entry: BusinessObject.xml
+  internalContract:
+    ownsCatalogKinds:
+      - Action
+      - Mutation
+      - Interceptor
+      - ComputedFunction
+      - ConstraintHandler
+      - Lifecycle
+    declaresObjectType: true
+    directLocalMembers:
+      - Identity.Property
+      - Properties.Property
+      - ComputedProperties.ComputedProperty
+    supports:
+      - parentRef
+      - Mixins
+  crossResourceRules:
+    - parentRef-resolves-to-entity-ObjectType-or-BusinessObject
+    - no-Property-ref-inside-BusinessObject
+    - member-ownerRef-matches-containing-BusinessObject
+    - property-roles-apply-only-to-BusinessObject-local-Properties
+  diagnostics:
+    - code: BUSINESS_OBJECT_PROPERTY_REF_REJECTED
+      message: BusinessObject must declare Property facts directly; Property@ref is not allowed.
+    - code: BUSINESS_OBJECT_MEMBER_OWNER_MISMATCH
+      message: A local member resource must be owned by the containing BusinessObject manifest.

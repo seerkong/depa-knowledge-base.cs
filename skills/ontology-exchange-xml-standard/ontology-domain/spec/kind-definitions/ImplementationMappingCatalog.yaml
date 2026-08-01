@@ -1,0 +1,38 @@
+apiVersion: fs-native/v1
+kind: KindDefinition
+metadata:
+  name: implementation-mapping-catalog
+spec:
+  resourceKind: ImplementationMappingCatalog
+  sourceShapes:
+    - file
+  descriptorSchema:
+    rootElement: ImplementationMappingCatalog
+    requiredAttributes:
+      - fqn
+      - id
+    requiredChildren:
+      - Description
+      - Mappings
+  identity:
+    fqn:
+      from: "@fqn"
+      required: true
+  description:
+    path: Description
+    required: true
+    nonEmpty: true
+  internalContract:
+    owns:
+      - ImplementationMapping
+      - CodeRef crosswalk
+    doesNotOwnSemanticFacts: true
+  crossResourceRules:
+    - targetRef-kind-matches-targetKind
+    - owner-level-targets-use-owner-resource-kinds
+    - CodeRef-values-are-stable-symbols-not-executable-snippets
+  diagnostics:
+    - code: IMPLEMENTATION_MAPPING_CATALOG_DESCRIPTION_MISSING
+      message: ImplementationMappingCatalog must declare a non-empty Description.
+    - code: IMPLEMENTATION_MAPPING_OWNER_SURROGATE_REJECTED
+      message: Mapping targetKind must not use structural facts as owner resource surrogates.

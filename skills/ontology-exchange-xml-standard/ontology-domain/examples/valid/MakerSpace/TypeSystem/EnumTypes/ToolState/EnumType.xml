@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<EnumType fqn="ontology.maker-space.enum-types.tool-state" id="MakerSpace.Type.ToolState">
+  <Description>Operational state of a workshop tool.</Description>
+  <Members>
+    <Member id="Available" value="available" />
+    <Member id="InUse" value="inUse" />
+    <Member id="Maintenance" value="maintenance" />
+  </Members>
+</EnumType>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Mutation fqn="ontology.maker-space.business-object.reservation.mutation.mark-approved" id="MakerSpace.Reservation.Mutation.MarkApproved" ownerRef="MakerSpace.Reservation" portability="portable">
+  <Description>Move the reservation state to approved.</Description>
+  <InternalLogic>Set the active reservation workflow state to approved.</InternalLogic>
+  <Evidences>
+    <Evidence ref="manual:makerspace-policy" />
+  </Evidences>
+</Mutation>

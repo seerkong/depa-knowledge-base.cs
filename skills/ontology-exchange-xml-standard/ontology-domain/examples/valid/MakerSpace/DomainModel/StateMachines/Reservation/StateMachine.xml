@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<StateMachine fqn="ontology.maker-space.lifecycles.reservation" id="MakerSpace.Lifecycle.Reservation" subjectTypeRef="MakerSpace.Reservation" statePropertyRef="MakerSpace.Reservation#workflowState" initial="requested">
+  <Description>Reservation state machine from request through return or cancellation.</Description>
+  <States>
+    <State id="requested" />
+    <State id="approved" />
+    <State id="checkedOut" />
+    <State id="returned" terminal="true" />
+    <State id="cancelled" terminal="true" />
+  </States>
+  <Transitions>
+    <Transition id="MakerSpace.Transition.ApproveReservation" trigger="approveReservation" from="requested" to="approved">
+      <Guard>
+        <PropertyEquals propertyRef="MakerSpace.Reservation#workflowState" value="requested" />
+      </Guard>
+      <Effects>
+        <SetProperty propertyRef="MakerSpace.Reservation#workflowState" value="approved" />
+      </Effects>
+      <Evidences>
+        <Evidence ref="manual:makerspace-policy" />
+      </Evidences>
+    </Transition>
+    <Transition id="MakerSpace.Transition.CheckOutReservation" trigger="checkOutReservation" from="approved" to="checkedOut">
+      <Effects>
+        <SetProperty propertyRef="MakerSpace.Reservation#workflowState" value="checkedOut" />
+      </Effects>
+      <Evidences>
+        <Evidence ref="manual:makerspace-policy" />
+      </Evidences>
+    </Transition>
+    <Transition id="MakerSpace.Transition.ReturnReservation" trigger="returnReservation" from="checkedOut" to="returned">
+      <Effects>
+        <SetProperty propertyRef="MakerSpace.Reservation#workflowState" value="returned" />
+      </Effects>
+      <Evidences>
+        <Evidence ref="manual:makerspace-policy" />
+      </Evidences>
+    </Transition>
+    <Transition id="MakerSpace.Transition.CancelReservation" trigger="cancelReservation" from="requested" to="cancelled">
+      <Effects>
+        <SetProperty propertyRef="MakerSpace.Reservation#workflowState" value="cancelled" />
+      </Effects>
+      <Evidences>
+        <Evidence ref="manual:makerspace-policy" />
+      </Evidences>
+    </Transition>
+  </Transitions>
+  <Evidences>
+    <Evidence ref="manual:makerspace-policy" />
+  </Evidences>
+</StateMachine>

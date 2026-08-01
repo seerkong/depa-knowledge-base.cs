@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BusinessProcessCatalog fqn="ontology.maker-space.processes.core" id="MakerSpace.Processes.Core">
+  <Description>MakerSpace process resources.</Description>
+  <BusinessProcesses>
+    <BusinessProcess id="MakerSpace.BusinessProcess.ToolCheckout">
+      <Description>Member reserves, checks out, and returns a tool.</Description>
+      <Participants>
+        <Type ref="MakerSpace.Reservation" role="case" />
+        <Type ref="MakerSpace.Member" role="actor" />
+        <Type ref="MakerSpace.Tool" role="resource" />
+        <StateMachine ref="MakerSpace.Lifecycle.Reservation" role="workflow" />
+      </Participants>
+      <Policies>
+        <Rule ref="MakerSpace.Rule.ToolRequiresCertification" />
+        <Rule ref="MakerSpace.Rule.ReservationWindowOrdered" />
+      </Policies>
+      <Evidences>
+        <Evidence ref="manual:makerspace-policy" />
+      </Evidences>
+    </BusinessProcess>
+  </BusinessProcesses>
+</BusinessProcessCatalog>

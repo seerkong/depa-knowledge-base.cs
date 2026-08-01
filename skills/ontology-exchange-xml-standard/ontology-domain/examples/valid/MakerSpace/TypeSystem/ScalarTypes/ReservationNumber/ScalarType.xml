@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ScalarType fqn="ontology.maker-space.scalar-types.reservation-number" id="MakerSpace.Type.ReservationNumber" base="builtin:String">
+  <Description>Stable reservation number.</Description>
+</ScalarType>

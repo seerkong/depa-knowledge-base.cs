@@ -1,0 +1,23 @@
+apiVersion: fs-native/v1
+kind: KindDefinition
+metadata:
+  name: computed-function
+spec:
+  resourceKind: ComputedFunction
+  sourceShapes: [manifest]
+  descriptorSchema:
+    rootElement: ComputedFunction
+    requiredAttributes: [fqn, id, ownerRef, name, returnTypeRef, portability]
+    requiredChildren: [Description]
+  identity:
+    fqn: { from: "@fqn", required: true }
+  entries:
+    manifest:
+      entry: ComputedFunction.xml
+  description: { path: Description, required: true, nonEmpty: true }
+  crossResourceRules:
+    - ownerRef-matches-containing-BusinessObject
+    - returnTypeRef-resolves-to-type-system
+  diagnostics:
+    - code: COMPUTED_FUNCTION_OWNER_MISMATCH
+      message: ComputedFunction ownerRef must match its containing BusinessObject.

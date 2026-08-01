@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ScalarType fqn="ontology.maker-space.scalar-types.tool-code" id="MakerSpace.Type.ToolCode" base="builtin:String">
+  <Description>Stable tool code.</Description>
+</ScalarType>

@@ -5,7 +5,7 @@ description: Generate and verify a runnable Bun or .NET Cozo OM model from valid
 
 # Model BO-First Knowledge with Cozo OM
 
-Require validated canonical XML, not raw observations or an unreviewed ledger. Read `../ontology-xml-dsl/SKILL.md` first.
+Require validated canonical XML, not raw observations or an unreviewed ledger. Read `../ontology-exchange-xml-standard/SKILL.md` first.
 
 1. Validate BO ownership, FQN references, direct evidence material, portable expressions, and selected target bindings.
 2. Generate the schema in dependency order: BO types/properties, associations, portable rules/lifecycles, then registered extension points.

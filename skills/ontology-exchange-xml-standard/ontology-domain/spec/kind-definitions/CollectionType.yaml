@@ -1,0 +1,26 @@
+apiVersion: fs-native/v1
+kind: KindDefinition
+metadata:
+  name: collection-type
+spec:
+  resourceKind: CollectionType
+  sourceShapes: [manifest]
+  entries:
+    manifest:
+      entry: CollectionType.xml
+  descriptorSchema:
+    rootElement: CollectionType
+    requiredAttributes: [fqn, id, collection, itemTypeRef]
+    requiredChildren: [Description]
+  identity:
+    fqn: { from: "@fqn", required: true }
+  description: { path: Description, required: true, nonEmpty: true }
+  internalContract:
+    owns: [Collection type shape]
+    forbidsUpperLayerRefs: true
+  crossResourceRules:
+    - itemTypeRef-resolves-to-value-type
+    - map-keyTypeRef-resolves-to-scalar-type
+  diagnostics:
+    - code: COLLECTION_TYPE_REF_INVALID
+      message: CollectionType item and map key refs must resolve to valid type declarations.

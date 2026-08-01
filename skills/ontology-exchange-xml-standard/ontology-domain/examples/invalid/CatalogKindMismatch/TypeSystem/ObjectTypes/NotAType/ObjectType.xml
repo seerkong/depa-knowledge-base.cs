@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Rule fqn="ontology.invalid.catalog-kind-mismatch.rules.placeholder" id="Invalid.Rule.Placeholder" scopeTypeRef="Invalid.Type.Placeholder" kind="custom">
+  <Statement>This root kind does not match the Type catalog.</Statement>
+  <Require>
+    <TypeIs typeRef="Invalid.Type.Placeholder" />
+  </Require>
+  <Violation code="PLACEHOLDER" message="Placeholder." />
+</Rule>

@@ -1,0 +1,44 @@
+apiVersion: fs-native/v1
+kind: KindDefinition
+metadata:
+  name: schema-evolution-module
+spec:
+  resourceKind: SchemaEvolutionModule
+  sourceShapes:
+    - file
+  descriptorSchema:
+    rootElement: SchemaEvolutionModule
+    requiredAttributes:
+      - fqn
+      - id
+    requiredChildren:
+      - Description
+    declarationContainers:
+      anyOf:
+        - Aliases
+        - Migrations
+        - GenerationSnapshots
+  identity:
+    fqn:
+      from: "@fqn"
+      required: true
+  description:
+    path: Description
+    required: true
+    nonEmpty: true
+  internalContract:
+    owns:
+      - Alias
+      - Migration
+      - GenerationSnapshot
+    forbidsExecutableMigrationCode: true
+  crossResourceRules:
+    - one-SchemaEvolutionModule-per-ontology-version
+    - alias-targets-resolve-to-current-declarations
+    - migration-toVersion-equals-Ontology-version
+    - generation-digest-is-normalized-semantic-ir-digest
+  diagnostics:
+    - code: SCHEMA_EVOLUTION_MODULE_DESCRIPTION_MISSING
+      message: SchemaEvolutionModule must declare a non-empty Description.
+    - code: SCHEMA_EVOLUTION_EXECUTABLE_MIGRATION_REJECTED
+      message: Migrations are declarative and cannot contain executable transformation code.

@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ObjectType id="Invalid.Member" kind="entity">
+  <Description>Missing fqn on the resource root.</Description>
+</ObjectType>

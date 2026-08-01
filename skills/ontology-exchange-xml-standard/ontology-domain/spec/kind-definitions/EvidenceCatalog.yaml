@@ -1,0 +1,37 @@
+apiVersion: fs-native/v1
+kind: KindDefinition
+metadata:
+  name: evidence-catalog
+spec:
+  resourceKind: EvidenceCatalog
+  sourceShapes:
+    - file
+  descriptorSchema:
+    rootElement: EvidenceCatalog
+    requiredAttributes:
+      - fqn
+      - id
+    requiredChildren:
+      - Description
+      - Evidences
+  identity:
+    fqn:
+      from: "@fqn"
+      required: true
+  description:
+    path: Description
+    required: true
+    nonEmpty: true
+  internalContract:
+    owns:
+      - Evidence
+    evidenceTextIsDirectMaterial: true
+  crossResourceRules:
+    - evidence-ids-unique-and-not-semantic-fqn
+    - evidence-paths-are-repository-relative
+    - grade-and-confidence-valid
+  diagnostics:
+    - code: EVIDENCE_CATALOG_DESCRIPTION_MISSING
+      message: EvidenceCatalog must declare a non-empty Description.
+    - code: EVIDENCE_WRAPPER_REJECTED
+      message: Evidence stores direct material text and cannot use wrapper nodes.

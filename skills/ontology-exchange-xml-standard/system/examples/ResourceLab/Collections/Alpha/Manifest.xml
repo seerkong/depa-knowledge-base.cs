@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CollectionManifest fqn="system.example.collection.alpha" version="1.0.0">
+  <Description>Nested manifest that declares its own first-level catalogs.</Description>
+  <FileResourceCatalog id="alpha-notes" kind="Note" root="vfs://@/Notes/"/>
+  <DirectoryResourceCatalog id="alpha-procedures" kind="Procedure" root="vfs://@/Procedures/" entry="Procedure.xml"/>
+</CollectionManifest>

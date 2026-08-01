@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<EvidenceCatalog fqn="ontology.maker-space.evidence.source" id="MakerSpace.Evidence.Source">
+  <Description>MakerSpace evidence materials.</Description>
+  <Evidences>
+    <Evidence id="manual:makerspace-policy" source="manual" grade="authoritative" resolver="manual" confidence="1.0"><![CDATA[
+The workshop operating policy requires certified members for approved tool reservations, ordered reservation windows, and requested/approved/checkedOut/returned/cancelled states.
+]]></Evidence>
+    <Evidence id="api-contract:maker-workbench" source="api-contract" artifact="maker-workbench-operation-contract-v1" grade="contractual" resolver="manual" confidence="0.95"><![CDATA[
+The workbench accepts ExecuteOperationRequest v1 with context, operation dimensions, invocation payload, and explicit execution capability choices.
+]]></Evidence>
+  </Evidences>
+</EvidenceCatalog>

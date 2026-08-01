@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BusinessObject fqn="ontology.invalid.request-dimension-verb-mismatch.business-object.reservation" id="Invalid.Reservation" parentRef="Invalid.Resource">
+  <Description>Support BusinessObject for the request mismatch negative case.</Description>
+  <Purpose>Minimal reservation business object.</Purpose>
+  <Identity>
+    <Property name="reservationNumber" typeRef="builtin:String" required="true" />
+  </Identity>
+</BusinessObject>

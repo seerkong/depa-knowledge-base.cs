@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CollectionType fqn="ontology.maker-space.collection-types.tool-code-list" id="MakerSpace.Type.ToolCodeList" collection="list" itemTypeRef="MakerSpace.Type.ToolCode">
+  <Description>Ordered list of tool codes used by batch selection examples.</Description>
+</CollectionType>

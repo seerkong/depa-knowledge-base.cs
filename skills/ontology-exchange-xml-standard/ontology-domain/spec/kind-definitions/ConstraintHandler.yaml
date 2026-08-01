@@ -1,0 +1,23 @@
+apiVersion: fs-native/v1
+kind: KindDefinition
+metadata:
+  name: constraint-handler
+spec:
+  resourceKind: ConstraintHandler
+  sourceShapes: [manifest]
+  descriptorSchema:
+    rootElement: ConstraintHandler
+    requiredAttributes: [fqn, id, ownerKind, ownerRef, portability]
+    requiredChildren: [Description, Statement]
+  identity:
+    fqn: { from: "@fqn", required: true }
+  entries:
+    manifest:
+      entry: ConstraintHandler.xml
+  description: { path: Description, required: true, nonEmpty: true }
+  crossResourceRules:
+    - local-ownerKind-is-business-object
+    - ownerRef-matches-containing-BusinessObject
+  diagnostics:
+    - code: CONSTRAINT_HANDLER_OWNER_MISMATCH
+      message: A BusinessObject-local ConstraintHandler must match its containing owner.

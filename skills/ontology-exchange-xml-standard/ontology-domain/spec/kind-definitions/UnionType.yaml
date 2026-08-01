@@ -1,0 +1,26 @@
+apiVersion: fs-native/v1
+kind: KindDefinition
+metadata:
+  name: union-type
+spec:
+  resourceKind: UnionType
+  sourceShapes: [manifest]
+  entries:
+    manifest:
+      entry: UnionType.xml
+  descriptorSchema:
+    rootElement: UnionType
+    requiredAttributes: [fqn, id]
+    requiredChildren: [Description, Options]
+  identity:
+    fqn: { from: "@fqn", required: true }
+  description: { path: Description, required: true, nonEmpty: true }
+  internalContract:
+    owns: [Union options]
+    forbidsUpperLayerRefs: true
+  crossResourceRules:
+    - options-resolve-to-value-types
+    - options-must-not-reference-Mixin
+  diagnostics:
+    - code: UNION_TYPE_OPTION_INVALID
+      message: UnionType options must resolve to declared value types and must not reference Mixins.

@@ -1,0 +1,43 @@
+apiVersion: fs-native/v1
+kind: KindDefinition
+metadata:
+  name: operation-catalog
+spec:
+  resourceKind: OperationCatalog
+  sourceShapes:
+    - file
+  descriptorSchema:
+    rootElement: OperationCatalog
+    requiredAttributes:
+      - fqn
+      - id
+    requiredChildren:
+      - Description
+      - Operations
+  identity:
+    fqn:
+      from: "@fqn"
+      required: true
+  description:
+    path: Description
+    required: true
+    nonEmpty: true
+  internalContract:
+    owns:
+      - Operation
+      - InvocationPreset
+      - complete ExecuteOperationRequest v1
+    usesSemanticOwnerTable: true
+  crossResourceRules:
+    - operation-five-dimensions-are-orthogonal
+    - selection-is-subject-batch-is-invocation
+    - RequestJson-is-exact-preview-and-POST-body
+    - definition-capability-set-request-execution-choice-are-distinct
+    - operation-verb-matches-single-or-every-batch-item
+  diagnostics:
+    - code: OPERATION_CATALOG_DESCRIPTION_MISSING
+      message: OperationCatalog must declare a non-empty Description.
+    - code: OPERATION_REQUEST_ENVELOPE_MISMATCH
+      message: InvocationPreset RequestJson must be a complete ExecuteOperationRequest v1.
+    - code: OPERATION_CAPABILITY_ROLE_MISMATCH
+      message: Definition support, runtime support, and request execution choice are distinct.

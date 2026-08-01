@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ScalarType fqn="ontology.maker-space.scalar-types.member-number" id="MakerSpace.Type.MemberNumber" base="builtin:String">
+  <Description>Stable member number.</Description>
+</ScalarType>

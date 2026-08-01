@@ -1,0 +1,36 @@
+apiVersion: fs-native/v1
+kind: KindDefinition
+metadata:
+  name: capability-catalog
+spec:
+  resourceKind: CapabilityCatalog
+  sourceShapes:
+    - file
+  descriptorSchema:
+    rootElement: CapabilityCatalog
+    requiredAttributes:
+      - fqn
+      - id
+    requiredChildren:
+      - Description
+      - Capabilities
+  identity:
+    fqn:
+      from: "@fqn"
+      required: true
+  description:
+    path: Description
+    required: true
+    nonEmpty: true
+  internalContract:
+    owns:
+      - Capability
+    referencesTypeContracts: true
+  crossResourceRules:
+    - inputs-and-outputs-reference-TypeRef
+    - no-implementation-body-or-type-declarations
+  diagnostics:
+    - code: CAPABILITY_CATALOG_DESCRIPTION_MISSING
+      message: CapabilityCatalog must declare a non-empty Description.
+    - code: CAPABILITY_INLINE_IMPLEMENTATION_REJECTED
+      message: Capability resources cannot own implementation bodies.

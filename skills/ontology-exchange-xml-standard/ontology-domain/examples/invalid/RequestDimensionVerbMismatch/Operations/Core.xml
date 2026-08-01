@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OperationCatalog fqn="ontology.invalid.request-dimension-verb-mismatch.operations" id="Invalid.Operations">
+  <Description>Invalid operation request mismatch catalog.</Description>
+  <Operations>
+    <Operation id="Invalid.Operation.ApproveReservation" verb="ApproveReservation" owner="business-object" ownerRef="Invalid.Reservation" behavior="mutation" subject="single" invocation="single" effect="write" subjectTypeRef="Invalid.Reservation">
+      <Capabilities>
+        <Atomicity value="atomic" />
+        <Observation value="after" />
+      </Capabilities>
+    </Operation>
+  </Operations>
+  <InvocationPresets>
+    <InvocationPreset id="Invalid.Preset.ApproveReservation" operationRef="Invalid.Operation.ApproveReservation">
+      <RequestJson><![CDATA[
+{
+  "apiVersion": "1",
+  "context": { "id": "Invalid.RequestMismatch", "version": "1.0.0" },
+  "operation": {
+    "ref": "Invalid.Operation.ApproveReservation",
+    "ownerKind": "business-object",
+    "ownerRef": "Invalid.Reservation",
+    "behaviorKind": "query",
+    "subjectKind": "single",
+    "invocationMode": "single",
+    "effect": "write"
+  },
+  "invocation": {
+    "mode": "single",
+    "subject": { "kind": "single", "ref": { "type": "Invalid.Reservation", "id": "reservation:1" } },
+    "verb": "ApproveBooking",
+    "payload": {}
+  },
+  "execution": { "atomicity": "atomic", "observe": ["after"] }
+}
+]]></RequestJson>
+    </InvocationPreset>
+  </InvocationPresets>
+</OperationCatalog>

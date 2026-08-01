@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<EventContractCatalog fqn="ontology.maker-space.events.core" id="MakerSpace.Events.Core">
+  <Description>MakerSpace event contracts.</Description>
+  <EventContracts>
+    <EventContract id="MakerSpace.Event.ReservationApproved" eventTypeRef="MakerSpace.EventType.ReservationApproved">
+      <Description>Published after a reservation is approved.</Description>
+      <Subjects>
+        <Type ref="MakerSpace.Reservation" />
+      </Subjects>
+      <Evidences>
+        <Evidence ref="api-contract:maker-workbench" />
+      </Evidences>
+    </EventContract>
+  </EventContracts>
+</EventContractCatalog>

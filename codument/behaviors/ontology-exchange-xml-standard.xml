@@ -1,0 +1,82 @@
+<behaviors capability="ontology-exchange-xml-standard" version="1">
+  <requirement id="fs-native-system">
+    <statement>The skill SHALL expose a generic FS-native resource system with source shapes, first-level catalogs, KindDefinition authority, logical identity, containment, registry, and stable diagnostics.</statement>
+    <suite id="system-layout" name="System layout and discovery">
+      <case id="four-layer-system">
+        <given>The skill is opened by an author or validator</given>
+        <when>The generic resource system is inspected</when>
+        <then>The system SHALL be organized as system/foundation, system/std, system/spec, and system/examples</then>
+      </case>
+      <case id="catalog-discovers-kind">
+        <given>A manifest declares a FileResourceCatalog, DirectoryResourceCatalog, or ManifestResourceCatalog</given>
+        <when>The resource tree is validated</when>
+        <then>The system SHALL scan only the declared root's first level and validate every member through the catalog Kind's KindDefinition</then>
+      </case>
+    </suite>
+  </requirement>
+  <requirement id="ontology-domain-kinds">
+    <statement>The ontology domain SHALL be an upper Kind package on the FS-native system, with Ontology as a manifest Kind and every ontology resource category as a registered resource Kind.</statement>
+    <suite id="domain-layout" name="Ontology domain layout">
+      <case id="four-layer-domain">
+        <given>The ontology business specification is inspected</given>
+        <when>Its documentation and examples are loaded</when>
+        <then>The domain SHALL be organized as ontology-domain/foundation, ontology-domain/std, ontology-domain/spec, and ontology-domain/examples</then>
+      </case>
+      <case id="manifest-catalog-assembly">
+        <given>An Ontology composes lower kernels, profiles, Operations, Evidence, Bindings, Mappings, and Evolution</given>
+        <when>The resource tree is authored</when>
+        <then>The Ontology SHALL use direct FS-native ResourceCatalog children and SHALL NOT use Ontology/Resources, Ontology/Modules, or per-resource href assembly</then>
+      </case>
+      <case id="self-describing-members">
+        <given>An ontology resource is discovered by a ResourceCatalog</given>
+        <when>The member is normalized</when>
+        <then>The member SHALL declare its resource Kind, fqn identity, semantic identity where required, and non-empty Description and SHALL match the catalog KindDefinition</then>
+      </case>
+    </suite>
+  </requirement>
+  <requirement id="fs-native-validation">
+    <statement>The validator SHALL discover ontology resources through FS-native catalogs and KindDefinitions before applying ontology-domain semantic validation.</statement>
+    <suite id="validation" name="Validation and rejection">
+      <case id="reject-retired-layout">
+        <given>An input uses Ontology/Resources, Ontology/Modules, explicit resource href entries, or the retired assets/examples layout</given>
+        <when>The validator reads the input</when>
+        <then>The validator SHALL reject it with a stable FS-native migration diagnostic and SHALL NOT translate it</then>
+      </case>
+      <case id="preserve-domain-contracts">
+        <given>A valid FS-native Ontology resource tree</given>
+        <when>Domain semantic validation runs</when>
+        <then>The validator SHALL preserve lower/upper ownership, five Operation dimensions, complete ExecuteOperationRequest v1, capability-role separation, evidence, binding, mapping, evolution, and VFS/XML security checks</then>
+      </case>
+    </suite>
+  </requirement>
+  <requirement id="runtime-projection-authority">
+    <statement>The ontology XML skill SHALL treat depa-ontology.ts as the Bun OM capability authority and SHALL require explicit import/export projection policy.</statement>
+    <suite id="projection" name="Bun OM import and export">
+      <case id="import-after-validation">
+        <given>A valid FS-native ontology tree and declared runtime mappings</given>
+        <when>The ontology is imported into Bun OM</when>
+        <then>The importer SHALL use public depa-ontology.ts schema and behavior surfaces only after XML validation</then>
+      </case>
+      <case id="no-fabrication-export">
+        <given>Only runtime schema rows, snapshots, or behavior manifests are available</given>
+        <when>An XML export is requested</when>
+        <then>The exporter SHALL NOT fabricate BusinessObject, Operation, Evidence, policy, lifecycle, or other profile-only facts without explicit export policy and evidence</then>
+      </case>
+    </suite>
+  </requirement>
+  <requirement id="fresh-examples">
+    <statement>System and ontology-domain examples SHALL be newly authored, compact, and scoped to demonstrating their own layer.</statement>
+    <suite id="example-policy" name="Example policy">
+      <case id="minimal-system-example">
+        <given>The system examples are reviewed</given>
+        <when>The FS-native mechanism is learned</when>
+        <then>The examples SHALL use a new neutral domain and the minimum files needed to demonstrate all three shapes, catalogs, KindDefinition registration, and nested manifest composition</then>
+      </case>
+      <case id="new-ontology-example">
+        <given>The ontology-domain examples are reviewed</given>
+        <when>The complete ontology capability is learned or tested</when>
+        <then>The examples SHALL use a newly authored non-IT-Asset domain covering every retained ontology concern and focused invalid cases</then>
+      </case>
+    </suite>
+  </requirement>
+</behaviors>

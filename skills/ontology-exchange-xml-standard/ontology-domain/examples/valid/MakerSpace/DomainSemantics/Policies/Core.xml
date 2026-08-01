@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DomainPolicyCatalog fqn="ontology.maker-space.policies.core" id="MakerSpace.Policies.Core">
+  <Description>MakerSpace policy groupings.</Description>
+  <DomainPolicies>
+    <DomainPolicy id="MakerSpace.Policy.ShopDay" ownerKind="domain-context">
+      <Statement>Workshop operations are evaluated against the ontology version active for the shop day.</Statement>
+      <Rules>
+        <Rule ref="MakerSpace.Rule.ReservationWindowOrdered" />
+      </Rules>
+      <Evidences>
+        <Evidence ref="manual:makerspace-policy" />
+      </Evidences>
+    </DomainPolicy>
+    <DomainPolicy id="MakerSpace.Policy.ReservationApproval" ownerKind="business-object" ownerRef="MakerSpace.Reservation">
+      <Statement>Reservation approval follows member certification and schedule ordering rules.</Statement>
+      <Rules>
+        <Rule ref="MakerSpace.Rule.ToolRequiresCertification" />
+        <Rule ref="MakerSpace.Rule.ReservationWindowOrdered" />
+      </Rules>
+      <Evidences>
+        <Evidence ref="manual:makerspace-policy" />
+      </Evidences>
+    </DomainPolicy>
+    <DomainPolicy id="MakerSpace.Policy.ReservedToolVisibility" ownerKind="association" ownerRef="MakerSpace.Association.ReservedTool">
+      <Statement>The reserved tool association is visible to reservation planners.</Statement>
+      <Rules>
+        <Rule ref="MakerSpace.Rule.ReservationWindowOrdered" />
+      </Rules>
+      <Evidences>
+        <Evidence ref="manual:makerspace-policy" />
+      </Evidences>
+    </DomainPolicy>
+  </DomainPolicies>
+</DomainPolicyCatalog>

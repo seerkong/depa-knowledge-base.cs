@@ -1,0 +1,27 @@
+apiVersion: fs-native/v1
+kind: KindDefinition
+metadata:
+  name: rule
+spec:
+  resourceKind: Rule
+  sourceShapes: [manifest]
+  entries:
+    manifest:
+      entry: Rule.xml
+  descriptorSchema:
+    rootElement: Rule
+    requiredAttributes: [fqn, id, scopeTypeRef, kind]
+    requiredChildren: [Statement, Require, Violation]
+  identity:
+    fqn: { from: "@fqn", required: true }
+  description: { path: Statement, required: true, nonEmpty: true }
+  internalContract:
+    owns: [predicate, Violation]
+    forbidsExecutableContent: true
+  crossResourceRules:
+    - rule-scopeTypeRef-resolves-to-ObjectType-or-BusinessObject
+    - predicate-references-available-in-current-context
+    - custom-rules-require-evidence-or-binding
+  diagnostics:
+    - code: RULE_PREDICATE_EXECUTABLE_CONTENT
+      message: Rule predicates must be typed XML, not executable strings.

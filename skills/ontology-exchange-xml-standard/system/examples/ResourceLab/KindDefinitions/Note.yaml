@@ -1,0 +1,32 @@
+apiVersion: fs-native/v1
+kind: KindDefinition
+metadata:
+  name: Note
+spec:
+  resourceKind: Note
+  sourceShapes:
+    - file
+  descriptorSchema:
+    format: xml
+    rootElement: Note
+    requiredChildren:
+      - Description
+  identity:
+    fqn:
+      path: "@fqn"
+    name:
+      path: "@name"
+      scope: catalog
+  description:
+    path: Description
+    minLength: 1
+  entries: {}
+  internalContract:
+    allowedReferences: []
+    allowedFiles: []
+  crossResourceRules: []
+  diagnostics:
+    - code: NOTE_IDENTITY_MISSING
+      mapsTo: RESOURCE_IDENTITY_MISSING
+    - code: NOTE_DESCRIPTION_MISSING
+      mapsTo: RESOURCE_KIND_SCHEMA_INVALID

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<EnumType fqn="ontology.invalid.domain-policy-inline-predicate.enum-types.reservation-state" id="Invalid.Type.ReservationState">
+  <Description>Minimal reservation state enum.</Description>
+  <Members>
+    <Member id="Requested" value="requested" />
+  </Members>
+</EnumType>

@@ -1,0 +1,36 @@
+apiVersion: fs-native/v1
+kind: KindDefinition
+metadata:
+  name: association-catalog
+spec:
+  resourceKind: AssociationCatalog
+  sourceShapes:
+    - file
+  descriptorSchema:
+    rootElement: AssociationCatalog
+    requiredAttributes:
+      - fqn
+      - id
+    requiredChildren:
+      - Description
+      - Associations
+  identity:
+    fqn:
+      from: "@fqn"
+      required: true
+  description:
+    path: Description
+    required: true
+    nonEmpty: true
+  internalContract:
+    owns:
+      - Association
+    referencesLowerFactsOnly: true
+  crossResourceRules:
+    - association-relationRef-resolves-to-Relation
+    - no-inline-relation-endpoints-or-cardinality
+  diagnostics:
+    - code: ASSOCIATION_CATALOG_DESCRIPTION_MISSING
+      message: AssociationCatalog must declare a non-empty Description.
+    - code: ASSOCIATION_INLINE_RELATION_FACT
+      message: Association resources cannot repeat DomainModel relation endpoints or cardinality.

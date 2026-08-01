@@ -16,7 +16,7 @@ Projection turns reviewed candidates into canonical XML. Validation proves gramm
 
 Write a self-contained bundle with:
 
-- canonical XML resources owned by `ontology-xml-dsl`;
+- canonical XML resources owned by `ontology-exchange-xml-standard`;
 - run-local source scope and read plan;
 - evidence inventory;
 - model-authored candidate ledger;
@@ -30,7 +30,7 @@ No output may contain or depend on `depa_*` objects, judgments, exports, or onto
 
 ## 2. XML Projection
 
-Before writing XML, load `ontology-xml-dsl/SKILL.md` and the routed specifications for every resource being emitted. That skill alone owns grammar, module placement, identities, references, ordering, evidence grades, status, schema evolution, and validation behavior.
+Before writing XML, load `ontology-exchange-xml-standard/SKILL.md` and the routed specifications for every resource being emitted. That skill alone owns grammar, module placement, identities, references, ordering, evidence grades, status, schema evolution, and validation behavior.
 
 Project according to these semantic boundaries:
 
@@ -38,11 +38,11 @@ Project according to these semantic boundaries:
 - evidence resources own source coordinates and grades;
 - implementation mappings connect repository-specific code to semantic identities;
 - observations, read plans, candidate ledgers, and coverage reports remain noncanonical sidecars;
-- unresolved candidates stay outside XML or project as explicit hypotheses when the DSL can represent the uncertainty;
+- unresolved candidates stay outside XML or project as explicit hypotheses when the exchange standard can represent the uncertainty;
 - every newly projected interpretation is a hypothesis unless the recorded acceptance decision satisfies the workflow gates; and
 - no generated XML embeds source code, callback bodies, query strings, business data, or target runtime instructions.
 
-Do not duplicate XML schema snippets in this reference. Any schema-shaped example encountered in older material is illustrative only and is never a gold oracle. Resolve all authoring details from the current DSL owner.
+Do not duplicate XML schema snippets in this reference. Any schema-shaped example encountered in older material is illustrative only and is never a gold oracle. Resolve all authoring details from the current exchange standard owner.
 
 ## 3. Strict Generated Validation
 
@@ -55,7 +55,7 @@ bun run skills/code-to-ontology-xml/scripts/audit-generated-ontology.ts \
   --report <run-dir>/generated-ontology-audit.json
 ```
 
-The audit entrypoint always invokes the `ontology-xml-dsl` validator with `--generated`; callers cannot fall back to default mode. A pass establishes closed grammar, references, and the DSL's generator evidence contract. It does not establish that the ontology is semantically complete or correct.
+The audit entrypoint always invokes the `ontology-exchange-xml-standard` validator with `--generated`; callers cannot fall back to default mode. A pass establishes closed grammar, references, and the exchange standard's generator evidence contract. It does not establish that the ontology is semantically complete or correct.
 
 After validation, search the canonical bundle and audit sidecars for:
 
@@ -66,7 +66,7 @@ After validation, search the canonical bundle and audit sidecars for:
 - host-language implementation bodies in XML; and
 - accepted objects without a recorded review decision and evidence-gate rationale.
 
-Any failure blocks completion. Fix the source interpretation or projection; do not weaken the DSL validator or rewrite its grammar locally.
+Any failure blocks completion. Fix the source interpretation or projection; do not weaken the exchange standard validator or rewrite its grammar locally.
 
 ## 4. Deterministic Reconciliation
 
@@ -92,7 +92,7 @@ Its pass does not prove that:
 - a rule or lifecycle is complete; or
 - any semantic object deserves `accepted` status.
 
-When the deterministic helper does not support the selected language or repository shape, record that limitation and perform the same accounting in the model-authored coverage matrix. The strict DSL validator and semantic coverage review remain mandatory.
+When the deterministic helper does not support the selected language or repository shape, record that limitation and perform the same accounting in the model-authored coverage matrix. The strict exchange standard validator and semantic coverage review remain mandatory.
 
 ## 5. Coverage Matrix
 
@@ -152,7 +152,7 @@ Perform a fresh review after projection and deterministic checks. Reopen represe
 - No `depa_*` input, evidence, interpretation, or output was used.
 - No current application ontology output influenced concept selection, expected shape, counts, or review verdict.
 - No gold sample, counterexample, or domain fixture was created.
-- XML grammar is referenced only through `ontology-xml-dsl`.
+- XML grammar is referenced only through `ontology-exchange-xml-standard`.
 
 ## 7. Completion Decision
 

@@ -1,0 +1,38 @@
+apiVersion: fs-native/v1
+kind: KindDefinition
+metadata:
+  name: constraint-handler-catalog
+spec:
+  resourceKind: ConstraintHandlerCatalog
+  sourceShapes:
+    - file
+  descriptorSchema:
+    rootElement: ConstraintHandlerCatalog
+    requiredAttributes:
+      - fqn
+      - id
+    requiredChildren:
+      - Description
+      - ConstraintHandlers
+  identity:
+    fqn:
+      from: "@fqn"
+      required: true
+  description:
+    path: Description
+    required: true
+    nonEmpty: true
+  internalContract:
+    owns:
+      - ConstraintHandler
+    usesSemanticOwnerTable: true
+    forbidsExecutableContent: true
+  crossResourceRules:
+    - ownerRef-resolves-to-owner-resource-identity
+    - rules-reference-Rule
+    - portability-is-bounded
+  diagnostics:
+    - code: CONSTRAINT_HANDLER_CATALOG_DESCRIPTION_MISSING
+      message: ConstraintHandlerCatalog must declare a non-empty Description.
+    - code: CONSTRAINT_HANDLER_OWNER_KIND_MISMATCH
+      message: ConstraintHandler ownerRef must resolve through the semantic owner table.

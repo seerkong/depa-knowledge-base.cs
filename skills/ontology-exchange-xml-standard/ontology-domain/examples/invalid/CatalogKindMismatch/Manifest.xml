@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Ontology fqn="ontology.invalid.catalog-kind-mismatch" id="Invalid.CatalogKindMismatch" version="1.0.0">
+  <Description>Invalid catalog member kind mismatch.</Description>
+  <ManifestResourceCatalog id="object-types" kind="ObjectType" root="vfs://@/TypeSystem/ObjectTypes/" entry="ObjectType.xml" />
+</Ontology>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DomainPolicyCatalog fqn="ontology.invalid.domain-policy-inline-predicate.policies" id="Invalid.Policies">
+  <Description>Invalid policy catalog.</Description>
+  <DomainPolicies>
+    <DomainPolicy id="Invalid.Policy.Reservation" ownerKind="business-object" ownerRef="Invalid.Reservation">
+      <Statement>Invalidly owns predicate content.</Statement>
+      <When>
+        <PropertyEquals propertyRef="Invalid.Reservation#workflowState" value="requested" />
+      </When>
+    </DomainPolicy>
+  </DomainPolicies>
+</DomainPolicyCatalog>

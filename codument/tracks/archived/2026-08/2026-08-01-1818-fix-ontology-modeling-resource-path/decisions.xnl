@@ -1,0 +1,17 @@
+<decision #track.fix_ontology_modeling_resource_path.scope {
+  priority = "P1"
+  status = "accepted"
+  durable_candidate = false
+  confidence = "high"
+}
+(
+  <question ?>应修订旧 archive 还是建立后续 correction？</?>
+  <answer { }
+  (
+    <raw-answer ?>保留 archive 不变，以新 track 修正当前 durable registry。</?>
+    <decision-text ?>历史归档保持不可变；当前 modeling authority 由本 correction track supersede。</?>
+    <rationale ?>归档记录当时事实，新 track 提供可追溯纠偏而不篡改历史。</?>
+    <evidence ?>G4M-T2 fresh verifier 的 unresolved path 报告。</?>
+  )
+  >
+)>

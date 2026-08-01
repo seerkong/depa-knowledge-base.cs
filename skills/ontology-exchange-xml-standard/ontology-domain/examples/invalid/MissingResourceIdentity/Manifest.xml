@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Ontology fqn="ontology.invalid.missing-resource-identity" id="Invalid.MissingResourceIdentity" version="1.0.0">
+  <Description>Invalid resource identity omission.</Description>
+  <ManifestResourceCatalog id="object-types" kind="ObjectType" root="vfs://@/TypeSystem/ObjectTypes/" entry="ObjectType.xml" />
+</Ontology>

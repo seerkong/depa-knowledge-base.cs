@@ -1,0 +1,13 @@
+{
+  "name": "ontology-exchange-xml-standard",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "bun test tests/validate-ontology-xml.test.ts",
+    "validate:canonical": "bun run scripts/validate-ontology-xml.ts ontology-domain/examples/valid/MakerSpace/Manifest.xml --workspace-root ontology-domain/examples/valid/MakerSpace",
+    "validate:security": "bun run scripts/validate-ontology-xml-security-test.ts"
+  },
+  "dependencies": {
+    "fast-xml-parser": "5.9.3"
+  }
+}

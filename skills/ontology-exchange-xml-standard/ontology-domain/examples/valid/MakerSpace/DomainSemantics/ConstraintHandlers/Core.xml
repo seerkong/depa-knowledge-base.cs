@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ConstraintHandlerCatalog fqn="ontology.maker-space.constraint-handlers.core" id="MakerSpace.ConstraintHandlers.Core">
+  <Description>MakerSpace constraint enforcement responsibilities.</Description>
+  <ConstraintHandlers>
+    <ConstraintHandler id="MakerSpace.ConstraintHandler.ReservationCertification" ownerKind="business-object" ownerRef="MakerSpace.Reservation" portability="extension-point">
+      <Statement>The workbench runtime checks reservation certification before approval.</Statement>
+      <Rules>
+        <Rule ref="MakerSpace.Rule.ToolRequiresCertification" />
+      </Rules>
+      <Evidences>
+        <Evidence ref="api-contract:maker-workbench" />
+      </Evidences>
+    </ConstraintHandler>
+  </ConstraintHandlers>
+</ConstraintHandlerCatalog>

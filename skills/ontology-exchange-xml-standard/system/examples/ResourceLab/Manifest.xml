@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CollectionManifest fqn="system.example.resource_lab" version="1.0.0">
+  <Description>Root manifest for a neutral FS-native resource tree example.</Description>
+  <FileResourceCatalog id="kind-registry" kind="KindDefinition" root="vfs://@/KindDefinitions/"/>
+  <FileResourceCatalog id="root-notes" kind="Note" root="vfs://@/Notes/"/>
+  <DirectoryResourceCatalog id="root-procedures" kind="Procedure" root="vfs://@/Procedures/" entry="Procedure.xml"/>
+  <ManifestResourceCatalog id="child-collections" kind="CollectionManifest" root="vfs://@/Collections/" entry="Manifest.xml"/>
+</CollectionManifest>

@@ -1,0 +1,41 @@
+apiVersion: fs-native/v1
+kind: KindDefinition
+metadata:
+  name: CollectionManifest
+spec:
+  resourceKind: CollectionManifest
+  sourceShapes:
+    - manifest
+  descriptorSchema:
+    format: xml
+    rootElement: CollectionManifest
+    requiredChildren:
+      - Description
+  identity:
+    fqn:
+      path: "@fqn"
+    name:
+      path: "@name"
+      scope: parent-manifest
+  description:
+    path: Description
+    minLength: 1
+  entries:
+    manifest:
+      entry: Manifest.xml
+  internalContract:
+    allowedCatalogs:
+      - FileResourceCatalog
+      - DirectoryResourceCatalog
+      - ManifestResourceCatalog
+    allowedReferences:
+      - scheme: vfs
+        boundary: manifest-directory
+  crossResourceRules:
+    - id: catalog-kind-has-definition
+      diagnostic: RESOURCE_KIND_DEFINITION_NOT_FOUND
+  diagnostics:
+    - code: COLLECTION_MANIFEST_IDENTITY_MISSING
+      mapsTo: RESOURCE_MANIFEST_IDENTITY_MISSING
+    - code: COLLECTION_MANIFEST_CATALOG_INVALID
+      mapsTo: RESOURCE_KIND_CONTRACT_INVALID

@@ -1,0 +1,24 @@
+apiVersion: fs-native/v1
+kind: KindDefinition
+metadata:
+  name: interceptor
+spec:
+  resourceKind: Interceptor
+  sourceShapes: [manifest]
+  descriptorSchema:
+    rootElement: Interceptor
+    requiredAttributes: [fqn, id, ownerRef, actionRef, phase, seq, portability]
+    requiredChildren: [Description]
+  identity:
+    fqn: { from: "@fqn", required: true }
+  entries:
+    manifest:
+      entry: Interceptor.xml
+  description: { path: Description, required: true, nonEmpty: true }
+  crossResourceRules:
+    - ownerRef-matches-containing-BusinessObject
+    - actionRef-resolves-to-same-owner-Action
+    - phase-is-before-or-after
+  diagnostics:
+    - code: INTERCEPTOR_TARGET_INVALID
+      message: Interceptor must target an Action owned by the same BusinessObject.

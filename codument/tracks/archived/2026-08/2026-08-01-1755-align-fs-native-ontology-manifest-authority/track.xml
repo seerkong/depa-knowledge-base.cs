@@ -1,0 +1,122 @@
+<Track id="align-fs-native-ontology-manifest-authority" version="1" xmlns:cdt="urn:codument:v1">
+  <Metadata>
+    <Status>completed</Status>
+    <Goal>用真实 track 收口 FS-native ontology manifest grammar 与 depa-ontology.ts projection authority。</Goal>
+    <Description>接管并验证当前未归属的 ontology-exchange-xml-standard 重构，形成可归档的 behavior、modeling、validator、fixtures 和 authority evidence。</Description>
+    <QuestionMode>decision-tree</QuestionMode>
+    <QuestionSeverity>auto</QuestionSeverity>
+    <CommitMode>manual</CommitMode>
+    <CreatedAt>2026-08-01T12:13:16Z</CreatedAt>
+    <UpdatedAt>2026-08-01T14:55:41Z</UpdatedAt>
+    <ModelingBaseCommit>19c7ce7b2c0ea63051c2e25a4f53fbe6cedc10a2</ModelingBaseCommit>
+  </Metadata>
+
+  <Ports scope="track">
+    <MaterialBundle role="input" name="behavior-deltas" domain="behavior" path="vfs://./behavior_deltas/"/>
+    <MaterialBundle role="input" name="modeling-deltas" domain="modeling" path="vfs://./modeling_deltas/"/>
+    <MaterialBundle role="output" name="ontology-xml-skill" domain="skill" path="vfs://@/skills/ontology-exchange-xml-standard/"/>
+    <MaterialBundle role="output" name="behavior" domain="codument" path="vfs://@/codument/behaviors/"/>
+    <MaterialBundle role="output" name="modeling" domain="modeling" path="vfs://@/codument/modeling/"/>
+  </Ports>
+
+  <TaskSpace id="space_align-fs-native-ontology-manifest-authority" name="align-fs-native-ontology-manifest-authority" version="1">
+    <Description>从既有 dirty implementation 建立可追溯 ownership，按 system、ontology domain、projection 与 final verification 顺序收敛。</Description>
+    <SubNodes>
+      <TaskGroup id="P0" name="Baseline And Ownership" status="DONE" order="0">
+        <Description>冻结当前 diff、历史 grammar 和 track-owned behavior/modeling target。</Description>
+        <SubNodes>
+          <Task id="T0.1" name="审计既有 diff 与 legacy authority" status="DONE" order="0" priority="P0">
+            <Description>确认 current FS-native tree、deleted Resources tree、历史 Cozo archive 和 depa-ontology.ts public authority；不得覆盖无关改动。</Description>
+            <cdt:Acceptance>
+              <cdt:Criterion id="T0.1-AC1" checked="true">findings 逐项列出 track-owned diff 与 out-of-scope diff</cdt:Criterion>
+              <cdt:Criterion id="T0.1-AC2" checked="true">旧 Resources authority 与 current manifest target 的差异有机械证据</cdt:Criterion>
+            </cdt:Acceptance>
+          </Task>
+          <Task id="T0.2" name="校准 behavior 与 modeling target" status="DONE" order="1" priority="P0">
+            <Description>验证 delta 覆盖 FS-native system、ontology Kind package、validator 和 runtime projection authority，并与当前 registry/实现一致。</Description>
+            <cdt:Acceptance>
+              <cdt:Criterion id="T0.2-AC1" checked="true">behavior delta 结构有效且覆盖可测试 breaking boundary</cdt:Criterion>
+              <cdt:Criterion id="T0.2-AC2" checked="true">modeling delta 通过 validator 且不保留 stale file-only ontology model</cdt:Criterion>
+            </cdt:Acceptance>
+          </Task>
+        </SubNodes>
+      </TaskGroup>
+
+      <TaskGroup id="P1" name="FS-Native Resource System" status="DONE" order="1">
+        <Description>验证 generic resource mechanism 与 ontology business rules 解耦。</Description>
+        <SubNodes>
+          <Task id="T1.1" name="验证 system specification 与 examples" status="DONE" order="0" priority="P0">
+            <Description>检查四层 docs、三种 source shape、三类 ResourceCatalog、KindDefinition、identity、containment 和 diagnostics。</Description>
+            <cdt:Acceptance>
+              <cdt:Criterion id="T1.1-AC1" checked="true">system examples 不复用旧 ontology/IT-asset fixtures</cdt:Criterion>
+              <cdt:Criterion id="T1.1-AC2" checked="true">generic grammar 不拥有 ontology-specific fields</cdt:Criterion>
+            </cdt:Acceptance>
+          </Task>
+          <Task id="T1.2" name="验证 discovery 与 KindDefinition pipeline" status="DONE" order="1" priority="P0">
+            <Description>用测试证明 first-level discovery、shape admission、logical refs 和 stable diagnostics。</Description>
+            <cdt:Acceptance>
+              <cdt:Criterion id="T1.2-AC1" checked="true">file/directory/manifest 正负例通过</cdt:Criterion>
+              <cdt:Criterion id="T1.2-AC2" checked="true">catalog Kind 与 member Kind mismatch 被拒绝</cdt:Criterion>
+            </cdt:Acceptance>
+          </Task>
+        </SubNodes>
+      </TaskGroup>
+
+      <TaskGroup id="P2" name="Ontology Manifest Grammar" status="DONE" order="2">
+        <Description>验证 28 KindDefinitions、分层 semantics、Operation/request 和 legacy rejection。</Description>
+        <SubNodes>
+          <Task id="T2.1" name="验证 ontology Kind registry 与 MakerSpace fixture" status="DONE" order="0" priority="P0">
+            <Description>核对 manifest/file shapes、lower kernels、BusinessObject-local members、profiles、Operation、evidence/binding/mapping/evolution。</Description>
+            <cdt:Acceptance>
+              <cdt:Criterion id="T2.1-AC1" checked="true">28 KindDefinitions 可解析且 source shape 与 fixture 一致</cdt:Criterion>
+              <cdt:Criterion id="T2.1-AC2" checked="true">五维 Operation 与完整 single/selection/batch request preset 闭合</cdt:Criterion>
+            </cdt:Acceptance>
+          </Task>
+          <Task id="T2.2" name="验证 breaking migration 与安全边界" status="DONE" order="1" priority="P0">
+            <Description>运行 Resources/Modules/href、shape、ownership、reference、XML/VFS security invalid matrix，修正任何漏检。</Description>
+            <cdt:Acceptance>
+              <cdt:Criterion id="T2.2-AC1" checked="true">旧 assembly 确定性拒绝且无 compatibility branch</cdt:Criterion>
+              <cdt:Criterion id="T2.2-AC2" checked="true">traversal/symlink/DOCTYPE/ENTITY/encoding/size/boundary checks 通过</cdt:Criterion>
+            </cdt:Acceptance>
+          </Task>
+        </SubNodes>
+      </TaskGroup>
+
+      <TaskGroup id="P3" name="Projection And Independent Closure" status="DONE" order="3">
+        <Description>固定 Bun OM authority，执行全量验证和 fresh direction review。</Description>
+        <cdt:Gate>
+          <cdt:Criterion checked="true">validator suite 与 security reproduction 全部通过</cdt:Criterion>
+          <cdt:Criterion checked="true">skill metadata、behavior、modeling、docs references 自洽</cdt:Criterion>
+          <cdt:Criterion checked="true">独立 verifier 从目标倒推为 PASS</cdt:Criterion>
+        </cdt:Gate>
+        <SubNodes>
+          <Task id="T3.1" name="验证 depa-ontology.ts import/export authority" status="DONE" order="0" priority="P0">
+            <Description>核对 public schema/behavior surfaces、projection order、callback boundary 和 no-fabrication export policy。</Description>
+            <cdt:Acceptance>
+              <cdt:Criterion id="T3.1-AC1" checked="true">source authority 文档测试通过且无旧 cozo-lib-bun authority</cdt:Criterion>
+              <cdt:Criterion id="T3.1-AC2" checked="true">runtime rows 不可单独导出 profile-only XML facts</cdt:Criterion>
+            </cdt:Acceptance>
+          </Task>
+          <Task id="T3.1A" name="修复大小写不敏感文件系统的入口别名" status="DONE" order="1" priority="P0">
+            <Description>在 realpath 解析前后保留调用者请求的入口 spelling，并与父目录真实 directory entry 及 KindDefinition exact entry 同时比对；不得削弱 symlink、containment 或正常 PascalCase 入口。</Description>
+            <cdt:Acceptance>
+              <cdt:Criterion id="T3.1A-AC1" checked="true">物理 Manifest.xml 存在时，以 manifest.xml 调用 CLI 在 macOS 上仍确定性拒绝</cdt:Criterion>
+              <cdt:Criterion id="T3.1A-AC2" checked="true">canonical、relative/absolute 正常入口及现有 security matrix 全部保持通过</cdt:Criterion>
+            </cdt:Acceptance>
+          </Task>
+          <Task id="T3.2" name="运行 final verification 与 metadata validation" status="DONE" order="2" priority="P0">
+            <Description>运行 validator tests、direct CLI、security、XML/Markdown/reference、skill quick validation、Codument/modeling validation 和 diff check；写 final report。</Description>
+            <cdt:Acceptance>
+              <cdt:Criterion id="T3.2-AC1" checked="true">fresh commands 与完整结果落 reports/final-verification.md</cdt:Criterion>
+              <cdt:Criterion id="T3.2-AC2" checked="true">无 blocking issue，未修改 out-of-scope files</cdt:Criterion>
+            </cdt:Acceptance>
+          </Task>
+        </SubNodes>
+        <Hooks>
+          <Hook on="phase:after"><cdt:AttractorCheck use="coding"/></Hook>
+          <Hook on="phase:after"><cdt:AttractorCheck use="docs"/></Hook>
+        </Hooks>
+      </TaskGroup>
+    </SubNodes>
+  </TaskSpace>
+</Track>

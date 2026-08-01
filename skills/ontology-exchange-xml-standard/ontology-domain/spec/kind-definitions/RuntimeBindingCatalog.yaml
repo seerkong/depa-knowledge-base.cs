@@ -1,0 +1,38 @@
+apiVersion: fs-native/v1
+kind: KindDefinition
+metadata:
+  name: runtime-binding-catalog
+spec:
+  resourceKind: RuntimeBindingCatalog
+  sourceShapes:
+    - file
+  descriptorSchema:
+    rootElement: RuntimeBindingCatalog
+    requiredAttributes:
+      - fqn
+      - id
+    requiredChildren:
+      - Description
+      - RuntimeBindings
+  identity:
+    fqn:
+      from: "@fqn"
+      required: true
+  description:
+    path: Description
+    required: true
+    nonEmpty: true
+  internalContract:
+    owns:
+      - RuntimeBinding
+      - runtime-supported capability set
+    forbidsExecutableContent: true
+  crossResourceRules:
+    - targetRef-kind-matches-targetKind
+    - operation-binding-capabilities-subset-operation-definition
+    - handlerRef-is-stable-registry-key-not-code-or-path
+  diagnostics:
+    - code: RUNTIME_BINDING_CATALOG_DESCRIPTION_MISSING
+      message: RuntimeBindingCatalog must declare a non-empty Description.
+    - code: RUNTIME_BINDING_CAPABILITY_ROLE_MISMATCH
+      message: RuntimeBinding declares runtime support, not Operation requestability or request choice.

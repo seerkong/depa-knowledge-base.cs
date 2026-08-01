@@ -1,0 +1,26 @@
+apiVersion: fs-native/v1
+kind: KindDefinition
+metadata:
+  name: enum-type
+spec:
+  resourceKind: EnumType
+  sourceShapes: [manifest]
+  entries:
+    manifest:
+      entry: EnumType.xml
+  descriptorSchema:
+    rootElement: EnumType
+    requiredAttributes: [fqn, id]
+    requiredChildren: [Description, Members]
+  identity:
+    fqn: { from: "@fqn", required: true }
+  description: { path: Description, required: true, nonEmpty: true }
+  internalContract:
+    owns: [Enum members]
+    forbidsUpperLayerRefs: true
+  crossResourceRules:
+    - member-ids-are-local-PascalCase
+    - member-values-are-stable-literals
+  diagnostics:
+    - code: ENUM_TYPE_MEMBER_INVALID
+      message: EnumType members must have unique PascalCase ids and stable literal values.

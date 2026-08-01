@@ -1,0 +1,25 @@
+apiVersion: fs-native/v1
+kind: KindDefinition
+metadata:
+  name: scalar-type
+spec:
+  resourceKind: ScalarType
+  sourceShapes: [manifest]
+  entries:
+    manifest:
+      entry: ScalarType.xml
+  descriptorSchema:
+    rootElement: ScalarType
+    requiredAttributes: [fqn, id, base]
+    requiredChildren: [Description]
+  identity:
+    fqn: { from: "@fqn", required: true }
+  description: { path: Description, required: true, nonEmpty: true }
+  internalContract:
+    owns: [Scalar type alias]
+    forbidsUpperLayerRefs: true
+  crossResourceRules:
+    - base-resolves-to-built-in-scalar
+  diagnostics:
+    - code: SCALAR_TYPE_BASE_INVALID
+      message: ScalarType base must resolve to a built-in scalar.

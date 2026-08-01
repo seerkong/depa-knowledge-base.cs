@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RuntimeBindingCatalog fqn="ontology.maker-space.bindings.runtime" id="MakerSpace.Bindings.Runtime">
+  <Description>Runtime support declarations for MakerSpace operations and computed values.</Description>
+  <RuntimeBindings>
+    <RuntimeBinding id="MakerSpace.Binding.OpenShopDay.Http" targetKind="operation" targetRef="MakerSpace.Operation.OpenShopDay" runtime="http" portability="extension-point">
+      <Description>HTTP binding for opening a shop day.</Description>
+      <HandlerRef registry="maker-workbench" key="shop-day.open" contract="execute-operation-v1" />
+      <Capabilities>
+        <Atomicity value="atomic" />
+        <Atomicity value="best-effort" />
+        <Observation value="after" />
+        <Observation value="trace" />
+        <Capability name="subject" value="none" />
+      </Capabilities>
+      <Evidences>
+        <Evidence ref="api-contract:maker-workbench" />
+      </Evidences>
+    </RuntimeBinding>
+    <RuntimeBinding id="MakerSpace.Binding.ExpireReservations.Http" targetKind="operation" targetRef="MakerSpace.Operation.ExpireReservations" runtime="http" portability="extension-point">
+      <Description>HTTP binding for selector-based reservation expiration.</Description>
+      <HandlerRef registry="maker-workbench" key="reservation.expire-selected" contract="execute-operation-v1" />
+      <Capabilities>
+        <Atomicity value="atomic" />
+        <Atomicity value="best-effort" />
+        <Observation value="before" />
+        <Observation value="after" />
+        <Observation value="diff" />
+        <Observation value="trace" />
+        <Capability name="selection" value="filter" />
+      </Capabilities>
+      <Evidences>
+        <Evidence ref="api-contract:maker-workbench" />
+      </Evidences>
+    </RuntimeBinding>
+    <RuntimeBinding id="MakerSpace.Binding.ApproveReservation.Http" targetKind="operation" targetRef="MakerSpace.Operation.ApproveReservation" runtime="http" portability="extension-point">
+      <Description>HTTP binding for approving a reservation.</Description>
+      <HandlerRef registry="maker-workbench" key="reservation.approve" contract="execute-operation-v1" />
+      <Capabilities>
+        <Atomicity value="atomic" />
+        <Observation value="before" />
+        <Observation value="after" />
+        <Observation value="diff" />
+      </Capabilities>
+      <Evidences>
+        <Evidence ref="api-contract:maker-workbench" />
+      </Evidences>
+    </RuntimeBinding>
+    <RuntimeBinding id="MakerSpace.Binding.ValidateReservationCertification.Http" targetKind="operation" targetRef="MakerSpace.Operation.ValidateReservationCertification" runtime="http" portability="extension-point">
+      <Description>HTTP binding for batch certification validation.</Description>
+      <HandlerRef registry="maker-workbench" key="reservation.validate-certification" contract="execute-operation-v1" />
+      <Capabilities>
+        <Atomicity value="best-effort" />
+        <Observation value="after" />
+        <Observation value="trace" />
+        <Capability name="batch" value="keyed-items" />
+      </Capabilities>
+      <Evidences>
+        <Evidence ref="api-contract:maker-workbench" />
+      </Evidences>
+    </RuntimeBinding>
+    <RuntimeBinding id="MakerSpace.Binding.ReservationDuration.InMemory" targetKind="computed-property" targetRef="MakerSpace.Reservation#durationMinutes" runtime="bun" portability="portable">
+      <Description>Computed value binding for reservation duration.</Description>
+      <HandlerRef registry="maker-workbench" key="reservation.duration-minutes" contract="computed-property-v1" />
+      <Capabilities>
+        <Capability name="projection" value="pure" />
+      </Capabilities>
+      <Evidences>
+        <Evidence ref="api-contract:maker-workbench" />
+      </Evidences>
+    </RuntimeBinding>
+  </RuntimeBindings>
+</RuntimeBindingCatalog>

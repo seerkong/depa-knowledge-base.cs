@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OperationCatalog fqn="ontology.maker-space.operations.workbench" id="MakerSpace.Operations.Workbench">
+  <Description>MakerSpace workbench operation definitions and preview presets.</Description>
+  <Operations>
+    <Operation id="MakerSpace.Operation.OpenShopDay" verb="OpenShopDay" owner="domain-context" behavior="action" subject="none" invocation="single" effect="mixed" inputTypeRef="MakerSpace.Raw.AdminCommand">
+      <Description>Open a workshop operating day for reservations.</Description>
+      <Capabilities>
+        <Atomicity value="atomic" />
+        <Atomicity value="best-effort" />
+        <Observation value="after" />
+        <Observation value="trace" />
+      </Capabilities>
+      <Evidences>
+        <Evidence ref="api-contract:maker-workbench" />
+      </Evidences>
+    </Operation>
+    <Operation id="MakerSpace.Operation.ExpireReservations" verb="ExpireReservations" owner="business-object" ownerRef="MakerSpace.Reservation" behavior="mutation" subject="selection" invocation="single" effect="write" subjectTypeRef="MakerSpace.Reservation" inputTypeRef="MakerSpace.Raw.AdminCommand">
+      <Description>Expire reservations selected by a declarative selector.</Description>
+      <Capabilities>
+        <Atomicity value="atomic" />
+        <Atomicity value="best-effort" />
+        <Observation value="before" />
+        <Observation value="after" />
+        <Observation value="diff" />
+        <Observation value="trace" />
+      </Capabilities>
+      <Evidences>
+        <Evidence ref="api-contract:maker-workbench" />
+      </Evidences>
+    </Operation>
+    <Operation id="MakerSpace.Operation.GetReservedTool" verb="GetReservedTool" owner="association" ownerRef="MakerSpace.Association.ReservedTool" behavior="query" subject="single" invocation="single" effect="read-only" subjectTypeRef="MakerSpace.Reservation" outputTypeRef="MakerSpace.Tool">
+      <Description>Read the tool associated with a reservation.</Description>
+      <Capabilities>
+        <Atomicity value="best-effort" />
+        <Observation value="after" />
+        <Observation value="trace" />
+      </Capabilities>
+      <Evidences>
+        <Evidence ref="api-contract:maker-workbench" />
+      </Evidences>
+    </Operation>
+    <Operation id="MakerSpace.Operation.ApproveReservation" verb="ApproveReservation" owner="lifecycle" ownerRef="MakerSpace.Lifecycle.Reservation" behavior="transition" subject="single" invocation="single" effect="write" subjectTypeRef="MakerSpace.Reservation">
+      <Description>Approve a requested reservation through the reservation lifecycle.</Description>
+      <Constraints>
+        <Rule ref="MakerSpace.Rule.ToolRequiresCertification" />
+        <Rule ref="MakerSpace.Rule.ReservationWindowOrdered" />
+      </Constraints>
+      <Capabilities>
+        <Atomicity value="atomic" />
+        <Observation value="before" />
+        <Observation value="after" />
+        <Observation value="diff" />
+      </Capabilities>
+      <Evidences>
+        <Evidence ref="api-contract:maker-workbench" />
+      </Evidences>
+    </Operation>
+    <Operation id="MakerSpace.Operation.ValidateReservationCertification" verb="ValidateReservationCertification" owner="constraint" ownerRef="MakerSpace.ConstraintHandler.ReservationCertification" behavior="validate" subject="single" invocation="batch" effect="read-only" subjectTypeRef="MakerSpace.Reservation" outputTypeRef="builtin:Validity">
+      <Description>Validate reservation certification constraints for a batch of reservation subjects.</Description>
+      <Constraints>
+        <Rule ref="MakerSpace.Rule.ToolRequiresCertification" />
+      </Constraints>
+      <Capabilities>
+        <Atomicity value="best-effort" />
+        <Observation value="after" />
+        <Observation value="trace" />
+      </Capabilities>
+      <Evidences>
+        <Evidence ref="api-contract:maker-workbench" />
+      </Evidences>
+    </Operation>
+    <Operation id="MakerSpace.Operation.CheckoutReservation" verb="CheckoutReservation" owner="business-process" ownerRef="MakerSpace.BusinessProcess.ToolCheckout" behavior="composed" subject="single" invocation="single" effect="mixed" subjectTypeRef="MakerSpace.Reservation">
+      <Description>Run the checkout process for one approved reservation.</Description>
+      <Composition>
+        <Operation ref="MakerSpace.Operation.ApproveReservation" />
+        <Operation ref="MakerSpace.Operation.GetReservedTool" />
+      </Composition>
+      <Capabilities>
+        <Atomicity value="atomic" />
+        <Atomicity value="best-effort" />
+        <Observation value="before" />
+        <Observation value="after" />
+        <Observation value="diff" />
+        <Observation value="trace" />
+      </Capabilities>
+      <Evidences>
+        <Evidence ref="api-contract:maker-workbench" />
+      </Evidences>
+    </Operation>
+    <Operation id="MakerSpace.Operation.ComputeReservationWindow" verb="ComputeReservationWindow" owner="capability" ownerRef="MakerSpace.Capability.ReservationPlanning" behavior="computed" subject="single" invocation="single" effect="read-only" subjectTypeRef="MakerSpace.Reservation" outputTypeRef="MakerSpace.ReservationWindow">
+      <Description>Compute the reservation window view for planning.</Description>
+      <Capabilities>
+        <Atomicity value="best-effort" />
+        <Observation value="after" />
+        <Observation value="trace" />
+      </Capabilities>
+      <Evidences>
+        <Evidence ref="api-contract:maker-workbench" />
+      </Evidences>
+    </Operation>
+    <Operation id="MakerSpace.Operation.RunAdminCommand" verb="RunAdminCommand" owner="raw" ownerRef="MakerSpace.Raw.AdminCommand" behavior="raw" subject="none" invocation="single" effect="mixed" inputTypeRef="MakerSpace.Raw.AdminCommand">
+      <Description>Execute a structured raw administration command accepted by the workbench API.</Description>
+      <Capabilities>
+        <Atomicity value="best-effort" />
+        <Observation value="trace" />
+      </Capabilities>
+      <Evidences>
+        <Evidence ref="api-contract:maker-workbench" />
+      </Evidences>
+    </Operation>
+  </Operations>
+  <InvocationPresets>
+    <InvocationPreset id="MakerSpace.Preset.OpenShopDay" operationRef="MakerSpace.Operation.OpenShopDay" default="true">
+      <Title>Open shop day</Title>
+      <Description>Single no-subject domain-context action.</Description>
+      <RequestJson><![CDATA[
+{
+  "apiVersion": "1",
+  "context": { "id": "MakerSpace.Ontology", "version": "1.0.0" },
+  "operation": {
+    "ref": "MakerSpace.Operation.OpenShopDay",
+    "ownerKind": "domain-context",
+    "behaviorKind": "action",
+    "subjectKind": "none",
+    "invocationMode": "single",
+    "effect": "mixed"
+  },
+  "invocation": {
+    "mode": "single",
+    "subject": { "kind": "none" },
+    "verb": "OpenShopDay",
+    "payload": { "commandName": "openShopDay", "payload": { "date": "2026-08-03" } }
+  },
+  "execution": { "atomicity": "atomic", "observe": ["after", "trace"] }
+}
+]]></RequestJson>
+      <Evidences>
+        <Evidence ref="api-contract:maker-workbench" />
+      </Evidences>
+    </InvocationPreset>
+    <InvocationPreset id="MakerSpace.Preset.ApproveReservation" operationRef="MakerSpace.Operation.ApproveReservation">
+      <Title>Approve reservation</Title>
+      <Description>Single-subject lifecycle transition request.</Description>
+      <RequestJson><![CDATA[
+{
+  "apiVersion": "1",
+  "context": { "id": "MakerSpace.Ontology", "version": "1.0.0" },
+  "operation": {
+    "ref": "MakerSpace.Operation.ApproveReservation",
+    "ownerKind": "lifecycle",
+    "ownerRef": "MakerSpace.Lifecycle.Reservation",
+    "behaviorKind": "transition",
+    "subjectKind": "single",
+    "invocationMode": "single",
+    "effect": "write"
+  },
+  "invocation": {
+    "mode": "single",
+    "subject": {
+      "kind": "single",
+      "ref": { "type": "MakerSpace.Reservation", "id": "reservation:RSV-1001" }
+    },
+    "verb": "ApproveReservation",
+    "payload": {}
+  },
+  "execution": { "atomicity": "atomic", "observe": ["before", "after", "diff"] }
+}
+]]></RequestJson>
+      <Evidences>
+        <Evidence ref="api-contract:maker-workbench" />
+      </Evidences>
+    </InvocationPreset>
+    <InvocationPreset id="MakerSpace.Preset.ExpireApprovedReservations" operationRef="MakerSpace.Operation.ExpireReservations">
+      <Title>Expire approved reservations</Title>
+      <Description>Selection subject with one logical invocation.</Description>
+      <RequestJson><![CDATA[
+{
+  "apiVersion": "1",
+  "context": { "id": "MakerSpace.Ontology", "version": "1.0.0" },
+  "operation": {
+    "ref": "MakerSpace.Operation.ExpireReservations",
+    "ownerKind": "business-object",
+    "ownerRef": "MakerSpace.Reservation",
+    "behaviorKind": "mutation",
+    "subjectKind": "selection",
+    "invocationMode": "single",
+    "effect": "write"
+  },
+  "invocation": {
+    "mode": "single",
+    "subject": {
+      "kind": "selection",
+      "selector": {
+        "kind": "filter",
+        "where": { "workflowState": "approved", "endedBefore": "2026-08-03T00:00:00Z" }
+      }
+    },
+    "verb": "ExpireReservations",
+    "payload": { "commandName": "expireReservations", "payload": { "closedBy": "scheduler" } }
+  },
+  "execution": { "atomicity": "atomic", "observe": ["before", "after", "diff"] }
+}
+]]></RequestJson>
+      <Evidences>
+        <Evidence ref="api-contract:maker-workbench" />
+      </Evidences>
+    </InvocationPreset>
+    <InvocationPreset id="MakerSpace.Preset.ValidateCertificationBatch" operationRef="MakerSpace.Operation.ValidateReservationCertification">
+      <Title>Validate certification batch</Title>
+      <Description>Batch invocation with single subject per item.</Description>
+      <RequestJson><![CDATA[
+{
+  "apiVersion": "1",
+  "context": { "id": "MakerSpace.Ontology", "version": "1.0.0" },
+  "operation": {
+    "ref": "MakerSpace.Operation.ValidateReservationCertification",
+    "ownerKind": "constraint",
+    "ownerRef": "MakerSpace.ConstraintHandler.ReservationCertification",
+    "behaviorKind": "validate",
+    "subjectKind": "single",
+    "invocationMode": "batch",
+    "effect": "read-only"
+  },
+  "invocation": {
+    "mode": "batch",
+    "items": [
+      {
+        "key": "rsv-1001",
+        "subject": {
+          "kind": "single",
+          "ref": { "type": "MakerSpace.Reservation", "id": "reservation:RSV-1001" }
+        },
+        "verb": "ValidateReservationCertification",
+        "payload": {}
+      },
+      {
+        "key": "rsv-1002",
+        "subject": {
+          "kind": "single",
+          "ref": { "type": "MakerSpace.Reservation", "id": "reservation:RSV-1002" }
+        },
+        "verb": "ValidateReservationCertification",
+        "payload": {}
+      }
+    ]
+  },
+  "execution": { "atomicity": "best-effort", "observe": ["after", "trace"] }
+}
+]]></RequestJson>
+      <Evidences>
+        <Evidence ref="api-contract:maker-workbench" />
+      </Evidences>
+    </InvocationPreset>
+  </InvocationPresets>
+</OperationCatalog>

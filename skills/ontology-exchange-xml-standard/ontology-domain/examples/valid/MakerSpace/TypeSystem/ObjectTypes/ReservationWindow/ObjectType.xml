@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ObjectType fqn="ontology.maker-space.object-types.reservation-window" id="MakerSpace.ReservationWindow" kind="value">
+  <Description>Computed availability window for a reservation.</Description>
+  <Properties>
+    <Property name="startsAt" typeRef="builtin:DateTime" required="true" />
+    <Property name="endsAt" typeRef="builtin:DateTime" required="true" />
+  </Properties>
+</ObjectType>

@@ -1,0 +1,37 @@
+apiVersion: fs-native/v1
+kind: KindDefinition
+metadata:
+  name: domain-policy-catalog
+spec:
+  resourceKind: DomainPolicyCatalog
+  sourceShapes:
+    - file
+  descriptorSchema:
+    rootElement: DomainPolicyCatalog
+    requiredAttributes:
+      - fqn
+      - id
+    requiredChildren:
+      - Description
+      - DomainPolicies
+  identity:
+    fqn:
+      from: "@fqn"
+      required: true
+  description:
+    path: Description
+    required: true
+    nonEmpty: true
+  internalContract:
+    owns:
+      - DomainPolicy
+    usesSemanticOwnerTable: true
+  crossResourceRules:
+    - ownerRef-resolves-to-owner-resource-identity
+    - rules-reference-Rule
+    - no-inline-predicate-or-handler-routing
+  diagnostics:
+    - code: DOMAIN_POLICY_CATALOG_DESCRIPTION_MISSING
+      message: DomainPolicyCatalog must declare a non-empty Description.
+    - code: DOMAIN_POLICY_OWNER_KIND_MISMATCH
+      message: DomainPolicy ownerRef must resolve through the semantic owner table.

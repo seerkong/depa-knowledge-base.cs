@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Ontology fqn="ontology.invalid.domain-policy-inline-predicate" id="Invalid.DomainPolicyInlinePredicate" version="1.0.0">
+  <Description>Invalid domain policy inline predicate fixture.</Description>
+  <ManifestResourceCatalog id="enum-types" kind="EnumType" root="vfs://@/TypeSystem/EnumTypes/" entry="EnumType.xml" />
+  <ManifestResourceCatalog id="object-types" kind="ObjectType" root="vfs://@/TypeSystem/ObjectTypes/" entry="ObjectType.xml" />
+  <ManifestResourceCatalog id="business-objects" kind="BusinessObject" root="vfs://@/DomainModel/BusinessObjects/" entry="BusinessObject.xml" />
+  <FileResourceCatalog id="policies" kind="DomainPolicyCatalog" root="vfs://@/DomainSemantics/Policies/" />
+</Ontology>

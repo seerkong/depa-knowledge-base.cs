@@ -1,0 +1,69 @@
+<module #resource_framework.fs_native_system { kind = "module" depends_on = "[]" behaviors = "[ behavior://ontology-exchange-xml-standard/requirements/fs-native-system ]" } [
+  <desc ?01KYWXKBYR9M9ETVNKWM5MC78R>
+  通用作者态资源系统：拥有 source shape、ResourceCatalog、KindDefinition、逻辑身份、containment、registry 与诊断；不拥有 ontology 业务字段。
+  </?01KYWXKBYR9M9ETVNKWM5MC78R>
+  <capsule-tree ?tree>
+  skills/ontology-exchange-xml-standard/system/
+  foundation/axioms.md                 # 跨 Kind 的作者真源、身份、组合、引用和投影不变量
+  std/resource-tree.md                 # file/directory/manifest 与三类 Catalog 的产品语义
+  spec/canonical-grammar.xml            # 通用 manifest/catalog 机器语法
+  spec/xml-grammar.md                   # 通用 ResourceTree XML grammar 与 Catalog 结构
+  spec/kind-definitions.md              # KindDefinition registry、机器契约与校验顺序
+  spec/validation-pipeline.md           # 从 discovery 到 Kind/runtime validation 的标准流水线
+  spec/refs-and-containment.md          # VFS/resource/config/secret 逻辑引用边界
+  spec/diagnostics.md                   # 稳定 Agent-first 诊断码
+  examples/ResourceLab/Manifest.xml   # 中性三种 source shape 与嵌套 manifest 示例入口
+  </?tree>
+  <types ?t>
+  type SourceShape = "file" | "directory" | "manifest"
+  type ResourceCatalogKind = "FileResourceCatalog" | "DirectoryResourceCatalog" | "ManifestResourceCatalog"
+  interface ResourceIdentity { name?: string; fqn?: string }
+  </?t>
+  <not-owned-here ?01KYWXKBYR9M9ETVNKWM5MC78S>
+  Ontology 的 Type、Relation、Rule、Lifecycle、profile、Operation 与治理字段由 ontology-domain 拥有。
+  </?01KYWXKBYR9M9ETVNKWM5MC78S>
+]>
+
+<module #resource_framework.ontology_domain { kind = "module" depends_on = "[ modeling://domain/resource_framework/fs_native_system ]" behaviors = "[ behavior://ontology-exchange-xml-standard/requirements/ontology-domain-kinds, behavior://ontology-exchange-xml-standard/requirements/fs-native-validation, behavior://ontology-exchange-xml-standard/requirements/runtime-projection-authority ]" } [
+  <desc ?01KYWXKBYR9M9ETVNKWM5MC78T>
+  基于 FS-native system 注册的 ontology 业务 Kind package；Ontology、lower type/kernel、BusinessObject 与本地 behavior 共 17 个 Kind 是 manifest-shaped resources，11 个 catalog/governance Kind 是 file-shaped resources。
+  </?01KYWXKBYR9M9ETVNKWM5MC78T>
+  <capsule-tree ?tree>
+  skills/ontology-exchange-xml-standard/ontology-domain/
+  foundation/axioms.md                 # lower kernel、upper profile、Operation 与治理资源不变量
+  std/ontology-resource-tree.md        # Ontology manifest 的 canonical Catalog 布局
+  std/naming-and-references.md         # 资源 identity 与 ontology semantic identity 分层
+  spec/kind-definitions/*.yaml         # Ontology 及全部 ontology resource KindDefinition
+  spec/ontology-resource.md            # Ontology manifest resource 的业务契约
+  spec/type-and-relation-resource.md   # lower type/kernel manifest resource 契约
+  spec/business-object-resource.md     # BusinessObject 与本地 behavior manifest ownership
+  spec/lifecycle-resource.md           # lifecycle resource 的业务契约
+  spec/rule-resource.md                # rule resource 的业务契约
+  spec/domain-semantics-resource.md   # BO/association/policy/process/capability/event profile resources
+  spec/operation-catalog-resource.md   # operation matrix 与 ExecuteOperationRequest preset 契约
+  spec/runtime-binding-resource.md     # runtime binding resource 的实际能力绑定契约
+  spec/implementation-mapping-resource.md # implementation projection/resource mapping 契约
+  spec/evidence-resource.md            # evidence source/resource 的业务契约
+  spec/schema-evolution-resource.md    # schema evolution resource 的业务契约
+  spec/cozo-om-projection.md           # depa-ontology.ts Bun OM import/export authority
+  spec/csharp-om-projection.md         # C# facade projection 约束
+  examples/valid/                      # 全新 MakerSpace canonical resource tree
+  examples/invalid/                    # legacy layout、shape、Kind、ownership 与 request 负例
+  skills/ontology-exchange-xml-standard/scripts/
+  validate-ontology-xml.ts             # system discovery + ontology semantic validator
+  validate-ontology-xml-security-test.ts # containment 与 parser 安全复现
+  skills/ontology-exchange-xml-standard/tests/
+  validate-ontology-xml.test.ts        # FS-native 与 ontology-domain 集成回归
+  </?tree>
+  <types ?t>
+  type OntologyManifestKind = "Ontology" | "ScalarType" | "EnumType" | "Mixin" | "ObjectType" | "UnionType" | "CollectionType" | "Relation" | "Rule" | "StateMachine" | "BusinessObject" | "Action" | "Mutation" | "Interceptor" | "ComputedFunction" | "ConstraintHandler" | "Lifecycle"
+  type OntologyFileKind = "AssociationCatalog" | "DomainPolicyCatalog" | "ConstraintHandlerCatalog" | "BusinessProcessCatalog" | "CapabilityCatalog" | "EventContractCatalog" | "OperationCatalog" | "EvidenceCatalog" | "RuntimeBindingCatalog" | "ImplementationMappingCatalog" | "SchemaEvolutionModule"
+  type OntologyResourceKind = OntologyManifestKind | OntologyFileKind
+  </?t>
+  <fact-source ?01KYWXKBYR9M9ETVNKWM5MC78U>
+  FS-native XML resource tree 拥有 ontology 作者态语义；depa-ontology.ts 拥有 Bun OM runtime capability。Import 必须先验证 XML 再调用 public schema/behavior API；export 只能从 schema snapshot、behavior manifest 与显式 policy/evidence 生成 XML。
+  </?01KYWXKBYR9M9ETVNKWM5MC78U>
+  <not-owned-here ?01KYWXKBYR9M9ETVNKWM5MC78V>
+  不得重新发明 FS scanning，不得恢复 Resources/Modules/href assembly，也不得从 runtime rows 发明 BusinessObject、Operation、Evidence、policy、lifecycle 等 profile-only XML facts。
+  </?01KYWXKBYR9M9ETVNKWM5MC78V>
+]>

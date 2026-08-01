@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Procedure name="review">
+  <Description>Directory-shaped procedure scoped by the nested collection catalog.</Description>
+  <InternalMaterial ref="vfs://@/Notes.txt"/>
+</Procedure>

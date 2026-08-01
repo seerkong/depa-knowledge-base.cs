@@ -1,0 +1,27 @@
+apiVersion: fs-native/v1
+kind: KindDefinition
+metadata:
+  name: state-machine
+spec:
+  resourceKind: StateMachine
+  sourceShapes: [manifest]
+  entries:
+    manifest:
+      entry: StateMachine.xml
+  descriptorSchema:
+    rootElement: StateMachine
+    requiredAttributes: [fqn, id, subjectTypeRef, statePropertyRef, initial]
+    requiredChildren: [Description, States, Transitions]
+  identity:
+    fqn: { from: "@fqn", required: true }
+  description: { path: Description, required: true, nonEmpty: true }
+  internalContract:
+    owns: [State, Transition, Derivation, declarative effect]
+    subjectMayBeBusinessObject: true
+  crossResourceRules:
+    - subjectTypeRef-resolves-to-entity-ObjectType-or-BusinessObject
+    - statePropertyRef-resolves-to-subject-property
+    - transitions-reference-declared-states
+  diagnostics:
+    - code: LIFECYCLE_SUBJECT_KIND_MISMATCH
+      message: StateMachine subjects must resolve to entity ObjectType or BusinessObject declarations.

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<AssociationCatalog fqn="ontology.invalid.association-inline-endpoint.associations" id="Invalid.Associations">
+  <Description>Invalid association catalog.</Description>
+  <Associations>
+    <Association id="Invalid.Association.ReservedTool" relationRef="Invalid.Relation.ReservesTool" fromTypeRef="Invalid.Reservation" toTypeRef="Invalid.Tool" min="1" max="1">
+      <Description>Invalidly repeats lower endpoint and cardinality facts.</Description>
+    </Association>
+  </Associations>
+</AssociationCatalog>

@@ -1,0 +1,23 @@
+apiVersion: fs-native/v1
+kind: KindDefinition
+metadata:
+  name: lifecycle
+spec:
+  resourceKind: Lifecycle
+  sourceShapes: [manifest]
+  descriptorSchema:
+    rootElement: Lifecycle
+    requiredAttributes: [fqn, id, ownerRef, stateMachineRef]
+    requiredChildren: [Description]
+  identity:
+    fqn: { from: "@fqn", required: true }
+  entries:
+    manifest:
+      entry: Lifecycle.xml
+  description: { path: Description, required: true, nonEmpty: true }
+  crossResourceRules:
+    - ownerRef-matches-containing-BusinessObject
+    - stateMachineRef-subject-is-compatible-with-BusinessObject-id
+  diagnostics:
+    - code: LIFECYCLE_OWNER_MISMATCH
+      message: Lifecycle ownerRef must match its containing BusinessObject.

@@ -1,0 +1,56 @@
+apiVersion: fs-native/v1
+kind: KindDefinition
+metadata:
+  name: ontology
+spec:
+  resourceKind: Ontology
+  sourceShapes:
+    - manifest
+  entries:
+    manifest:
+      entry: Manifest.xml
+  descriptorSchema:
+    rootElement: Ontology
+    requiredAttributes:
+      - fqn
+      - id
+      - version
+    forbiddenAttributes: []
+    requiredChildren:
+      - Description
+    allowedCatalogs:
+      - FileResourceCatalog
+      - DirectoryResourceCatalog
+      - ManifestResourceCatalog
+    forbiddenChildren:
+      - Resources
+      - Modules
+  identity:
+    fqn:
+      from: "@fqn"
+      required: true
+    name:
+      required: false
+  description:
+    path: Description
+    required: true
+    nonEmpty: true
+  internalContract:
+    catalogs: direct-children-only
+    memberDiscovery: first-level-only
+    ontologyResourceShapes:
+      typeSystem: manifest
+      domainModel: manifest
+      businessObject: manifest
+      catalogs: file
+  crossResourceRules:
+    - at-least-one-ObjectType-catalog-when-semantic-references-exist
+    - SchemaEvolutionModule-at-most-one
+    - no-legacy-Resources-Modules-or-href-assembly
+  diagnostics:
+    - code: ONTOLOGY_MANIFEST_ENTRY_MISSING
+      message: Ontology manifest resources must use exact PascalCase Manifest.xml as their entry.
+    - code: ONTOLOGY_LEGACY_ASSEMBLY_REJECTED
+      message: Ontology Resources, Modules, and href assembly are retired.
+    - code: ONTOLOGY_CATALOG_KIND_UNKNOWN
+      message: Every ontology catalog kind must resolve to one KindDefinition.

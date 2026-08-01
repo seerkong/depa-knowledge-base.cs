@@ -1,0 +1,37 @@
+apiVersion: fs-native/v1
+kind: KindDefinition
+metadata:
+  name: event-contract-catalog
+spec:
+  resourceKind: EventContractCatalog
+  sourceShapes:
+    - file
+  descriptorSchema:
+    rootElement: EventContractCatalog
+    requiredAttributes:
+      - fqn
+      - id
+    requiredChildren:
+      - Description
+      - EventContracts
+  identity:
+    fqn:
+      from: "@fqn"
+      required: true
+  description:
+    path: Description
+    required: true
+    nonEmpty: true
+  internalContract:
+    owns:
+      - EventContract
+    referencesLowerFactsOnly: true
+  crossResourceRules:
+    - eventTypeRef-resolves-to-ObjectType
+    - subjects-reference-TypeRef-or-Relation
+    - lifecycle-module-does-not-reference-events-directly
+  diagnostics:
+    - code: EVENT_CONTRACT_CATALOG_DESCRIPTION_MISSING
+      message: EventContractCatalog must declare a non-empty Description.
+    - code: EVENT_CONTRACT_SUBJECT_KIND_MISMATCH
+      message: Event subjects must resolve to type-reference or Relation declarations.

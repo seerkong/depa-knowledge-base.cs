@@ -123,7 +123,7 @@ No deterministic tool may:
 
 Record each observation with stable repository key, immutable revision, repository-relative path, symbol or route identity, line range when available, resolver, raw observation summary, evidence grade, and confidence.
 
-Grades follow `ontology-xml-dsl`. Keep the source's actual authority:
+Grades follow `ontology-exchange-xml-standard`. Keep the source's actual authority:
 
 - persisted constraints and designated records may be authoritative;
 - backend rejection or prevention may be enforced;
@@ -180,7 +180,7 @@ To recommend `accepted`, the model must trace the relevant control path and iden
 - indirect callees, transaction or persistence effects, and bypass paths; and
 - evidence strong enough for the claim.
 
-Names, comments, routes, inventory signals, UI conditions, and tests without an enforcing implementation may discover a rule but cannot accept it. Ambiguous calls, presentation-only behavior, incomplete branches, or unsupported expression semantics remain hypotheses. XML projection must use only the rule vocabulary routed by `ontology-xml-dsl`; never paste host-language conditions into XML.
+Names, comments, routes, inventory signals, UI conditions, and tests without an enforcing implementation may discover a rule but cannot accept it. Ambiguous calls, presentation-only behavior, incomplete branches, or unsupported expression semantics remain hypotheses. XML projection must use only the rule vocabulary routed by `ontology-exchange-xml-standard`; never paste host-language conditions into XML.
 
 ## 9. Apply Lifecycle Evidence Gates
 

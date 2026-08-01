@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Ontology fqn="ontology.maker-space" id="MakerSpace.Ontology" version="1.0.0">
+  <Description>MakerSpace workshop scheduling and tool-use ontology.</Description>
+  <ManifestResourceCatalog id="scalar-types" kind="ScalarType" root="vfs://@/TypeSystem/ScalarTypes/" entry="ScalarType.xml" />
+  <ManifestResourceCatalog id="enum-types" kind="EnumType" root="vfs://@/TypeSystem/EnumTypes/" entry="EnumType.xml" />
+  <ManifestResourceCatalog id="mixins" kind="Mixin" root="vfs://@/TypeSystem/Mixins/" entry="Mixin.xml" />
+  <ManifestResourceCatalog id="object-types" kind="ObjectType" root="vfs://@/TypeSystem/ObjectTypes/" entry="ObjectType.xml" />
+  <ManifestResourceCatalog id="union-types" kind="UnionType" root="vfs://@/TypeSystem/TypeExpressions/UnionTypes/" entry="UnionType.xml" />
+  <ManifestResourceCatalog id="collection-types" kind="CollectionType" root="vfs://@/TypeSystem/TypeExpressions/CollectionTypes/" entry="CollectionType.xml" />
+  <ManifestResourceCatalog id="business-objects" kind="BusinessObject" root="vfs://@/DomainModel/BusinessObjects/" entry="BusinessObject.xml" />
+  <ManifestResourceCatalog id="relations" kind="Relation" root="vfs://@/DomainModel/Relations/" entry="Relation.xml" />
+  <ManifestResourceCatalog id="rules" kind="Rule" root="vfs://@/DomainModel/Rules/" entry="Rule.xml" />
+  <ManifestResourceCatalog id="state-machines" kind="StateMachine" root="vfs://@/DomainModel/StateMachines/" entry="StateMachine.xml" />
+  <FileResourceCatalog id="associations" kind="AssociationCatalog" root="vfs://@/DomainSemantics/Associations/" />
+  <FileResourceCatalog id="policies" kind="DomainPolicyCatalog" root="vfs://@/DomainSemantics/Policies/" />
+  <FileResourceCatalog id="constraint-handlers" kind="ConstraintHandlerCatalog" root="vfs://@/DomainSemantics/ConstraintHandlers/" />
+  <FileResourceCatalog id="processes" kind="BusinessProcessCatalog" root="vfs://@/DomainSemantics/Processes/" />
+  <FileResourceCatalog id="capabilities" kind="CapabilityCatalog" root="vfs://@/DomainSemantics/Capabilities/" />
+  <FileResourceCatalog id="events" kind="EventContractCatalog" root="vfs://@/DomainSemantics/Events/" />
+  <FileResourceCatalog id="operations" kind="OperationCatalog" root="vfs://@/Operations/" />
+  <FileResourceCatalog id="evidence" kind="EvidenceCatalog" root="vfs://@/Evidence/" />
+  <FileResourceCatalog id="bindings" kind="RuntimeBindingCatalog" root="vfs://@/Bindings/" />
+  <FileResourceCatalog id="mappings" kind="ImplementationMappingCatalog" root="vfs://@/Mappings/" />
+  <FileResourceCatalog id="evolution" kind="SchemaEvolutionModule" root="vfs://@/Evolution/" />
+</Ontology>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<UnionType fqn="ontology.maker-space.union-types.schedule-input" id="MakerSpace.Type.ScheduleInput">
+  <Description>Scheduling input may be a precise reservation window or a raw administrative command.</Description>
+  <Options>
+    <Type ref="MakerSpace.ReservationWindow" />
+    <Type ref="MakerSpace.Raw.AdminCommand" />
+  </Options>
+</UnionType>

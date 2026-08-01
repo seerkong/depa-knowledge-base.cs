@@ -1,0 +1,38 @@
+apiVersion: fs-native/v1
+kind: KindDefinition
+metadata:
+  name: Procedure
+spec:
+  resourceKind: Procedure
+  sourceShapes:
+    - directory
+  descriptorSchema:
+    format: xml
+    rootElement: Procedure
+    requiredChildren:
+      - Description
+  identity:
+    fqn:
+      path: "@fqn"
+    name:
+      path: "@name"
+      scope: catalog
+  description:
+    path: Description
+    minLength: 1
+  entries:
+    directory:
+      entry: Procedure.xml
+  internalContract:
+    allowedReferences:
+      - scheme: vfs
+        boundary: resource-directory
+    allowedFiles:
+      - Procedure.xml
+      - Notes.txt
+  crossResourceRules: []
+  diagnostics:
+    - code: PROCEDURE_ENTRY_MISSING
+      mapsTo: RESOURCE_CATALOG_ENTRY_MISSING
+    - code: PROCEDURE_REF_CONTAINMENT
+      mapsTo: RESOURCE_REF_CONTAINMENT

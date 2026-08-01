@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Rule fqn="ontology.maker-space.rules.reservation-window-ordered" id="MakerSpace.Rule.ReservationWindowOrdered" scopeTypeRef="MakerSpace.Reservation" kind="conditional">
+  <Statement>A reservation start time must be earlier than its end time.</Statement>
+  <Require>
+    <PropertyCompare propertyRef="MakerSpace.Reservation#startTime" op="lt" otherPropertyRef="MakerSpace.Reservation#endTime" />
+  </Require>
+  <Violation code="RESERVATION_WINDOW_INVALID" message="Reservation start time must be before end time." />
+  <Evidences>
+    <Evidence ref="manual:makerspace-policy" />
+  </Evidences>
+</Rule>

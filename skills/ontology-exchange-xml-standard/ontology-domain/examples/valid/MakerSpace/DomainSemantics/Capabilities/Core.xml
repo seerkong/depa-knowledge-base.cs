@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CapabilityCatalog fqn="ontology.maker-space.capabilities.core" id="MakerSpace.Capabilities.Core">
+  <Description>MakerSpace capability resources.</Description>
+  <Capabilities>
+    <Capability id="MakerSpace.Capability.ReservationPlanning">
+      <Description>Plan, validate, and compute reservation windows for workshop tools.</Description>
+      <Inputs>
+        <Type ref="MakerSpace.Reservation" />
+      </Inputs>
+      <Outputs>
+        <Type ref="MakerSpace.ReservationWindow" />
+      </Outputs>
+      <Evidences>
+        <Evidence ref="manual:makerspace-policy" />
+      </Evidences>
+    </Capability>
+  </Capabilities>
+</CapabilityCatalog>

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Ontology Exchange XML Standard"
+  short_description: "Author, evolve, and validate ontology exchange XML"
+  default_prompt: "Use $ontology-exchange-xml-standard to author or review an FS-native ontology XML exchange package, prioritizing depa-ontology.ts/cozo-om ObjectType/Mixin/inheritance import-export with embedded local Properties, then DomainSemantics, Operations with ExecuteOperationRequest v1 presets, evidence, bindings, mappings, and evolution."

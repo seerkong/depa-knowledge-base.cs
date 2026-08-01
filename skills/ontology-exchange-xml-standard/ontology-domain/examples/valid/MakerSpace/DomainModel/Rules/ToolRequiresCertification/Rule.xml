@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Rule fqn="ontology.maker-space.rules.tool-requires-certification" id="MakerSpace.Rule.ToolRequiresCertification" scopeTypeRef="MakerSpace.Reservation" kind="cross-entity">
+  <Statement>An approved reservation must be requested by a certified member.</Statement>
+  <When>
+    <PropertyEquals propertyRef="MakerSpace.Reservation#workflowState" value="approved" />
+  </When>
+  <Require>
+    <EveryRelated relationRef="MakerSpace.Relation.RequestedBy">
+      <PropertyEquals propertyRef="MakerSpace.Member#certificationState" value="certified" />
+    </EveryRelated>
+  </Require>
+  <Violation code="MEMBER_NOT_CERTIFIED" message="Member must be certified before reservation approval." />
+  <Evidences>
+    <Evidence ref="manual:makerspace-policy" />
+  </Evidences>
+</Rule>

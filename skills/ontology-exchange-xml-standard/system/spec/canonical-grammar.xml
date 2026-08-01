@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FsNativeResourceSystemGrammar version="1.0.0">
+  <ManifestRoot>
+    <Identity oneOf="name fqn"/>
+    <Attribute name="version" required="false"/>
+    <OwnedChild name="Description" cardinality="1..1" nonEmptyText="true"/>
+    <Catalog name="FileResourceCatalog" cardinality="0..*">
+      <Attribute name="id" required="true" uniqueAmong="manifest-catalogs"/>
+      <Attribute name="kind" required="true" type="normalized-kind"/>
+      <Attribute name="root" required="true" type="vfs-root-ref"/>
+      <Attribute name="entry" required="false" forbidden="true"/>
+    </Catalog>
+    <Catalog name="DirectoryResourceCatalog" cardinality="0..*">
+      <Attribute name="id" required="true" uniqueAmong="manifest-catalogs"/>
+      <Attribute name="kind" required="true" type="normalized-kind"/>
+      <Attribute name="root" required="true" type="vfs-root-ref"/>
+      <Attribute name="entry" required="true" type="entry-file-name"/>
+    </Catalog>
+    <Catalog name="ManifestResourceCatalog" cardinality="0..*">
+      <Attribute name="id" required="true" uniqueAmong="manifest-catalogs"/>
+      <Attribute name="kind" required="true" type="normalized-kind"/>
+      <Attribute name="root" required="true" type="vfs-root-ref"/>
+      <Attribute name="entry" required="true" type="xml-manifest-entry-file-name"/>
+    </Catalog>
+  </ManifestRoot>
+  <Rules>
+    <Rule code="RESOURCE_CATALOG_KIND_MISSING" name="catalog-kind-required"/>
+    <Rule code="RESOURCE_CATALOG_ID_DUPLICATE" name="catalog-id-unique-per-manifest"/>
+    <Rule code="RESOURCE_CATALOG_ENTRY_MISSING" name="directory-and-manifest-entry-required"/>
+    <Rule code="RESOURCE_CATALOG_ENTRY_FORBIDDEN" name="file-catalog-entry-forbidden"/>
+    <Rule code="RESOURCE_CATALOG_SCAN_DEPTH_INVALID" name="catalog-scan-depth-one"/>
+    <Rule code="RESOURCE_CATALOG_MEMBER_KIND_MISMATCH" name="member-kind-matches-catalog-kind"/>
+    <Rule code="RESOURCE_CATALOG_MEMBER_DUPLICATE" name="one-resource-one-catalog"/>
+    <Rule code="RESOURCE_SHAPE_MISMATCH" name="manifest-only-composition"/>
+    <Rule code="RESOURCE_IDENTITY_MISSING" name="resource-has-name-or-fqn"/>
+    <Rule code="RESOURCE_FQN_DUPLICATE" name="fqn-unique-in-tree"/>
+    <Rule code="RESOURCE_KIND_DEFINITION_NOT_FOUND" name="catalog-kind-has-definition"/>
+    <Rule code="RESOURCE_REF_CONTAINMENT" name="logical-reference-containment"/>
+  </Rules>
+</FsNativeResourceSystemGrammar>

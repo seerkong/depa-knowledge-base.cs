@@ -1,0 +1,24 @@
+apiVersion: fs-native/v1
+kind: KindDefinition
+metadata:
+  name: mutation
+spec:
+  resourceKind: Mutation
+  sourceShapes: [manifest]
+  descriptorSchema:
+    rootElement: Mutation
+    requiredAttributes: [fqn, id, ownerRef, portability]
+    requiredChildren: [Description]
+  identity:
+    fqn: { from: "@fqn", required: true }
+  entries:
+    manifest:
+      entry: Mutation.xml
+  description: { path: Description, required: true, nonEmpty: true }
+  internalContract:
+    owns: [InternalLogic, Evidence references]
+  crossResourceRules:
+    - ownerRef-matches-containing-BusinessObject
+  diagnostics:
+    - code: MUTATION_OWNER_MISMATCH
+      message: Mutation ownerRef must match its containing BusinessObject.

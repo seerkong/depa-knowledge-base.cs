@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ImplementationMappingCatalog fqn="ontology.maker-space.mappings.implementation" id="MakerSpace.Mappings.Implementation">
+  <Description>Implementation crosswalks for MakerSpace ontology declarations.</Description>
+  <Mappings>
+    <ImplementationMapping id="MakerSpace.Mapping.ResourceRecord" targetKind="object-type" targetRef="MakerSpace.Resource" status="accepted">
+      <Description>Resource object type maps to the workbench resource record.</Description>
+      <RepresentedBy>
+        <CodeRef repository="maker-workbench" language="typescript" kind="dto" symbol="ResourceRecord" path="src/contracts/resource.ts" resolver="manual" confidence="0.95" />
+      </RepresentedBy>
+      <StoredBy>
+        <CodeRef repository="maker-workbench" language="sql" kind="table" symbol="resources" path="schema/workbench.sql" resolver="manual" confidence="0.9" />
+      </StoredBy>
+      <Evidences>
+        <Evidence ref="api-contract:maker-workbench" />
+      </Evidences>
+    </ImplementationMapping>
+    <ImplementationMapping id="MakerSpace.Mapping.ReservationBusinessObject" targetKind="business-object" targetRef="MakerSpace.Reservation" status="accepted">
+      <Description>Reservation BO maps to the workbench reservation aggregate facade.</Description>
+      <ImplementedBy>
+        <CodeRef repository="maker-workbench" language="typescript" kind="service" symbol="ReservationWorkbench" path="src/reservations/workbench.ts" resolver="manual" confidence="0.9" />
+      </ImplementedBy>
+      <Enforces>
+        <Rule ref="MakerSpace.Rule.ToolRequiresCertification" />
+        <Rule ref="MakerSpace.Rule.ReservationWindowOrdered" />
+      </Enforces>
+      <Evidences>
+        <Evidence ref="api-contract:maker-workbench" />
+      </Evidences>
+    </ImplementationMapping>
+    <ImplementationMapping id="MakerSpace.Mapping.ApproveReservationOperation" targetKind="operation" targetRef="MakerSpace.Operation.ApproveReservation" status="accepted">
+      <Description>ApproveReservation operation maps to the execute-operation route.</Description>
+      <ExposedBy>
+        <CodeRef repository="maker-workbench" language="http" kind="route" symbol="POST /operations/execute" path="api/openapi.yaml" resolver="manual" confidence="0.95" />
+      </ExposedBy>
+      <Evidences>
+        <Evidence ref="api-contract:maker-workbench" />
+      </Evidences>
+    </ImplementationMapping>
+    <ImplementationMapping id="MakerSpace.Mapping.ApproveReservationBinding" targetKind="runtime-binding" targetRef="MakerSpace.Binding.ApproveReservation.Http" status="accepted">
+      <Description>Runtime binding maps to a registered handler key.</Description>
+      <ImplementedBy>
+        <CodeRef repository="maker-workbench" language="typescript" kind="handler-registry" symbol="reservation.approve" path="src/runtime/handlers.ts" resolver="manual" confidence="0.95" />
+      </ImplementedBy>
+      <Evidences>
+        <Evidence ref="api-contract:maker-workbench" />
+      </Evidences>
+    </ImplementationMapping>
+  </Mappings>
+</ImplementationMappingCatalog>

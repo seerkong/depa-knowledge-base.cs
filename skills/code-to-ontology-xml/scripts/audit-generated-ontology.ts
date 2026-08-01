@@ -35,7 +35,7 @@ export type AuditGeneratedOntologyOptions = {
 
 const ontologyValidator = resolve(
   import.meta.dir,
-  "../../ontology-xml-dsl/scripts/validate-ontology-xml.ts",
+  "../../ontology-exchange-xml-standard/scripts/validate-ontology-xml.ts",
 );
 
 function outputLines(value: string): string[] {

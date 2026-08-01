@@ -1,0 +1,28 @@
+apiVersion: fs-native/v1
+kind: KindDefinition
+metadata:
+  name: relation
+spec:
+  resourceKind: Relation
+  sourceShapes: [manifest]
+  entries:
+    manifest:
+      entry: Relation.xml
+  descriptorSchema:
+    rootElement: Relation
+    requiredAttributes: [fqn, id, name, fromTypeRef, toTypeRef, directed]
+    requiredChildren: [Description]
+  identity:
+    fqn: { from: "@fqn", required: true }
+  description: { path: Description, required: true, nonEmpty: true }
+  internalContract:
+    owns: [Relation endpoints, cardinality, edge Property]
+    forbidsUpperLayerRefs: true
+  crossResourceRules:
+    - relation-endpoint-types-resolve-to-entity-ObjectType-or-BusinessObject
+    - relation-cardinality-is-valid
+    - edge-properties-are-embedded-local-members-without-id-or-ref
+    - edge-properties-are-scalar-enum-value-or-json-compatible
+  diagnostics:
+    - code: RELATION_ENDPOINT_KIND_MISMATCH
+      message: Relation endpoints must resolve to entity ObjectType or BusinessObject declarations.

@@ -1,0 +1,2 @@
+This file is internal closure material for the Procedure resource.
+It is not a child resource because no manifest catalog admits it.

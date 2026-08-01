@@ -1,0 +1,37 @@
+<decision #track.align_fs_native_ontology_manifest_authority.authority {
+  priority = "P0"
+  status = "accepted"
+  durable_candidate = true
+  confidence = "high"
+  reversibility = "low; replacing either XML or runtime authority would require a new major contract and migration"
+}
+(
+  <question ?>哪一套 grammar、workspace 和 Bun OM surface 是 latest authority？</?>
+  <answer { }
+  (
+    <raw-answer ?>上游 mission Revision 12 选择本 workspace 的 FS-native manifest implementation；depa-ontology.ts 是 Bun OM capability authority。</?>
+    <decision-text ?>KindDefinition 声明的精确 manifest entry + ResourceCatalog 是唯一 latest XML grammar；当前 `Ontology` 入口是 `Manifest.xml`，本 workspace 拥有 ontology-exchange-xml-standard definition，depa-ontology.ts 拥有 Bun OM runtime capability。</?>
+    <rationale ?>这消除历史 Resources grammar 与当前 desired state 的双重真源，并保持 XML authoring 与 runtime projection 的 authority 分离。</?>
+    <evidence ?>上游 mission gap-loop report 1、replan 012、当前 validator/tests 和 depa-ontology.ts projection documentation。</?>
+  )
+  >
+)>
+
+<decision #track.align_fs_native_ontology_manifest_authority.migration {
+  priority = "P0"
+  status = "accepted"
+  durable_candidate = true
+  confidence = "high"
+  reversibility = "medium; a future major grammar may add an explicit migration adapter without restoring a second current authority"
+}
+(
+  <question ?>旧 Resources/Modules/href grammar 如何兼容？</?>
+  <answer { }
+  (
+    <raw-answer ?>只保留迁移诊断，不保留可执行兼容入口。</?>
+    <decision-text ?>Validator 必须确定性拒绝旧 assembly；迁移通过显式资源树改写完成。</?>
+    <rationale ?>兼容分支会恢复第二 grammar authority，并破坏 latest-only 判定。</?>
+    <evidence ?>proposal 的 breaking boundary 和 legacy fixtures。</?>
+  )
+  >
+)>

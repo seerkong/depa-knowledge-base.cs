@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<EnumType fqn="ontology.maker-space.enum-types.certification-state" id="MakerSpace.Type.CertificationState">
+  <Description>Member certification state.</Description>
+  <Members>
+    <Member id="Learning" value="learning" />
+    <Member id="Certified" value="certified" />
+    <Member id="Suspended" value="suspended" />
+  </Members>
+</EnumType>

@@ -1,0 +1,49 @@
+<Track id="fix-ontology-modeling-resource-path" version="1" xmlns:cdt="urn:codument:v1">
+  <Metadata>
+    <Status>completed</Status>
+    <Goal>修正 ontology exchange modeling registry 中不可解析的 DomainSemantics 规范路径。</Goal>
+    <Description>通过后续 correction track 提升真实 authority 路径，不改写已归档历史。</Description>
+    <QuestionMode>decision-tree</QuestionMode>
+    <QuestionSeverity>auto</QuestionSeverity>
+    <CommitMode>manual</CommitMode>
+    <CreatedAt>2026-08-01T15:07:00Z</CreatedAt>
+    <UpdatedAt>2026-08-01T15:18:00Z</UpdatedAt>
+    <ModelingBaseCommit>88c0be615505acfbafbf45ef2b200c59f3cd0987</ModelingBaseCommit>
+  </Metadata>
+
+  <Ports scope="track">
+    <MaterialBundle role="input" name="modeling-deltas" domain="modeling" path="vfs://./modeling_deltas/"/>
+    <MaterialBundle role="output" name="modeling" domain="modeling" path="vfs://@/codument/modeling/"/>
+  </Ports>
+
+  <TaskSpace id="space_fix-ontology-modeling-resource-path" name="fix-ontology-modeling-resource-path" version="1">
+    <Description>先修正并机械验证路径，再由 fresh verifier 收口。</Description>
+    <SubNodes>
+      <TaskGroup id="P0" name="Modeling Path Correction" status="DONE" order="0">
+        <SubNodes>
+          <Task id="T0.1" name="修正并验证 DomainSemantics modeling path" status="DONE" order="0" priority="P0">
+            <Description>修正 live registry，保持 delta 一致，并验证 capsule-tree 中声明的文件路径均可解析。</Description>
+            <cdt:Acceptance>
+              <cdt:Criterion id="T0.1-AC1" checked="true">live registry 与 delta 使用存在的 domain-semantics-resource.md</cdt:Criterion>
+              <cdt:Criterion id="T0.1-AC2" checked="true">Codument modeling 与 filesystem reference gate 通过</cdt:Criterion>
+            </cdt:Acceptance>
+          </Task>
+        </SubNodes>
+      </TaskGroup>
+      <TaskGroup id="P1" name="Independent Closure" status="DONE" order="1">
+        <SubNodes>
+          <Task id="T1.1" name="独立验证并准备归档" status="DONE" order="0" priority="P0">
+            <Description>fresh verifier 从 G4M blocker 倒推，确认旧 archive 被本 correction supersede 且当前 modeling 可机械导航。</Description>
+            <cdt:Acceptance>
+              <cdt:Criterion id="T1.1-AC1" checked="true">fresh report 为 PASS 且无 unresolved modeling path</cdt:Criterion>
+              <cdt:Criterion id="T1.1-AC2" checked="true">无 implementation、behavior 或 out-of-scope 修改</cdt:Criterion>
+            </cdt:Acceptance>
+          </Task>
+        </SubNodes>
+        <Hooks>
+          <Hook on="phase:after"><cdt:AttractorCheck use="docs"/></Hook>
+        </Hooks>
+      </TaskGroup>
+    </SubNodes>
+  </TaskSpace>
+</Track>

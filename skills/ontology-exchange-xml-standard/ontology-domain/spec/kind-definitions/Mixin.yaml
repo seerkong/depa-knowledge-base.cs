@@ -1,0 +1,26 @@
+apiVersion: fs-native/v1
+kind: KindDefinition
+metadata:
+  name: mixin
+spec:
+  resourceKind: Mixin
+  sourceShapes: [manifest]
+  entries:
+    manifest:
+      entry: Mixin.xml
+  descriptorSchema:
+    rootElement: Mixin
+    requiredAttributes: [fqn, id]
+    requiredChildren: [Description]
+  identity:
+    fqn: { from: "@fqn", required: true }
+  description: { path: Description, required: true, nonEmpty: true }
+  internalContract:
+    owns: [Property]
+    forbidsUpperLayerRefs: true
+  crossResourceRules:
+    - properties-are-embedded-local-members-without-id-or-ref
+    - mixins-are-traits-and-not-property-value-types
+  diagnostics:
+    - code: MIXIN_PROPERTY_INVALID
+      message: Mixin properties are embedded language members and cannot declare global ids.

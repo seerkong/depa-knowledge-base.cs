@@ -1,0 +1,36 @@
+apiVersion: fs-native/v1
+kind: KindDefinition
+metadata:
+  name: business-process-catalog
+spec:
+  resourceKind: BusinessProcessCatalog
+  sourceShapes:
+    - file
+  descriptorSchema:
+    rootElement: BusinessProcessCatalog
+    requiredAttributes:
+      - fqn
+      - id
+    requiredChildren:
+      - Description
+      - BusinessProcesses
+  identity:
+    fqn:
+      from: "@fqn"
+      required: true
+  description:
+    path: Description
+    required: true
+    nonEmpty: true
+  internalContract:
+    owns:
+      - BusinessProcess
+    referencesLowerFactsOnly: true
+  crossResourceRules:
+    - participants-reference-TypeRef-Relation-or-StateMachine
+    - policies-reference-Rule-not-DomainPolicy
+  diagnostics:
+    - code: BUSINESS_PROCESS_CATALOG_DESCRIPTION_MISSING
+      message: BusinessProcessCatalog must declare a non-empty Description.
+    - code: BUSINESS_PROCESS_POLICY_SOURCE_MISMATCH
+      message: BusinessProcess policies reference Rule declarations directly.
