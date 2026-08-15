@@ -3,18 +3,18 @@
   <Description>Reservation business-object resource and local capability manifest.</Description>
   <Purpose>Represents a member request to reserve and use a tool.</Purpose>
   <Identity>
-    <Property name="reservationNumber" typeRef="MakerSpace.Type.ReservationNumber" required="true" />
+    <Field name="reservationNumber" typeRef="MakerSpace.Type.ReservationNumber" required="true" />
   </Identity>
-  <Properties>
-    <Property name="workflowState" typeRef="MakerSpace.Type.ReservationState" required="true" role="state" />
-    <Property name="startTime" typeRef="builtin:DateTime" required="true" role="measurement" />
-    <Property name="endTime" typeRef="builtin:DateTime" required="true" role="measurement" />
-  </Properties>
-  <ComputedProperties>
-    <ComputedProperty name="durationMinutes" typeRef="builtin:Number">
+  <Fields>
+    <Field name="workflowState" typeRef="MakerSpace.Type.ReservationState" required="true" role="state" />
+    <Field name="startTime" typeRef="builtin:DateTime" required="true" role="measurement" />
+    <Field name="endTime" typeRef="builtin:DateTime" required="true" role="measurement" />
+  </Fields>
+  <ComputedProps>
+    <ComputedProp name="durationMinutes" typeRef="builtin:Number">
       <Statement>Duration is the number of minutes between startTime and endTime.</Statement>
-    </ComputedProperty>
-  </ComputedProperties>
+    </ComputedProp>
+  </ComputedProps>
   <Constraints>
     <Rule ref="MakerSpace.Rule.ToolRequiresCertification" />
     <Rule ref="MakerSpace.Rule.ReservationWindowOrdered" />
@@ -25,6 +25,6 @@
   <Evidences>
     <Evidence ref="manual:makerspace-policy" />
   </Evidences>
-  <ManifestResourceCatalog id="actions" kind="Action" root="vfs://@/Actions/" entry="Action.xml" />
+  <ManifestResourceCatalog id="operations" kind="Operation" root="vfs://@/Operations/" entry="Operation.xml" />
   <ManifestResourceCatalog id="mutations" kind="Mutation" root="vfs://@/Mutations/" entry="Mutation.xml" />
 </BusinessObject>

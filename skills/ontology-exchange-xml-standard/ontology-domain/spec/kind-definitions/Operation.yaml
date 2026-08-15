@@ -1,0 +1,25 @@
+apiVersion: fs-native/v1
+kind: KindDefinition
+metadata:
+  name: operation
+spec:
+  resourceKind: Operation
+  sourceShapes: [manifest]
+  descriptorSchema:
+    rootElement: Operation
+    requiredAttributes: [fqn, id, ownerRef, portability]
+    requiredChildren: [Description]
+  identity:
+    fqn: { from: "@fqn", required: true }
+  entries:
+    manifest:
+      entry: Operation.xml
+  description: { path: Description, required: true, nonEmpty: true }
+  internalContract:
+    owns: [Mutation references, InternalLogic, Evidence references]
+  crossResourceRules:
+    - ownerRef-matches-containing-BusinessObject
+    - composed-Mutations-share-the-same-BusinessObject-owner
+  diagnostics:
+    - code: OPERATION_OWNER_MISMATCH
+      message: Operation ownerRef must match its containing BusinessObject.

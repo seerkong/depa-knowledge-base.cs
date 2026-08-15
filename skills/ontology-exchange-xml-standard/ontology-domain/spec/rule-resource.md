@@ -6,11 +6,11 @@
 <Rule fqn="ontology.maker-space.rules.tool-requires-certification" id="MakerSpace.Rule.ToolRequiresCertification" scopeTypeRef="MakerSpace.Reservation" kind="cross-entity">
   <Statement>An approved tool reservation must be for a certified member.</Statement>
   <When>
-    <PropertyEquals propertyRef="MakerSpace.Reservation#workflowState" value="approved" />
+    <FieldEquals fieldRef="MakerSpace.Reservation#workflowState" value="approved" />
   </When>
   <Require>
-    <EveryRelated relationRef="MakerSpace.Relation.RequestedBy">
-      <PropertyEquals propertyRef="MakerSpace.Member#certificationState" value="certified" />
+    <EveryRelated relationDefRef="MakerSpace.RelationDef.RequestedBy">
+      <FieldEquals fieldRef="MakerSpace.Member#certificationState" value="certified" />
     </EveryRelated>
   </Require>
   <Violation code="MEMBER_NOT_CERTIFIED" message="Member is not certified for the requested tool." />
@@ -20,7 +20,7 @@
 ## Rule grammar
 
 - `Rule` requires resource `fqn`, semantic `id`, `scopeTypeRef`, and `kind`.
-- `scopeTypeRef` resolves to a declared entity `ObjectType` or `BusinessObject`.
+- `scopeTypeRef` resolves to a declared entity `Class` or `BusinessObject`.
 - `kind` is `conditional|cross-entity|computed-dependency|existential|uniqueness|cardinality|custom`.
 - Optional `status` is `accepted|hypothesis`.
 - Direct children are exactly one `Statement`, optional `When`, exactly one `Require`, exactly one `Violation`, optional `Evidences`, in that order.
@@ -46,56 +46,56 @@ Every predicate is a typed XML element. Do not use expression strings.
 - `All` and `Any` contain at least two predicates.
 - `Not` contains exactly one predicate.
 
-### Property predicates
+### Field predicates
 
 ```xml
-<PropertyPresent propertyRef="MakerSpace.Reservation#reservationNumber" />
-<PropertyEquals propertyRef="MakerSpace.Reservation#workflowState" value="approved" />
-<PropertyNotEquals propertyRef="MakerSpace.Reservation#workflowState" value="cancelled" />
-<PropertyIn propertyRef="MakerSpace.Tool#toolState">
+<FieldPresent fieldRef="MakerSpace.Reservation#reservationNumber" />
+<FieldEquals fieldRef="MakerSpace.Reservation#workflowState" value="approved" />
+<FieldNotEquals fieldRef="MakerSpace.Reservation#workflowState" value="cancelled" />
+<FieldIn fieldRef="MakerSpace.Tool#toolState">
   <Value value="available" />
   <Value value="maintenance" />
-</PropertyIn>
-<PropertyCompare propertyRef="MakerSpace.Reservation#startTime" op="lt" otherPropertyRef="MakerSpace.Reservation#endTime" />
+</FieldIn>
+<FieldCompare fieldRef="MakerSpace.Reservation#startTime" op="lt" otherFieldRef="MakerSpace.Reservation#endTime" />
 ```
 
-- `propertyRef` resolves to a declared `Property` available in the current predicate context.
-- A property is available in the current predicate context when it is declared by the context `ObjectType` or `BusinessObject`, one of its transitive parent types, or one of its transitively composed mixins. A nested relation predicate uses its target-entity context.
-- `PropertyCompare` requires `propertyRef` and `op`, permits only the conditional RHS attributes `value` and `otherPropertyRef`, and has no child elements or text content.
-- Exactly one of `value` and `otherPropertyRef` is required. They are mutually exclusive.
-- `PropertyCompare@op` is `lt|lte|gt|gte`.
+- `fieldRef` resolves to a declared `Field` available in the current predicate context.
+- A field is available in the current predicate context when it is declared by the context `Class` or `BusinessObject`, one of its transitive parent classes, or one of its transitively composed mixins. A nested relation-def predicate uses its target-entity context.
+- `FieldCompare` requires `fieldRef` and `op`, permits only the conditional RHS fields `value` and `otherFieldRef`, and has no child elements or text content.
+- Exactly one of `value` and `otherFieldRef` is required. They are mutually exclusive.
+- `FieldCompare@op` is `lt|lte|gt|gte`.
 - Normalize each operand type before comparison. The orderable normalized bases are `builtin:Number`, `builtin:Decimal`, and `builtin:DateTime`.
-- With `otherPropertyRef`, the referenced RHS must resolve to a `Property` available in the same current predicate context as `propertyRef`. Both normalized bases must be identical.
-- With `value`, constant conversion must succeed through the normalized LHS base. `value` is literal data only; it cannot name another property, contain interpolation, or encode an expression.
+- With `otherFieldRef`, the referenced RHS must resolve to a `Field` available in the same current predicate context as `fieldRef`. Both normalized bases must be identical.
+- With `value`, constant conversion must succeed through the normalized LHS base. `value` is literal data only; it cannot name another field, contain interpolation, or encode an expression.
 
-### Type and relation predicates
+### Type and relation-def predicates
 
 ```xml
 <TypeIs typeRef="MakerSpace.Reservation" />
-<RelatedExists relationRef="MakerSpace.Relation.ReservesTool">
+<RelatedExists relationDefRef="MakerSpace.RelationDef.ReservesTool">
   <TypeIs typeRef="MakerSpace.Tool" />
 </RelatedExists>
-<EveryRelated relationRef="MakerSpace.Relation.RequestedBy">
-  <PropertyEquals propertyRef="MakerSpace.Member#certificationState" value="certified" />
+<EveryRelated relationDefRef="MakerSpace.RelationDef.RequestedBy">
+  <FieldEquals fieldRef="MakerSpace.Member#certificationState" value="certified" />
 </EveryRelated>
-<RelatedCount relationRef="MakerSpace.Relation.ReservesTool" op="eq" value="1" />
+<RelatedCount relationDefRef="MakerSpace.RelationDef.ReservesTool" op="eq" value="1" />
 ```
 
-- `typeRef` resolves to a declared entity `ObjectType` or `BusinessObject`.
-- `relationRef` resolves to a declared `Relation` whose endpoint is compatible with the current predicate context.
+- `typeRef` resolves to a declared entity `Class` or `BusinessObject`.
+- `relationDefRef` resolves to a declared `RelationDef` whose endpoint is compatible with the current predicate context.
 - `RelatedExists` and `EveryRelated` contain exactly one predicate evaluated in target-entity context.
 - `RelatedCount@op` is `eq|neq|lt|lte|gt|gte`; `value` is a non-negative integer.
 
 ### Existential predicate
 
 ```xml
-<ExistsRelated relationRef="MakerSpace.Relation.ReservesTool" direction="out" targetTypeRef="MakerSpace.Tool" />
+<ExistsRelated relationDefRef="MakerSpace.RelationDef.ReservesTool" direction="out" targetTypeRef="MakerSpace.Tool" />
 ```
 
 - `direction` is `out|in`.
-- `targetTypeRef` resolves to a declared entity `ObjectType` or `BusinessObject`.
-- The relation endpoint for the chosen direction must be compatible with `scopeTypeRef`.
+- `targetTypeRef` resolves to a declared entity `Class` or `BusinessObject`.
+- The relation-def endpoint for the chosen direction must be compatible with `scopeTypeRef`.
 
 ## Rejection rules
 
-Validators must reject predicates encoded as strings, scripts, SQL, CozoScript, JavaScript, TypeScript, or C#; rules that reference non-entity DomainSemantics resources or implementation symbols to define predicates; missing `Violation`; property or relation refs incompatible with the predicate context; invalid `PropertyCompare` operands; and `custom` rules that omit evidence or claim executable behavior without an external binding resource.
+Validators must reject predicates encoded as strings, scripts, SQL, CozoScript, JavaScript, TypeScript, or C#; rules that reference non-entity DomainSemantics resources or implementation symbols to define predicates; missing `Violation`; field or relation-def refs incompatible with the predicate context; invalid `FieldCompare` operands; and `custom` rules that omit evidence or claim executable behavior without an external binding resource.

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BusinessObject fqn="ontology.invalid.bo-field-ref.business-object.member" id="Invalid.Member" parentRef="Invalid.Resource">
+  <Description>Invalid member business object.</Description>
+  <Purpose>Invalidly references a field instead of declaring it directly.</Purpose>
+  <Fields>
+    <Field ref="Invalid.Member#displayName" />
+  </Fields>
+</BusinessObject>

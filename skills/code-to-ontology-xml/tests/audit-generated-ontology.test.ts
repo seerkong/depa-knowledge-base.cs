@@ -23,7 +23,7 @@ function createBundle(): string {
     `<?xml version="1.0" encoding="UTF-8"?>
 <Ontology id="Example.Ontology" version="v1">
   <Modules>
-    <TypeModule href="vfs://./types.xml" />
+    <ClassModule href="vfs://./classes.xml" />
     <EvidenceModule href="vfs://./evidence.xml" />
   </Modules>
 </Ontology>
@@ -31,16 +31,16 @@ function createBundle(): string {
   );
   write(
     root,
-    "types.xml",
+    "classes.xml",
     `<?xml version="1.0" encoding="UTF-8"?>
-<TypeModule id="Example.Types">
-  <Types>
-    <Type id="Example.Record" status="hypothesis">
+<ClassModule id="Example.Classes">
+  <Classes>
+    <Class id="Example.Record" status="hypothesis">
       <Description>Candidate record identity.</Description>
       <EvidenceRefs><EvidenceRef ref="code:record" /></EvidenceRefs>
-    </Type>
-  </Types>
-</TypeModule>
+    </Class>
+  </Classes>
+</ClassModule>
 `,
   );
   write(
@@ -106,8 +106,8 @@ describe("audit-generated-ontology", () => {
     const root = createBundle();
     write(
       root,
-      "types.xml",
-      readFileSync(join(root, "types.xml"), "utf8")
+      "classes.xml",
+      readFileSync(join(root, "classes.xml"), "utf8")
         .replace("<EvidenceRefs><EvidenceRef ref=\"code:record\" /></EvidenceRefs>", ""),
     );
 
@@ -159,7 +159,7 @@ describe("audit-generated-ontology", () => {
         requiredDomains: [{
           domain: "records",
           status: "missing",
-          typeRefs: ["Example.Record"],
+          classRefs: ["Example.Record"],
           mappingRefs: [],
           evidenceRefs: ["code:record"],
         }],

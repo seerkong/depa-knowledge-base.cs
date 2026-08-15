@@ -1,0 +1,21 @@
+<behavior-patch capability="depa-knowledge-base" version="1">
+  <upsert selector="behavior://depa-knowledge-base/requirements/renamed-ontology-om-consumer-contract">
+    <requirement id="renamed-ontology-om-consumer-contract">
+      <statement>系统 SHALL consume the ontology OM through Class, Object, Field, FieldValue, ComputedProp, RelationDef, RelationLink, and Operation vocabulary without legacy compatibility aliases.</statement>
+      <suite id="consumer-contract" name="Ontology consumer contract">
+        <case id="renamed-api-and-storage-usage">
+          <given>knowledge-base code, tests, and direct Cozo queries depend on the ontology package</given>
+          <when>knowledge-base defines classes, creates objects, persists field values, creates relation links, and exposes operations</when>
+          <then>system SHALL use the renamed ontology APIs, DTOs, tables, and columns</then>
+        </case>
+      </suite>
+      <suite id="skill-contract" name="Skill vocabulary contract">
+        <case id="skills-teach-current-model">
+          <given>project skills, prompts, validators, examples, and docs explain ontology modeling</given>
+          <when>an agent or developer reads or executes those assets</when>
+          <then>they SHALL be guided toward Class/Object/Field/ComputedProp/Relation/Operation vocabulary and SHALL NOT be taught old OM terms as active names</then>
+        </case>
+      </suite>
+    </requirement>
+  </upsert>
+</behavior-patch>

@@ -29,27 +29,27 @@ spec:
       entry: BusinessObject.xml
   internalContract:
     ownsCatalogKinds:
-      - Action
+      - Operation
       - Mutation
       - Interceptor
       - ComputedFunction
       - ConstraintHandler
       - Lifecycle
-    declaresObjectType: true
+    declaresClass: true
     directLocalMembers:
-      - Identity.Property
-      - Properties.Property
-      - ComputedProperties.ComputedProperty
+      - Identity.Field
+      - Fields.Field
+      - ComputedProps.ComputedProp
     supports:
       - parentRef
       - Mixins
   crossResourceRules:
-    - parentRef-resolves-to-entity-ObjectType-or-BusinessObject
-    - no-Property-ref-inside-BusinessObject
+    - parentRef-resolves-to-entity-Class-or-BusinessObject
+    - no-Field-ref-inside-BusinessObject
     - member-ownerRef-matches-containing-BusinessObject
-    - property-roles-apply-only-to-BusinessObject-local-Properties
+    - property-roles-apply-only-to-BusinessObject-local-Fields
   diagnostics:
     - code: BUSINESS_OBJECT_PROPERTY_REF_REJECTED
-      message: BusinessObject must declare Property facts directly; Property@ref is not allowed.
+      message: BusinessObject must declare Field facts directly; Field@ref is not allowed.
     - code: BUSINESS_OBJECT_MEMBER_OWNER_MISMATCH
       message: A local member resource must be owned by the containing BusinessObject manifest.

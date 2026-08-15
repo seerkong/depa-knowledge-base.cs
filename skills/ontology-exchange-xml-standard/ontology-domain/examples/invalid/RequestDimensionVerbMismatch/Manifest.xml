@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Ontology fqn="ontology.invalid.request-dimension-verb-mismatch" id="Invalid.RequestMismatch" version="1.0.0">
   <Description>Invalid operation request mismatch fixture.</Description>
-  <ManifestResourceCatalog id="object-types" kind="ObjectType" root="vfs://@/TypeSystem/ObjectTypes/" entry="ObjectType.xml" />
+  <ManifestResourceCatalog id="classes" kind="Class" root="vfs://@/TypeSystem/Classes/" entry="Class.xml" />
   <ManifestResourceCatalog id="business-objects" kind="BusinessObject" root="vfs://@/DomainModel/BusinessObjects/" entry="BusinessObject.xml" />
   <FileResourceCatalog id="operations" kind="OperationCatalog" root="vfs://@/Operations/" />
 </Ontology>

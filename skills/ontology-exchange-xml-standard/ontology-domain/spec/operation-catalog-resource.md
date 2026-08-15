@@ -1,6 +1,6 @@
 # Operation catalog resources
 
-`OperationCatalog` sits above TypeSystem, DomainModel, and DomainSemantics declarations. It defines callable semantics for actions, mutations, queries, transitions, validation, computed values, composed operations, and raw operations. It does not own object type structure, relation endpoints, rule predicates, lifecycle state machines, runtime implementation bodies, or execution state.
+`OperationCatalog` sits above TypeSystem, DomainModel, and DomainSemantics declarations. It defines callable semantics for operations, mutations, queries, transitions, validation, computed values, composed operations, and raw operations. It does not own class structure, relation-def endpoints, rule predicates, lifecycle state machines, runtime implementation bodies, or execution state.
 
 `InvocationPreset/RequestJson` stores one complete `ExecuteOperationRequest v1`. The parsed object is the workbench preview and is posted unchanged to the execute endpoint. There is no second implicit request model.
 
@@ -26,17 +26,17 @@
 - `Operations` contains one or more `Operation` declarations.
 - `Operation` requires FQN `id`, lowerCamelCase or PascalCase `verb`, `owner`, `behavior`, `subject`, `invocation`, and `effect`.
 - `owner` is `domain-context|business-object|association|lifecycle|constraint|business-process|capability|raw`.
-- `behavior` is `action|mutation|query|transition|validate|computed|composed|raw`.
+- `behavior` is `operation|mutation|query|transition|validate|computed|composed|raw`.
 - `subject` is `none|single|selection`.
 - `invocation` is `single|batch`.
 - `effect` is `read-only|write|mixed`.
 - Optional `status` is `accepted|hypothesis`.
 - `Operation@atomicity` is not part of the latest grammar. Atomicity support is a set under `Capabilities`; one request chooses one value under `execution.atomicity`.
 - `ownerRef` presence and target kind follow the shared semantic owner reference table in [../std/naming-and-references.md](../std/naming-and-references.md).
-- Domain owner refs must resolve to their matching resource identities. `ObjectType` is not a fallback for `business-object`, `Relation` is not a fallback for `association`, and `Rule` is not a fallback for `constraint`.
-- `lifecycle` resolves only to `StateMachine`; a lifecycle-bearing `BusinessObject` or its subject `ObjectType` is not the lifecycle owner identity.
+- Domain owner refs must resolve to their matching resource identities. `Class` is not a fallback for `business-object`, `RelationDef` is not a fallback for `association`, and `Rule` is not a fallback for `constraint`.
+- `lifecycle` resolves only to `StateMachine`; a lifecycle-bearing `BusinessObject` or its subject `Class` is not the lifecycle owner identity.
 - `subjectTypeRef` is forbidden when `subject="none"` and required when `subject="single"` or `subject="selection"`.
-- `subjectTypeRef` resolves to an entity `ObjectType` or `BusinessObject`; `inputTypeRef` and `outputTypeRef` resolve to built-in or declared type expressions.
+- `subjectTypeRef` resolves to an entity `Class` or `BusinessObject`; `inputTypeRef` and `outputTypeRef` resolve to built-in or declared type expressions.
 - Direct children are optional `Description`, optional `Purpose`, optional `InternalLogic`, optional `Composition`, optional `Constraints`, exactly one `Capabilities`, optional `Evidences`, in that order.
 - `InternalLogic` is non-empty plain text for readers and target implementers. It is not executable pseudocode, source code, query text, a handler key, or a code-generation input.
 - `Composition` contains one or more `Operation ref="OperationFqn"` references.
@@ -73,7 +73,7 @@
 ## Five dimensions
 
 - `owner` answers who owns the operation's domain meaning.
-- `behavior` answers what behavior it represents: `action|mutation|query|transition|validate|computed|composed|raw`.
+- `behavior` answers what behavior it represents: `operation|mutation|query|transition|validate|computed|composed|raw`.
 - `subject` answers what one logical invocation targets: `none|single|selection`.
 - `invocation` answers whether a request contains one invocation or multiple keyed invocations: `single|batch`.
 - `effect` answers whether persistent facts are read only, written, or both: `read-only|write|mixed`.
@@ -227,7 +227,7 @@ A batch definition with `subject="single"` carries one single subject per item:
 - `InvocationPresets` contains one or more `InvocationPreset` declarations.
 - `InvocationPreset` requires FQN `id` and `operationRef`.
 - `operationRef` resolves to an `Operation`.
-- Optional attributes are `status` and `default`; `default` is `true|false` and selects a UI preset, never an atomicity or observation default.
+- Optional fields are `status` and `default`; `default` is `true|false` and selects a UI preset, never an atomicity or observation default.
 - Direct children are optional `Title`, optional `Description`, exactly one `RequestJson`, optional `Evidences`, in that order.
 - `RequestJson` contains exactly one complete `ExecuteOperationRequest v1` JSON object as text or CDATA.
 - The parsed object is the preview and POST body. Validation must not synthesize omitted envelope members or translate a simplified preset into the full request.

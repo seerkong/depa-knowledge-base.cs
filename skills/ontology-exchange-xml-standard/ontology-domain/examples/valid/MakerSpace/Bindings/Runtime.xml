@@ -58,9 +58,9 @@
         <Evidence ref="api-contract:maker-workbench" />
       </Evidences>
     </RuntimeBinding>
-    <RuntimeBinding id="MakerSpace.Binding.ReservationDuration.InMemory" targetKind="computed-property" targetRef="MakerSpace.Reservation#durationMinutes" runtime="bun" portability="portable">
+    <RuntimeBinding id="MakerSpace.Binding.ReservationDuration.InMemory" targetKind="computed-prop" targetRef="MakerSpace.Reservation#durationMinutes" runtime="bun" portability="portable">
       <Description>Computed value binding for reservation duration.</Description>
-      <HandlerRef registry="maker-workbench" key="reservation.duration-minutes" contract="computed-property-v1" />
+      <HandlerRef registry="maker-workbench" key="reservation.duration-minutes" contract="computed-prop-v1" />
       <Capabilities>
         <Capability name="projection" value="pure" />
       </Capabilities>

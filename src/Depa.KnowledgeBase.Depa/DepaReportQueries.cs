@@ -158,17 +158,17 @@ internal static class DepaReportQueries
     internal static async Task<DepaFactGradeMap> GetFactGradeMapAsync(CozoOm om, CancellationToken ct)
     {
         await DepaOntologySchema.InitAsync(om, ct);
-        var nodes = (await LoadEntitySnapsAsync(om, "depa_fact_source", ct))
+        var nodes = (await LoadObjectSnapsAsync(om, "depa_fact_source", ct))
             .Select(snap => new DepaFactGradeNode(
-                snap.EntityId,
+                snap.ObjectId,
                 snap.Label,
-                (int)Num(snap.Props, "grade", 0),
-                Str(snap.Props, "grade_id"),
-                Str(snap.Props, "expected_owner"),
-                Str(snap.Props, "path"),
-                (int)Num(snap.Props, "line", 0)))
+                (int)Num(snap.FieldValues, "grade", 0),
+                Str(snap.FieldValues, "grade_id"),
+                Str(snap.FieldValues, "expected_owner"),
+                Str(snap.FieldValues, "path"),
+                (int)Num(snap.FieldValues, "line", 0)))
             .OrderBy(n => n.Grade)
-            .ThenBy(n => n.EntityId, StringComparer.Ordinal)
+                .ThenBy(n => n.ObjectId, StringComparer.Ordinal)
             .ToArray();
         var edges = new List<DepaFactGradeEdge>();
         foreach (var relation in new[] { "fact_written_by", "projection_derived_from" })
@@ -183,8 +183,8 @@ internal static class DepaReportQueries
             nodes,
             edges
                 .OrderBy(e => e.Relation, StringComparer.Ordinal)
-                .ThenBy(e => e.FromId, StringComparer.Ordinal)
-                .ThenBy(e => e.ToId, StringComparer.Ordinal)
+                .ThenBy(e => e.FromObjectId, StringComparer.Ordinal)
+                .ThenBy(e => e.ToObjectId, StringComparer.Ordinal)
                 .ToArray());
     }
 
@@ -208,29 +208,29 @@ internal static class DepaReportQueries
 
     // ---- store read-back helpers (judgement layer @ NOW) ----
 
-    private sealed record EntitySnap(string EntityId, string Label, IReadOnlyDictionary<string, JsonElement> Props);
+    private sealed record ObjectSnap(string ObjectId, string Label, IReadOnlyDictionary<string, JsonElement> FieldValues);
 
-    private static async Task<IReadOnlyList<EntitySnap>> LoadEntitySnapsAsync(CozoOm om, string typeName, CancellationToken ct)
+    private static async Task<IReadOnlyList<ObjectSnap>> LoadObjectSnapsAsync(CozoOm om, string className, CancellationToken ct)
     {
-        var entityResult = await om.Runtime.Store.RunAsync(
-            """?[id, label] := *om_entity{ id, type_name: $type, label }""",
-            new Dictionary<string, object?> { ["type"] = typeName },
+        var objectResult = await om.Runtime.Store.RunAsync(
+            """?[id, label] := *om_object{ id, class_name: $class, label }""",
+            new Dictionary<string, object?> { ["class"] = className },
             cancellationToken: ct);
-        var labels = entityResult.Rows
+        var labels = objectResult.Rows
             .Where(row => row[0].ValueKind == JsonValueKind.String)
             .ToDictionary(
                 row => row[0].GetString()!,
                 row => row[1].ValueKind == JsonValueKind.String ? row[1].GetString() ?? "" : "",
                 StringComparer.Ordinal);
-        var propResult = await om.Runtime.Store.RunAsync(
+        var fieldValueResult = await om.Runtime.Store.RunAsync(
             """
-            ?[id, attr_name, value] :=
-              *om_entity{ id, type_name: $type },
-              *om_property{ entity_id: id, attr_name, value @ "NOW" }
+            ?[id, field_name, value] :=
+              *om_object{ id, class_name: $class },
+              *om_field_value{ object_id: id, field_name, value @ "NOW" }
             """,
-            new Dictionary<string, object?> { ["type"] = typeName },
+            new Dictionary<string, object?> { ["class"] = className },
             cancellationToken: ct);
-        var propsById = propResult.Rows
+        var fieldValuesById = fieldValueResult.Rows
             .Where(row => row[0].ValueKind == JsonValueKind.String && row[1].ValueKind == JsonValueKind.String)
             .GroupBy(row => row[0].GetString()!, StringComparer.Ordinal)
             .ToDictionary(
@@ -239,19 +239,19 @@ internal static class DepaReportQueries
                 StringComparer.Ordinal);
         return labels.Keys
             .OrderBy(id => id, StringComparer.Ordinal)
-            .Select(id => new EntitySnap(
+            .Select(id => new ObjectSnap(
                 id,
                 labels[id],
-                propsById.GetValueOrDefault(id) ?? new Dictionary<string, JsonElement>(StringComparer.Ordinal)))
+                fieldValuesById.GetValueOrDefault(id) ?? new Dictionary<string, JsonElement>(StringComparer.Ordinal)))
             .ToArray();
     }
 
     private static async Task<IReadOnlyList<DepaViolationSummary>> LoadPersistedViolationsAsync(CozoOm om, CancellationToken ct)
     {
         var summaries = new List<DepaViolationSummary>();
-        foreach (var snap in await LoadEntitySnapsAsync(om, "depa_violation", ct))
+        foreach (var snap in await LoadObjectSnapsAsync(om, "depa_violation", ct))
         {
-            var ruleId = Str(snap.Props, "rule_id");
+            var ruleId = Str(snap.FieldValues, "rule_id");
             if (ruleId.Length == 0)
             {
                 continue; // hand-made violation without the §5.2 fields — not reportable.
@@ -259,10 +259,10 @@ internal static class DepaReportQueries
 
             var subject = "";
             var evidence = new List<DepaEvidenceRef>();
-            if (snap.Props.TryGetValue("evidence_json", out var evidenceJson) && evidenceJson.ValueKind == JsonValueKind.Object)
+            if (snap.FieldValues.TryGetValue("evidence_json", out var evidenceJson) && evidenceJson.ValueKind == JsonValueKind.Object)
             {
                 if (evidenceJson.TryGetProperty("subject", out var subjectEl) && subjectEl.ValueKind == JsonValueKind.Object
-                    && subjectEl.TryGetProperty("entity_id", out var subjectId) && subjectId.ValueKind == JsonValueKind.String)
+                    && subjectEl.TryGetProperty("object_id", out var subjectId) && subjectId.ValueKind == JsonValueKind.String)
                 {
                     subject = subjectId.GetString() ?? "";
                 }
@@ -278,12 +278,12 @@ internal static class DepaReportQueries
             }
 
             summaries.Add(new DepaViolationSummary(
-                snap.EntityId,
+                snap.ObjectId,
                 ruleId,
-                Str(snap.Props, "dimension"),
+                Str(snap.FieldValues, "dimension"),
                 subject,
-                Str(snap.Props, "message"),
-                Num(snap.Props, "confidence", 1.0),
+                Str(snap.FieldValues, "message"),
+                Num(snap.FieldValues, "confidence", 1.0),
                 evidence));
         }
 
@@ -297,8 +297,8 @@ internal static class DepaReportQueries
     {
         var result = await om.Runtime.Store.RunAsync(
             """
-            ?[from_id, to_id] :=
-              *om_edge{ from_id, rel_name: $rel, to_id, props: _props @ "NOW" }
+            ?[from_object_id, to_object_id] :=
+              *om_relation_link{ from_object_id, relation_name: $rel, to_object_id, payload: _payload @ "NOW" }
             """,
             new Dictionary<string, object?> { ["rel"] = relName },
             cancellationToken: ct);

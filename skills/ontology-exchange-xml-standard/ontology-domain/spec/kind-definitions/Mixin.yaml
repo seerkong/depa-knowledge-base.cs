@@ -16,7 +16,7 @@ spec:
     fqn: { from: "@fqn", required: true }
   description: { path: Description, required: true, nonEmpty: true }
   internalContract:
-    owns: [Property]
+    owns: [Field]
     forbidsUpperLayerRefs: true
   crossResourceRules:
     - properties-are-embedded-local-members-without-id-or-ref

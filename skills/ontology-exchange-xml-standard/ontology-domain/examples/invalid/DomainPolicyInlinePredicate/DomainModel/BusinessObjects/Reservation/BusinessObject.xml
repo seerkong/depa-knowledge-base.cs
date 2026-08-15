@@ -2,7 +2,7 @@
 <BusinessObject fqn="ontology.invalid.domain-policy-inline-predicate.business-object.reservation" id="Invalid.Reservation" parentRef="Invalid.Resource">
   <Description>Support BusinessObject for the policy predicate negative case.</Description>
   <Purpose>Minimal reservation business object.</Purpose>
-  <Properties>
-    <Property name="workflowState" typeRef="Invalid.Type.ReservationState" required="true" role="state" />
-  </Properties>
+  <Fields>
+    <Field name="workflowState" typeRef="Invalid.Type.ReservationState" required="true" role="state" />
+  </Fields>
 </BusinessObject>

@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<Ontology fqn="ontology.invalid.bo-property-ref" id="Invalid.BoPropertyRef" version="1.0.0">
-  <Description>Invalid BO property reference fixture.</Description>
-  <ManifestResourceCatalog id="object-types" kind="ObjectType" root="vfs://@/TypeSystem/ObjectTypes/" entry="ObjectType.xml" />
-  <ManifestResourceCatalog id="business-objects" kind="BusinessObject" root="vfs://@/DomainModel/BusinessObjects/" entry="BusinessObject.xml" />
-</Ontology>

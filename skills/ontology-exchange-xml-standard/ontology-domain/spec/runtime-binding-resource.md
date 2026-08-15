@@ -1,6 +1,6 @@
 # Runtime binding resources
 
-`RuntimeBindingCatalog` declares externally owned runtime support for operations, computed properties, custom rules, transitions, and projection targets. It does not contain implementation bodies or executable code.
+`RuntimeBindingCatalog` declares externally owned runtime support for operations, computed fields, custom rules, transitions, and projection targets. It does not contain implementation bodies or executable code.
 
 ```xml
 <RuntimeBindingCatalog fqn="ontology.maker-space.bindings" id="MakerSpace.Bindings">
@@ -14,7 +14,7 @@
         <Observation value="before" />
         <Observation value="after" />
         <Observation value="diff" />
-        <Capability name="transaction" value="single-datasource" />
+        <Capability name="transoperation" value="single-datasource" />
         <Capability name="selection" value="filter" />
         <Capability name="batch" value="keyed-items" />
       </Capabilities>
@@ -30,8 +30,8 @@
 - `RuntimeBindings` contains one or more `RuntimeBinding` declarations.
 - `RuntimeBinding` requires FQN `id`, `targetKind`, `targetRef`, `runtime`, and `portability`.
 - `RuntimeBinding@atomicity` is not part of the latest grammar.
-- `targetKind` is `operation|computed-property|rule|transition|projection`.
-- `targetRef` resolves according to `targetKind`: `operation` -> `Operation`; `computed-property` -> `ComputedProperty`; `rule` -> `Rule`; `transition` -> `Transition`; `projection` -> `ObjectType`, `BusinessObject`, `Relation`, `Rule`, `StateMachine`, `Operation`, or a DomainSemantics profile resource.
+- `targetKind` is `operation|computed-prop|rule|transition|projection`.
+- `targetRef` resolves according to `targetKind`: `operation` -> `Operation`; `computed-prop` -> `ComputedProp`; `rule` -> `Rule`; `transition` -> `Transition`; `projection` -> `Class`, `BusinessObject`, `RelationDef`, `Rule`, `StateMachine`, `Operation`, or a DomainSemantics profile resource.
 - `runtime` is a stable runtime key such as `bun`, `dotnet`, `sqlite-workbench`, `http`, or `cozo-om`.
 - `portability` is `portable|extension-point|target-specific`.
 - Optional `status` is `accepted|hypothesis`.
@@ -43,7 +43,7 @@
 - `HandlerRef` requires non-empty `registry` and `key`.
 - `registry` is a stable server-side registry name.
 - `key` is a stable handler key pre-registered by runtime composition.
-- Optional attributes are `version` and `contract`.
+- Optional fields are `version` and `contract`.
 - `HandlerRef` must not be a filesystem path, package import path, URL to executable code, inline function, shell command, SQL string, or arbitrary callback name accepted from a request.
 
 ## Runtime capability grammar
@@ -55,7 +55,7 @@ For `targetKind="operation"`, `Capabilities` contains one or more `Atomicity`, z
 - Atomicity and observation values have set semantics. Duplicates are invalid and source order does not define preference.
 - The atomicity set is non-empty. The observation set may be empty.
 - Generic `Capability` requires non-empty `name` and `value`.
-- Generic entries describe runtime-specific support such as `transaction`, `selection`, `batch`, `projection`, or `target`.
+- Generic entries describe runtime-specific support such as `transoperation`, `selection`, `batch`, `projection`, or `target`.
 - Generic `Capability@name` must not be `atomicity|observation|observations|observe|before|after|diff|trace|plan`; standard atomicity and observation support must use the structured children.
 
 For a non-operation binding, `Capabilities` is optional. When present, it contains one or more generic `Capability` children only. `Atomicity` and `Observation` are forbidden, and no `not-applicable` placeholder is required or allowed.

@@ -19,7 +19,7 @@ spec:
     owns: [predicate, Violation]
     forbidsExecutableContent: true
   crossResourceRules:
-    - rule-scopeTypeRef-resolves-to-ObjectType-or-BusinessObject
+    - rule-scopeTypeRef-resolves-to-Class-or-BusinessObject
     - predicate-references-available-in-current-context
     - custom-rules-require-evidence-or-binding
   diagnostics:

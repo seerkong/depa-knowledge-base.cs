@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<ObjectType fqn="ontology.maker-space.object-types.admin-command" id="MakerSpace.Raw.AdminCommand" kind="raw">
-  <Description>Structured raw administration command payload.</Description>
-  <Properties>
-    <Property name="commandName" typeRef="builtin:String" required="true" />
-    <Property name="payload" typeRef="builtin:Json" required="false" />
-  </Properties>
-</ObjectType>

@@ -23,7 +23,7 @@ The service rejects approval when a member lacks required certification.
 
 - `Evidence` requires unique namespaced `id`, `source`, `grade`, and `confidence`.
 - `source` is `code|database-investigation|document|api-contract|ui|decision|manual|generated`.
-- Optional attributes are `repository`, `revision`, `artifact`, `path`, `symbol`, `lines`, `resolver`, `observedAt`, `sourceKind`, and `externalId`.
+- Optional fields are `repository`, `revision`, `artifact`, `path`, `symbol`, `lines`, `resolver`, `observedAt`, `sourceKind`, and `externalId`.
 - At least one locator is required: `repository+path`, `artifact`, `externalId`, or `source="manual"` with `resolver="manual"`.
 - `path` is repository-relative with forward slashes. Reject absolute paths and `..` segments.
 - `lines` is either one positive integer or `start-end` where `end >= start`.
@@ -38,7 +38,7 @@ The service rejects approval when a member lacks required certification.
 
 Semantic resources use plural `Evidences` containers with singular `Evidence ref="evidence-id"` references. A ref must resolve to exactly one `Evidence` in the fully assembled bundle.
 
-Evidence-bearing semantic objects include Type, Mixin, Property, ComputedProperty, Relation, edge Property, Rule, StateMachine, Transition, Derivation, BusinessObject, Association, DomainPolicy, ConstraintHandler, BusinessProcess, Capability, EventContract, Operation, InvocationPreset, RuntimeBinding, ImplementationMapping, Alias, and Migration.
+Evidence-bearing semantic objects include Class, value-kind, Mixin, Field, ComputedProp, RelationDef, RelationLink Field, Rule, StateMachine, Transition, Derivation, BusinessObject, Association, DomainPolicy, ConstraintHandler, BusinessProcess, Capability, EventContract, Operation, InvocationPreset, RuntimeBinding, ImplementationMapping, Alias, and Migration.
 
 An accepted interpreted object requires evidence appropriate to the strength of its claim. A hypothesis requires at least one direct or owner-scoped evidence item with `grade="inferred"` and remains non-enforcing by default.
 

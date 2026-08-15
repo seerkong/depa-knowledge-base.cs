@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<Relation fqn="ontology.maker-space.relations.reserves-tool" id="MakerSpace.Relation.ReservesTool" name="reservesTool" fromTypeRef="MakerSpace.Reservation" toTypeRef="MakerSpace.Tool" directed="true" min="1" max="1">
-  <Description>Reservation to reserved tool.</Description>
-  <Properties>
-    <Property name="assignedAt" typeRef="builtin:DateTime" required="true" />
-  </Properties>
-</Relation>

@@ -6,7 +6,7 @@ using Depa.Ontology.Contracts.Models;
 namespace Depa.KnowledgeBase.Depa;
 
 /// <summary>One declared capsule with its internals glob (design §1.1), shared pipeline ↔ detectors.</summary>
-internal sealed record DepaCapsuleInfo(string EntityId, string Name, string RootPath, string InternalsGlob);
+internal sealed record DepaCapsuleInfo(string ObjectId, string Name, string RootPath, string InternalsGlob);
 
 /// <summary>One ck_external_call summary row (design §4.2), shared pipeline ↔ detectors.</summary>
 internal sealed record DepaExternalCall(string CallerId, string TargetKey, int Count, string Category, string FirstFileId, int FirstLine);
@@ -21,14 +21,14 @@ internal sealed record DepaDetectionOutcome(
 /// Step ③ of depa_scan (design §3, track add-llm-wiki-depa-conformance-tools): the eight MVP
 /// red-light detectors reading ck_* observations joined with the depa_* judgement layer
 /// (loaded back from the OM store, so config, heuristic AND manually upserted annotations all
-/// count), materializing depa_violation entities + violates/signal edges.
+/// count), materializing depa_violation objects + violates/signal relation links.
 ///
 /// Discipline (design §5): each rule checks its inputs first — missing annotations or missing
 /// observation tables yield a BLOCKED finding naming the gap, never a guess and never a silent
 /// PASS. Every violation carries path:line evidence (hits without a locatable site are not
 /// materialized). Violation ids are derived from (rule, subject, evidence key) so repeated
 /// scans upsert in place; hits that disappear are expired at scan end together with their
-/// violates/signal edges — but only for rules that actually ran (BLOCKED rules keep their
+/// violates/signal relation links — but only for rules that actually ran (BLOCKED rules keep their
 /// prior findings, because "cannot judge" must not fake compliance).
 /// </summary>
 internal static class DepaViolationDetectors
@@ -66,7 +66,7 @@ internal static class DepaViolationDetectors
         "file_io", "network", "db", "process", "console", "env", "threading",
     };
 
-    private sealed record Snap(string EntityId, IReadOnlyDictionary<string, JsonElement> Props)
+    private sealed record Snap(string ObjectId, IReadOnlyDictionary<string, JsonElement> Props)
     {
         public string Str(string name) =>
             Props.TryGetValue(name, out var v) && v.ValueKind == JsonValueKind.String ? v.GetString() ?? "" : "";
@@ -84,7 +84,7 @@ internal static class DepaViolationDetectors
     private sealed record Pending(
         string RuleId,
         string Dimension,
-        string SubjectEntityId,
+        string SubjectObjectId,
         string SubjectSymbolId,
         string SubjectSymKey,
         string Message,
@@ -161,16 +161,16 @@ internal static class DepaViolationDetectors
         var symbolById = symbols.ToDictionary(s => s.SymbolId, StringComparer.Ordinal);
 
         // Judgement layer read back from the OM store: config + heuristic annotations from this
-        // scan's ①/② segments and any manually upserted depa_* entities all participate.
-        var impls = await LoadTypeAsync(om, "depa_impl", ct);
-        var contracts = await LoadTypeAsync(om, "depa_contract", ct);
-        var projections = await LoadTypeAsync(om, "depa_projection", ct);
-        var factSources = await LoadTypeAsync(om, "depa_fact_source", ct);
-        var runtimeParams = await LoadTypeAsync(om, "depa_runtime_param", ct);
-        var carriers = await LoadTypeAsync(om, "depa_runtime_carrier", ct);
+        // scan's ①/② segments and any manually upserted depa_* objects all participate.
+        var impls = await LoadClassAsync(om, "depa_impl", ct);
+        var contracts = await LoadClassAsync(om, "depa_contract", ct);
+        var projections = await LoadClassAsync(om, "depa_projection", ct);
+        var factSources = await LoadClassAsync(om, "depa_fact_source", ct);
+        var runtimeParams = await LoadClassAsync(om, "depa_runtime_param", ct);
+        var carriers = await LoadClassAsync(om, "depa_runtime_carrier", ct);
         // Batch-1 detector inputs (track expand-depa-detection-rules T2.1): the step-② entry
         // materialization is read back so V-L4 counts capsule_exposes fan-out.
-        var entrySnaps = await LoadTypeAsync(om, "depa_entry", ct);
+        var entrySnaps = await LoadClassAsync(om, "depa_entry", ct);
         var exposesEdges = await ListEdgesAsync(om, "capsule_exposes", ct);
 
         var implBySymbolId = impls
@@ -329,12 +329,12 @@ internal static class DepaViolationDetectors
 
                         var more = call.Count > 1 ? $", +{call.Count - 1} more call sites" : "";
                         hits.Add(new Pending(
-                            "V-E1", "effect", core.EntityId, core.SymbolId, core.SymKey,
+                            "V-E1", "effect", core.ObjectId, core.SymbolId, core.SymKey,
                             $"core '{coreSym.Name}' bypasses effect contracts: '{memberSym.Name}' calls {call.TargetKey} ({rule.Category})",
                             [new DepaEvidenceRef("external_call", path, line, $"CALLS {call.TargetKey} (category={rule.Category}, count={call.Count}{more})")],
                             core.Confidence,
                             $"{member}->{call.TargetKey}",
-                            (core.EntityId, "effect_leaks_through", $"depa:effectapi:{rule.Pattern}", new Dictionary<string, object?>
+                            (core.ObjectId, "effect_leaks_through", $"depa:effectapi:{rule.Pattern}", new Dictionary<string, object?>
                             {
                                 ["target_key"] = call.TargetKey,
                                 ["count"] = call.Count,
@@ -381,14 +381,14 @@ internal static class DepaViolationDetectors
                         var mutableStatic = field.Signature.Contains("static", StringComparison.Ordinal)
                             && !field.Signature.Contains("readonly", StringComparison.Ordinal)
                             && !field.Signature.Contains("const ", StringComparison.Ordinal);
-                        if (!mutableStatic || CapsuleOf(field.Path)?.EntityId == coreCapsule?.EntityId)
+                        if (!mutableStatic || CapsuleOf(field.Path)?.ObjectId == coreCapsule?.ObjectId)
                         {
                             continue; // own-capsule statics are the capsule's business (design §3 row 2).
                         }
 
                         var memberSym = symbolById.GetValueOrDefault(member) ?? coreSym;
                         hits.Add(new Pending(
-                            "V-E2", "effect", core.EntityId, core.SymbolId, core.SymKey,
+                            "V-E2", "effect", core.ObjectId, core.SymbolId, core.SymKey,
                             $"core '{coreSym.Name}' depends on implicit global state: '{memberSym.Name}' accesses static mutable field '{field.Name}'",
                             [new DepaEvidenceRef("access", PathOfEdge(edge, memberSym), edge.Line > 0 ? edge.Line : memberSym.StartLine,
                                 $"ACCESSES static mutable field {field.Name} ({field.Signature})")],
@@ -448,8 +448,8 @@ internal static class DepaViolationDetectors
                 else if (expectedOwner.Length > 0)
                 {
                     var writerSym = symbolById[writers[0].Key];
-                    var writerEntityId = implBySymbolId.GetValueOrDefault(writers[0].Key)?.EntityId ?? "";
-                    var matches = expectedOwner == writerEntityId || expectedOwner == writerSym.SymbolId
+                    var writerObjectId = implBySymbolId.GetValueOrDefault(writers[0].Key)?.ObjectId ?? "";
+                    var matches = expectedOwner == writerObjectId || expectedOwner == writerSym.SymbolId
                         || expectedOwner == writerSym.SymKey || expectedOwner == writerSym.Name;
                     if (!matches)
                     {
@@ -468,7 +468,7 @@ internal static class DepaViolationDetectors
                         $"{symbolById[e.FromId].Name} writes {factSym.Name}"))
                     .ToArray();
                 hits.Add(new Pending(
-                    "V-D1", "data", fact.EntityId, fact.SymbolId, fact.SymKey,
+                    "V-D1", "data", fact.ObjectId, fact.SymbolId, fact.SymKey,
                     message, evidence, fact.Confidence,
                     string.Join("|", writers.Select(g => g.Key)) + (writers.Length == 1 ? $"|expected:{expectedOwner}" : "")));
             }
@@ -531,10 +531,10 @@ internal static class DepaViolationDetectors
                     // The backwrites relation is typed depa_projection -> depa_fact_source;
                     // grade-6/7 fact hits carry evidence only, no signal edge.
                     (string From, string Rel, string To, Dictionary<string, object?>? Props)? signal = isProjection
-                        ? (source.EntityId, "backwrites", fact.EntityId, null)
+                        ? (source.ObjectId, "backwrites", fact.ObjectId, null)
                         : null;
                     hits.Add(new Pending(
-                        "V-S1", "fact_source", source.EntityId, source.SymbolId, source.SymKey,
+                        "V-S1", "fact_source", source.ObjectId, source.SymbolId, source.SymKey,
                         $"{sourceLabel} writes back into grade-{(int)fact.Num("grade", 0)} fact source '{factSym.Name}'",
                         writeEdges.Select(e => new DepaEvidenceRef("write", PathOfEdge(e, sourceSym), e.Line > 0 ? e.Line : sourceSym.StartLine,
                             $"{sourceSym.Name} writes {factSym.Name}")).ToArray(),
@@ -584,7 +584,7 @@ internal static class DepaViolationDetectors
                     }
 
                     hits.Add(new Pending(
-                        "V-F1", "layering", param.EntityId, param.SymbolId, param.SymKey,
+                        "V-F1", "layering", param.ObjectId, param.SymbolId, param.SymKey,
                         $"config parameter type '{typeSym.Name}' carries function-object field '{field.Name}' — behaviour does not belong in config",
                         [new DepaEvidenceRef("declaration", field.Path, field.StartLine, $"field {field.Name}: {field.Signature}")],
                         param.Confidence,
@@ -641,7 +641,7 @@ internal static class DepaViolationDetectors
                     }
 
                     hits.Add(new Pending(
-                        "V-F2", "layering", carrier.EntityId, carrier.SymbolId, carrier.SymKey,
+                        "V-F2", "layering", carrier.ObjectId, carrier.SymbolId, carrier.SymKey,
                         $"runtime carrier '{carrierSym.Name}' hosts business method '{method.Name}' (carrier types must stay data-only)",
                         [new DepaEvidenceRef("declaration", method.Path, method.StartLine, $"method {method.Name} has {outgoingCalls} outgoing CALLS")],
                         Math.Min(carrier.Confidence, MaxHeuristicViolationConfidence),
@@ -674,17 +674,17 @@ internal static class DepaViolationDetectors
                 }
 
                 var toCapsule = CapsuleOf(toSym.Path);
-                if (toCapsule is null || toCapsule.EntityId == fromCapsule.EntityId
+                if (toCapsule is null || toCapsule.ObjectId == fromCapsule.ObjectId
                     || !PathGlobMatch(toCapsule.InternalsGlob, toSym.Path))
                 {
                     continue;
                 }
 
-                var key = (fromCapsule.EntityId, toCapsule.EntityId);
+                var key = (fromCapsule.ObjectId, toCapsule.ObjectId);
                 (crossings.TryGetValue(key, out var list) ? list : crossings[key] = []).Add(edge);
             }
 
-            var capsuleById = capsules.ToDictionary(c => c.EntityId, StringComparer.Ordinal);
+            var capsuleById = capsules.ToDictionary(c => c.ObjectId, StringComparer.Ordinal);
             var hits = new List<Pending>();
             foreach (var ((fromCapsuleId, toCapsuleId), crossingEdges) in crossings.OrderBy(p => p.Key.FromCapsule, StringComparer.Ordinal).ThenBy(p => p.Key.ToCapsule, StringComparer.Ordinal))
             {
@@ -738,7 +738,7 @@ internal static class DepaViolationDetectors
                 }
 
                 hits.Add(new Pending(
-                    "V-L3", "layering", contract.EntityId, contract.SymbolId, contract.SymKey,
+                    "V-L3", "layering", contract.ObjectId, contract.SymbolId, contract.SymKey,
                     $"contract file '{fromSym.Path}' imports implementation file '{toSym.Path}' — the dependency must point the other way",
                     [new DepaEvidenceRef("import", PathOfEdge(edge, fromSym), edge.Line > 0 ? edge.Line : fromSym.StartLine,
                         $"{fromSym.Name} IMPORTS {toSym.Name} ({toSym.Path})")],
@@ -772,7 +772,7 @@ internal static class DepaViolationDetectors
                     {
                         var targetName = symbolById.TryGetValue(edge.ToId, out var target) ? target.Name : edge.ToId;
                         hits.Add(new Pending(
-                            "V-E3", "effect", contract.EntityId, contract.SymbolId, contract.SymKey,
+                            "V-E3", "effect", contract.ObjectId, contract.SymbolId, contract.SymKey,
                             $"contract '{contractSym.Name}' hosts orchestration: member '{memberSym.Name}' calls '{targetName}' (contracts declare effects, factories/bootstrap assemble them)",
                             [new DepaEvidenceRef("call", PathOfEdge(edge, memberSym), edge.Line > 0 ? edge.Line : memberSym.StartLine,
                                 $"{memberSym.Name} CALLS {targetName}")],
@@ -806,12 +806,12 @@ internal static class DepaViolationDetectors
                 if (gradedBySymbol.TryGetValue(projection.SymbolId, out var fact))
                 {
                     hits.Add(new Pending(
-                        "V-D3", "data", projection.EntityId, projection.SymbolId, projection.SymKey,
+                        "V-D3", "data", projection.ObjectId, projection.SymbolId, projection.SymKey,
                         $"'{projSym.Name}' is annotated as a projection AND as a grade-{(int)fact.Num("grade", 0)} fact source — read model and fact are entangled",
                         [new DepaEvidenceRef("declaration", projSym.Path, projSym.StartLine,
                             $"{projSym.Name} carries both depa_projection and depa_fact_source judgements")],
                         Math.Min(projection.Confidence, fact.Confidence),
-                        $"dual:{fact.EntityId}"));
+                        $"dual:{fact.ObjectId}"));
                 }
 
                 var closure = Closure(projection.SymbolId);
@@ -825,7 +825,7 @@ internal static class DepaViolationDetectors
                     }
 
                     hits.Add(new Pending(
-                        "V-D3", "data", projection.EntityId, projection.SymbolId, projection.SymKey,
+                        "V-D3", "data", projection.ObjectId, projection.SymbolId, projection.SymKey,
                         $"projection '{projSym.Name}' is written by external symbol '{writerSym.Name}' — outsiders treat the read model as a fact source",
                         [new DepaEvidenceRef("write", PathOfEdge(edge, writerSym), edge.Line > 0 ? edge.Line : writerSym.StartLine,
                             $"{writerSym.Name} writes projection {projSym.Name}")],
@@ -885,7 +885,7 @@ internal static class DepaViolationDetectors
                     }
 
                     hits.Add(new Pending(
-                        "V-S3", "fact_source", fact.EntityId, fact.SymbolId, fact.SymKey,
+                        "V-S3", "fact_source", fact.ObjectId, fact.SymbolId, fact.SymKey,
                         $"grade-5 snapshot '{factSym.Name}' carries input-typed field '{field.Name}' ({fieldType}) — checkpoints hold grade 1-3 state, not per-call payloads",
                         [new DepaEvidenceRef("declaration", field.Path, field.StartLine, $"field {field.Name}: {field.Signature}")],
                         Math.Min(fact.Confidence, MaxHeuristicViolationConfidence),
@@ -929,7 +929,7 @@ internal static class DepaViolationDetectors
                         }
 
                         hits.Add(new Pending(
-                            "V-S4", "fact_source", core.EntityId, core.SymbolId, core.SymKey,
+                            "V-S4", "fact_source", core.ObjectId, core.SymbolId, core.SymKey,
                             $"core '{coreSym.Name}' probes file metadata for run state: '{memberSym.Name}' calls {call.TargetKey} — run state belongs to the grade-3 control plane",
                             [new DepaEvidenceRef("external_call", path, line,
                                 $"heuristic phenomenon: {memberSym.Name} CALLS {call.TargetKey} (count={call.Count})")],
@@ -1000,7 +1000,7 @@ internal static class DepaViolationDetectors
                     }
 
                     hits.Add(new Pending(
-                        ruleId, "fact_source", fact.EntityId, fact.SymbolId, fact.SymKey,
+                        ruleId, "fact_source", fact.ObjectId, fact.SymbolId, fact.SymKey,
                         $"grade-{grade} {gradeWord} '{factSym.Name}' is read on the live path: '{readerSym.Name}' ({readerSym.Path}) sits outside every declared recovery path — {ruleRef}",
                         [new DepaEvidenceRef("read", path, line,
                             $"heuristic phenomenon: {readerSym.Name} reads {factSym.Name} outside recoveryPaths")],
@@ -1030,7 +1030,7 @@ internal static class DepaViolationDetectors
             {
                 return RuleOutcome.Blocked(
                     "BLOCKED: missing capsule declarations (depa-map.json capsules) — the layer-awareness "
-                    + "hit needs a subject entity to attach to; not guessing.");
+                    + "hit needs a subject object to attach to; not guessing.");
             }
 
             int LayerOf(string path)
@@ -1063,11 +1063,11 @@ internal static class DepaViolationDetectors
                     continue; // unlayered paths, same layer, or the compliant high→low direction.
                 }
 
-                var subjectEntityId = implBySymbolId.GetValueOrDefault(edge.FromId)?.EntityId
-                    ?? CapsuleOf(fromSym.Path)?.EntityId ?? "";
-                if (subjectEntityId.Length == 0)
+                var subjectObjectId = implBySymbolId.GetValueOrDefault(edge.FromId)?.ObjectId
+                    ?? CapsuleOf(fromSym.Path)?.ObjectId ?? "";
+                if (subjectObjectId.Length == 0)
                 {
-                    continue; // no depa entity to attach the hit to (outside every capsule).
+                    continue; // no depa object to attach the hit to (outside every capsule).
                 }
 
                 var path = PathOfEdge(edge, fromSym);
@@ -1084,7 +1084,7 @@ internal static class DepaViolationDetectors
                 // honestly weighted, instead of being cleared).
                 var lowFidelity = edge.Confidence < 1.0;
                 hits.Add(new Pending(
-                    "V-P2", "processor", subjectEntityId, fromSym.SymbolId, fromSym.SymKey,
+                    "V-P2", "processor", subjectObjectId, fromSym.SymbolId, fromSym.SymKey,
                     $"lower layer '{map.Layers[fromLayer].Name}' symbol '{fromSym.Name}' reaches up into layer '{map.Layers[toLayer].Name}' symbol '{toSym.Name}' — reusable components must stay unaware of their calling domain (catalog C4)",
                     [new DepaEvidenceRef("layer_edge", path, line,
                         (lowFidelity ? $"heuristic phenomenon (low-confidence call resolution, {edge.Evidence}): " : "")
@@ -1148,7 +1148,7 @@ internal static class DepaViolationDetectors
                             }
 
                             hits.Add(new Pending(
-                                "V-F3", "layering", param.EntityId, param.SymbolId, param.SymKey,
+                                "V-F3", "layering", param.ObjectId, param.SymbolId, param.SymKey,
                                 $"config type '{cfgType.Name}' duplicates runtime field '{cfgField.Name}' ({cfgFieldType}) of '{rtType.Name}' — one dependency needs one home",
                                 [
                                     new DepaEvidenceRef("declaration", cfgField.Path, cfgField.StartLine, $"config field {cfgField.Name}: {cfgField.Signature}"),
@@ -1185,12 +1185,12 @@ internal static class DepaViolationDetectors
 
                 var fromCapsule = CapsuleOf(fromSym.Path);
                 var toCapsule = CapsuleOf(toSym.Path);
-                if (fromCapsule is null || toCapsule is null || fromCapsule.EntityId == toCapsule.EntityId)
+                if (fromCapsule is null || toCapsule is null || fromCapsule.ObjectId == toCapsule.ObjectId)
                 {
                     continue;
                 }
 
-                firstCrossing.TryAdd((fromCapsule.EntityId, toCapsule.EntityId), edge);
+                firstCrossing.TryAdd((fromCapsule.ObjectId, toCapsule.ObjectId), edge);
             }
 
             var adjacency = firstCrossing.Keys
@@ -1216,7 +1216,7 @@ internal static class DepaViolationDetectors
                 return seen;
             }
 
-            var capsuleById = capsules.ToDictionary(c => c.EntityId, StringComparer.Ordinal);
+            var capsuleById = capsules.ToDictionary(c => c.ObjectId, StringComparer.Ordinal);
             var reachable = adjacency.Keys.ToDictionary(id => id, ReachableFrom, StringComparer.Ordinal);
             var reported = new HashSet<string>(StringComparer.Ordinal);
             var hits = new List<Pending>();
@@ -1274,8 +1274,8 @@ internal static class DepaViolationDetectors
                 return RuleOutcome.Blocked($"BLOCKED: {MissingInputOf("V-L4")} — no capsules whose entry fan-out could be counted; not guessing.");
             }
 
-            var entryById = entrySnaps.ToDictionary(e => e.EntityId, StringComparer.Ordinal);
-            var capsuleById = capsules.ToDictionary(c => c.EntityId, StringComparer.Ordinal);
+            var entryById = entrySnaps.ToDictionary(e => e.ObjectId, StringComparer.Ordinal);
+            var capsuleById = capsules.ToDictionary(c => c.ObjectId, StringComparer.Ordinal);
             var hits = new List<Pending>();
             foreach (var group in exposesEdges
                          .Where(e => capsuleById.ContainsKey(e.From))
@@ -1301,7 +1301,7 @@ internal static class DepaViolationDetectors
                     .Select(snap => snap is not null && symbolById.TryGetValue(snap.SymbolId, out var s) ? s.Name : "?")
                     .ToArray();
                 hits.Add(new Pending(
-                    "V-L4", "layering", capsule.EntityId, "", "",
+                    "V-L4", "layering", capsule.ObjectId, "", "",
                     $"capsule '{capsule.Name}' exposes {entryIds.Length} entries (a capsule has one stable entry): {string.Join(", ", entryNames)}",
                     evidence, 1.0,
                     string.Join("|", entryIds)));
@@ -1340,14 +1340,14 @@ internal static class DepaViolationDetectors
 
                     foreach (var (internalSym, internalCapsule) in internalTypes)
                     {
-                        if (internalCapsule!.EntityId == contractCapsule?.EntityId
+                        if (internalCapsule!.ObjectId == contractCapsule?.ObjectId
                             || !ContainsWord(memberSym.Signature, internalSym.Name))
                         {
                             continue;
                         }
 
                         hits.Add(new Pending(
-                            "V-L5", "layering", contract.EntityId, contract.SymbolId, contract.SymKey,
+                            "V-L5", "layering", contract.ObjectId, contract.SymbolId, contract.SymKey,
                             $"contract '{contractSym.Name}' member '{memberSym.Name}' references '{internalSym.Name}' — an internal type of capsule '{internalCapsule.Name}' must not surface in a contract signature",
                             [new DepaEvidenceRef("signature", memberSym.Path, memberSym.StartLine,
                                 $"{memberSym.Name}: {memberSym.Signature} references {internalSym.Name} ({internalSym.Path})")],
@@ -1381,13 +1381,13 @@ internal static class DepaViolationDetectors
                              .OrderBy(s => s.SymbolId, StringComparer.Ordinal))
                 {
                     var otherCapsule = CapsuleOf(other.Path);
-                    if (otherCapsule is null || otherCapsule.EntityId == contractCapsule?.EntityId)
+                    if (otherCapsule is null || otherCapsule.ObjectId == contractCapsule?.ObjectId)
                     {
                         continue;
                     }
 
                     hits.Add(new Pending(
-                        "V-L6", "layering", contract.EntityId, contract.SymbolId, contract.SymKey,
+                        "V-L6", "layering", contract.ObjectId, contract.SymbolId, contract.SymKey,
                         $"contract type '{contractSym.Name}' is defined twice: in the contract package ({contractSym.Path}) and in capsule '{otherCapsule.Name}' ({other.Path}) — one contract, one definition",
                         [
                             new DepaEvidenceRef("declaration", contractSym.Path, contractSym.StartLine, $"contract definition of {contractSym.Name}"),
@@ -1431,12 +1431,12 @@ internal static class DepaViolationDetectors
                 }
 
                 hits.Add(new Pending(
-                    "V-R1", "layering", param.EntityId, param.SymbolId, param.SymKey,
+                    "V-R1", "layering", param.ObjectId, param.SymbolId, param.SymKey,
                     $"runtime-role parameter is declared as '{param.Str("declared_type")}' — an unstructured big bag defeats runtime explicitness (roles become unauditable)",
                     [new DepaEvidenceRef("declaration", path, line,
                         $"heuristic phenomenon (big-bag lexicon): runtime param declared as {param.Str("declared_type")}")],
                     Math.Min(param.Confidence, SignalConfidenceCeiling),
-                    $"param:{param.EntityId}"));
+                    $"param:{param.ObjectId}"));
             }
 
             foreach (var carrier in anchoredCarriers)
@@ -1451,7 +1451,7 @@ internal static class DepaViolationDetectors
                     }
 
                     hits.Add(new Pending(
-                        "V-R1", "layering", carrier.EntityId, carrier.SymbolId, carrier.SymKey,
+                        "V-R1", "layering", carrier.ObjectId, carrier.SymbolId, carrier.SymKey,
                         $"runtime carrier '{carrierSym.Name}' hosts big-bag field '{field.Name}' ({fieldType}) — runtime fields must be structured and role-addressable",
                         [new DepaEvidenceRef("declaration", field.Path, field.StartLine,
                             $"heuristic phenomenon (big-bag lexicon): field {field.Name}: {field.Signature}")],
@@ -1506,7 +1506,7 @@ internal static class DepaViolationDetectors
                 }
 
                 hits.Add(new Pending(
-                    "V-C1", "processor", core.EntityId, core.SymbolId, core.SymKey,
+                    "V-C1", "processor", core.ObjectId, core.SymbolId, core.SymKey,
                     $"core '{coreSym.Name}' does not cover fn(runtime, input, config): observed roles [{string.Join(", ", roles.OrderBy(r => r, StringComparer.Ordinal))}], missing [{string.Join(", ", missing)}]",
                     [new DepaEvidenceRef("declaration", coreSym.Path, coreSym.StartLine,
                         $"role-annotated parameters of {coreSym.Name} cover [{string.Join(", ", roles.OrderBy(r => r, StringComparer.Ordinal))}] only")],
@@ -1571,12 +1571,12 @@ internal static class DepaViolationDetectors
                 var capsule = CapsuleOf(abstraction.Path);
                 if (capsule is null)
                 {
-                    continue; // no subject entity to attach the signal to (outside every capsule).
+                    continue; // no subject object to attach the signal to (outside every capsule).
                 }
 
                 var implementorName = symbolById.TryGetValue(implementors.Single(), out var impl) ? impl.Name : implementors.Single();
                 hits.Add(new Pending(
-                    "V-G1", "overdesign", capsule.EntityId, abstraction.SymbolId, abstraction.SymKey,
+                    "V-G1", "overdesign", capsule.ObjectId, abstraction.SymbolId, abstraction.SymKey,
                     $"abstraction '{abstraction.Name}' has exactly one implementation ('{implementorName}') — single-implementation polymorphism signal: collapse until a second implementation exists",
                     [new DepaEvidenceRef("declaration", abstraction.Path, abstraction.StartLine,
                         $"single-implementation signal: {abstraction.Name} <- {implementorName} only")],
@@ -1599,7 +1599,7 @@ internal static class DepaViolationDetectors
 
             if (capsules.Count == 0)
             {
-                return RuleOutcome.Blocked($"BLOCKED: {MissingInputOf("V-A1")} — the density signal needs a subject entity to attach to; not guessing.");
+                return RuleOutcome.Blocked($"BLOCKED: {MissingInputOf("V-A1")} — the density signal needs a subject object to attach to; not guessing.");
             }
 
             var hits = new List<Pending>();
@@ -1615,10 +1615,10 @@ internal static class DepaViolationDetectors
                 }
 
                 var subject = implBySymbolId.GetValueOrDefault(group.Key);
-                var subjectEntityId = subject?.EntityId ?? CapsuleOf(callerSym.Path)?.EntityId ?? "";
-                if (subjectEntityId.Length == 0)
+                var subjectObjectId = subject?.ObjectId ?? CapsuleOf(callerSym.Path)?.ObjectId ?? "";
+                if (subjectObjectId.Length == 0)
                 {
-                    continue; // no depa entity to attach the signal to.
+                    continue; // no depa object to attach the signal to.
                 }
 
                 var evidence = group
@@ -1641,7 +1641,7 @@ internal static class DepaViolationDetectors
                 }
 
                 hits.Add(new Pending(
-                    "V-A1", "actor", subjectEntityId, callerSym.SymbolId, callerSym.SymKey,
+                    "V-A1", "actor", subjectObjectId, callerSym.SymbolId, callerSym.SymKey,
                     $"'{callerSym.Name}' aggregates {total} threading-primitive calls — bare locks smearing shared state instead of a single owner behind messages (phenomenon-level signal)",
                     evidence,
                     Math.Min(subject?.Confidence ?? 1.0, PhenomenonConfidenceCeiling),
@@ -1662,32 +1662,32 @@ internal static class DepaViolationDetectors
 
         foreach (var pending in outcomes.Values.SelectMany(o => o.Hits))
         {
-            var subjectKey = pending.SubjectSymKey.Length > 0 ? pending.SubjectSymKey : pending.SubjectEntityId;
+            var subjectKey = pending.SubjectSymKey.Length > 0 ? pending.SubjectSymKey : pending.SubjectObjectId;
             var id = $"depa:violation:{pending.RuleId}@{subjectKey}@{StableHash(pending.EvidenceKey)}";
             if (materialized.ContainsKey(id))
             {
                 continue;
             }
 
-            await om.UpsertEntityAsync(id, "depa_violation", $"{pending.RuleId} on {subjectKey}", ct);
-            await om.SetPropertyAsync(id, "rule_id", pending.RuleId, cancellationToken: ct);
-            await om.SetPropertyAsync(id, "verdict", "GAP", cancellationToken: ct);
-            await om.SetPropertyAsync(id, "dimension", pending.Dimension, cancellationToken: ct);
-            await om.SetPropertyAsync(id, "message", pending.Message, cancellationToken: ct);
-            await om.SetPropertyAsync(id, "confidence", pending.Confidence, cancellationToken: ct);
-            await om.SetPropertyAsync(id, "assigned_by", pending.Confidence >= 1.0 ? "config" : "heuristic", cancellationToken: ct);
-            await om.SetPropertyAsync(id, "symbol_id", pending.SubjectSymbolId, cancellationToken: ct);
-            await om.SetPropertyAsync(id, "sym_key", pending.SubjectSymKey, cancellationToken: ct);
-            await om.SetPropertyAsync(id, "path", pending.Evidence[0].Path, cancellationToken: ct);
-            await om.SetPropertyAsync(id, "line", pending.Evidence[0].Line, cancellationToken: ct);
-            await om.SetPropertyAsync(id, "evidence_json", new Dictionary<string, object?>
+            await om.UpsertObjectAsync(id, "depa_violation", $"{pending.RuleId} on {subjectKey}", ct);
+            await om.SetFieldValueAsync(id, "rule_id", pending.RuleId, cancellationToken: ct);
+            await om.SetFieldValueAsync(id, "verdict", "GAP", cancellationToken: ct);
+            await om.SetFieldValueAsync(id, "dimension", pending.Dimension, cancellationToken: ct);
+            await om.SetFieldValueAsync(id, "message", pending.Message, cancellationToken: ct);
+            await om.SetFieldValueAsync(id, "confidence", pending.Confidence, cancellationToken: ct);
+            await om.SetFieldValueAsync(id, "assigned_by", pending.Confidence >= 1.0 ? "config" : "heuristic", cancellationToken: ct);
+            await om.SetFieldValueAsync(id, "symbol_id", pending.SubjectSymbolId, cancellationToken: ct);
+            await om.SetFieldValueAsync(id, "sym_key", pending.SubjectSymKey, cancellationToken: ct);
+            await om.SetFieldValueAsync(id, "path", pending.Evidence[0].Path, cancellationToken: ct);
+            await om.SetFieldValueAsync(id, "line", pending.Evidence[0].Line, cancellationToken: ct);
+            await om.SetFieldValueAsync(id, "evidence_json", new Dictionary<string, object?>
             {
                 ["rule_id"] = pending.RuleId,
                 ["verdict"] = "GAP",
                 ["dimension"] = pending.Dimension,
                 ["subject"] = new Dictionary<string, object?>
                 {
-                    ["entity_id"] = pending.SubjectEntityId,
+                    ["object_id"] = pending.SubjectObjectId,
                     ["symbol_id"] = pending.SubjectSymbolId,
                     ["sym_key"] = pending.SubjectSymKey,
                 },
@@ -1704,18 +1704,18 @@ internal static class DepaViolationDetectors
                 ["detected_at"] = detectedAt,
                 ["scan_commit"] = scanCommit,
             }, cancellationToken: ct);
-            await om.LinkEntitiesAsync(id, "violates", pending.SubjectEntityId, cancellationToken: ct);
+            await om.CreateRelationLinkAsync(id, "violates", pending.SubjectObjectId, cancellationToken: ct);
 
             if (pending.Signal is { } signal)
             {
                 if (desiredSignals[signal.Rel].Add((signal.From, signal.To)))
                 {
-                    await om.LinkEntitiesAsync(signal.From, signal.Rel, signal.To, signal.Props, cancellationToken: ct);
+                    await om.CreateRelationLinkAsync(signal.From, signal.Rel, signal.To, signal.Props, cancellationToken: ct);
                 }
             }
 
             materialized[id] = new DepaViolationSummary(
-                id, pending.RuleId, pending.Dimension, pending.SubjectEntityId, pending.Message, pending.Confidence, pending.Evidence);
+                id, pending.RuleId, pending.Dimension, pending.SubjectObjectId, pending.Message, pending.Confidence, pending.Evidence);
         }
 
         // ---- expire: violations (and their edges) of rules that ran but no longer hit ----
@@ -1727,9 +1727,9 @@ internal static class DepaViolationDetectors
                 continue;
             }
 
-            // Cascade delete through the OM API: entity + all property rows + all touching
-            // edges (including 'violates') in one transaction — no orphan om_property rows.
-            await om.DeleteEntityAsync(staleId, ct);
+            // Cascade delete through the OM API: object + all field-value rows + all touching
+            // relation links (including 'violates') in one transaction — no orphan om_field_value rows.
+            await om.DeleteObjectAsync(staleId, ct);
         }
 
         foreach (var (rel, ruleId) in new[] { ("effect_leaks_through", "V-E1"), ("backwrites", "V-S1") })
@@ -1743,7 +1743,7 @@ internal static class DepaViolationDetectors
             {
                 if (!desiredSignals[rel].Contains((from, to)))
                 {
-                    await om.UnlinkEntitiesAsync(from, rel, to, cancellationToken: ct);
+                    await om.RetractRelationLinkAsync(from, rel, to, cancellationToken: ct);
                 }
             }
         }
@@ -1951,15 +1951,15 @@ internal static class DepaViolationDetectors
         }
     }
 
-    private static async Task<IReadOnlyList<Snap>> LoadTypeAsync(CozoOm om, string typeName, CancellationToken ct)
+    private static async Task<IReadOnlyList<Snap>> LoadClassAsync(CozoOm om, string className, CancellationToken ct)
     {
         var result = await om.Runtime.Store.RunAsync(
             """
-            ?[id, attr_name, value] :=
-              *om_entity{ id, type_name: $type },
-              *om_property{ entity_id: id, attr_name, value @ "NOW" }
+            ?[id, field_name, value] :=
+              *om_object{ id, class_name: $class },
+              *om_field_value{ object_id: id, field_name, value @ "NOW" }
             """,
-            new Dictionary<string, object?> { ["type"] = typeName },
+            new Dictionary<string, object?> { ["class"] = className },
             cancellationToken: ct);
         return result.Rows
             .Where(row => row[0].ValueKind == JsonValueKind.String && row[1].ValueKind == JsonValueKind.String)
@@ -1967,14 +1967,14 @@ internal static class DepaViolationDetectors
             .Select(group => new Snap(
                 group.Key,
                 group.ToDictionary(row => row[1].GetString()!, row => row[2], StringComparer.Ordinal)))
-            .OrderBy(s => s.EntityId, StringComparer.Ordinal)
+            .OrderBy(s => s.ObjectId, StringComparer.Ordinal)
             .ToArray();
     }
 
     private static async Task<IReadOnlyList<string>> ListViolationIdsAsync(CozoOm om, CancellationToken ct)
     {
         var result = await om.Runtime.Store.RunAsync(
-            """?[id] := *om_entity{ id, type_name: "depa_violation" }""",
+            """?[id] := *om_object{ id, class_name: "depa_violation" }""",
             cancellationToken: ct);
         return result.Rows
             .Where(row => row[0].ValueKind == JsonValueKind.String)
@@ -1986,8 +1986,8 @@ internal static class DepaViolationDetectors
     {
         var result = await om.Runtime.Store.RunAsync(
             """
-            ?[from_id, to_id] :=
-              *om_edge{ from_id, rel_name: $rel, to_id, props: _props @ "NOW" }
+            ?[from_object_id, to_object_id] :=
+              *om_relation_link{ from_object_id, relation_name: $rel, to_object_id, payload: _payload @ "NOW" }
             """,
             new Dictionary<string, object?> { ["rel"] = relName },
             cancellationToken: ct);

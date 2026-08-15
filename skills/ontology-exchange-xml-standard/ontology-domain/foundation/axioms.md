@@ -4,7 +4,7 @@ These axioms define the latest ontology authoring model. Specifications may refi
 
 ## O1. FS-native XML owns ontology meaning
 
-Canonical FS-native XML resources own object type, relation, rule, lifecycle, DomainSemantics, operation, evidence, binding, mapping, and evolution declarations. Generated Bun/.NET code, Cozo `om_*` rows, HTTP catalogs, workbench state, diagrams, Markdown catalogs, request logs, and runtime database rows are projections. For Bun OM, native runtime capability is defined by `/Users/kongweixian/infra-dev/ontology/depa-ontology.ts/packages/depa-ontology`; XML is the readable authoring and exchange representation over that surface.
+Canonical FS-native XML resources own class, relation-def, rule, lifecycle, DomainSemantics, operation, evidence, binding, mapping, and evolution declarations. Generated Bun/.NET code, Cozo `om_*` rows, HTTP catalogs, workbench state, diagrams, Markdown catalogs, request logs, and runtime database rows are projections. For Bun OM, native runtime capability is defined by `/Users/kongweixian/infra-dev/ontology/depa-ontology.ts/packages/depa-ontology`; XML is the readable authoring and exchange representation over that surface.
 
 ## O2. Latest-only resource tree
 
@@ -14,8 +14,8 @@ Canonical FS-native XML resources own object type, relation, rule, lifecycle, Do
 
 The dependency layers are:
 
-1. TypeSystem: `ScalarType`, `EnumType`, `Mixin`, `ObjectType`, `UnionType`, `CollectionType`;
-2. DomainModel: manifest `BusinessObject`, its owned Action/Mutation/Interceptor/ComputedFunction/ConstraintHandler/Lifecycle resources, and `Relation`, `Rule`, `StateMachine`;
+1. TypeSystem: `ScalarType`, `EnumType`, `Mixin`, `Class`, `UnionType`, `CollectionType`;
+2. DomainModel: manifest `BusinessObject`, its owned Operation/Mutation/Interceptor/ComputedFunction/ConstraintHandler/Lifecycle resources, and `RelationDef`, `Rule`, `StateMachine`;
 3. DomainSemantics: `Association`, `DomainPolicy`, `ConstraintHandler`, `BusinessProcess`, `Capability`, `EventContract`;
 4. operation definitions: `OperationCatalog` and exact invocation presets;
 5. projection and governance: `EvidenceCatalog`, `RuntimeBindingCatalog`, `ImplementationMappingCatalog`, `SchemaEvolutionModule`.
@@ -24,15 +24,15 @@ Higher layers may reference lower layers. A lower layer must not reference a Dom
 
 ## O4. One fact has one owner
 
-Every ontology resource root has an FS-native resource identity and an independent semantic declaration identity. Named declarations such as ObjectType, Mixin, Relation, Rule, BusinessObject, DomainSemantics resource, Operation, Evidence, binding, mapping, alias, and migration use stable semantic IDs. Language members such as Property and ComputedProperty are different: they are embedded in their ObjectType/Mixin/BusinessObject/Relation owner and have local names, not independent global IDs or resources. Cross-resource use derives an `OwnerFqn#localName` path without creating a second owner.
+Every ontology resource root has an FS-native resource identity and an independent semantic declaration identity. Named declarations such as Class, Mixin, RelationDef, Rule, BusinessObject, DomainSemantics resource, Operation, Evidence, binding, mapping, alias, and migration use stable semantic IDs. Language members such as Field and ComputedProp are different: they are embedded in their Class/Mixin/BusinessObject/RelationDef owner and have local names, not independent global IDs or resources. Cross-resource use derives an `OwnerFqn#localName` path without creating a second owner.
 
-## O5. ObjectType authority is profile-neutral
+## O5. Class authority is profile-neutral
 
-The type language is profile-neutral and is not specialized for business objects. ObjectType, Mixin, and BusinessObject manifests directly embed Property members; ObjectType and BusinessObject own single inheritance and Mixin application. XML preserves Mixin author order, but incompatible Mixin Property collisions are invalid because current `cozo-om` storage does not persist an ordinal. Future profiles such as `PageObject` must be able to reuse the same type-language rules without causing the TypeSystem to depend on BO concepts.
+The type language is profile-neutral and is not specialized for business objects. Class, Mixin, and BusinessObject manifests directly embed Field members; Class and BusinessObject own single inheritance and Mixin application. XML preserves Mixin author order, but incompatible Mixin Field collisions are invalid because current `cozo-om` storage does not persist an ordinal. Future profiles such as `PageObject` must be able to reuse the same type-language rules without causing the TypeSystem to depend on BO concepts.
 
 ## O6. Profiles add meaning by reference
 
-BusinessObject manifests directly own their object-type properties and BO-local behavior membership. DomainSemantics resources may assign purpose, roles, participants, policy grouping, capability grouping, and event contracts by reference. They must not inline relation endpoints or cardinality, policy predicates, lifecycle state machines, or executable handler bodies.
+BusinessObject manifests directly own their class fields and BO-local behavior membership. DomainSemantics resources may assign purpose, roles, participants, policy grouping, capability grouping, and event contracts by reference. They must not inline relation-def endpoints or cardinality, policy predicates, lifecycle state machines, or executable handler bodies.
 
 ## O7. XML is declarative
 
@@ -40,7 +40,7 @@ XML may contain typed predicates, declarative constraints, selectors, state tran
 
 ## O8. Text explains; structure decides
 
-`Description`, `Purpose`, `Statement`, and `InternalLogic` explain intent for humans. Machine behavior comes from explicit attributes, typed children, references, and exact request JSON compatibility. A sentence never substitutes for a missing type reference, relation endpoint, predicate, transition, operation dimension, binding, or evidence reference.
+`Description`, `Purpose`, `Statement`, and `InternalLogic` explain intent for humans. Machine behavior comes from explicit fields, typed children, references, and exact request JSON compatibility. A sentence never substitutes for a missing type reference, relation-def endpoint, predicate, transition, operation dimension, binding, or evidence reference.
 
 ## O9. Observation and interpretation are distinct
 
@@ -57,7 +57,7 @@ Use these grades in lower-case XML values:
 1. `authoritative`: persisted invariant, schema constraint, or designated fact source.
 2. `enforced`: backend code rejects or prevents violations.
 3. `contractual`: API, DTO, schema, or protocol declaration.
-4. `presentational`: frontend visibility, validation, or interaction behavior.
+4. `presentational`: frontend visibility, validation, or interoperation behavior.
 5. `inferred`: naming, graph topology, heuristic, or model interpretation.
 
 Lower-grade evidence may support discovery but cannot by itself establish a higher-grade rule.

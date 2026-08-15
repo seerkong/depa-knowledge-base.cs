@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Mixin fqn="ontology.maker-space.mixins.auditable" id="MakerSpace.Mixin.Auditable">
-  <Description>Reusable audit attributes projected through cozo-om mixin membership.</Description>
-  <Properties>
-    <Property name="createdAt" typeRef="builtin:DateTime" required="true" />
-    <Property name="updatedAt" typeRef="builtin:DateTime" required="false" />
-  </Properties>
+  <Description>Reusable audit fields projected through cozo-om mixin membership.</Description>
+  <Fields>
+    <Field name="createdAt" typeRef="builtin:DateTime" required="true" />
+    <Field name="updatedAt" typeRef="builtin:DateTime" required="false" />
+  </Fields>
 </Mixin>

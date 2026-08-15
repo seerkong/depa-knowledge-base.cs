@@ -1,4 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<ObjectType fqn="ontology.invalid.association-inline-endpoint.object-types.reservation" id="Invalid.Reservation" kind="entity">
-  <Description>Minimal reservation type.</Description>
-</ObjectType>

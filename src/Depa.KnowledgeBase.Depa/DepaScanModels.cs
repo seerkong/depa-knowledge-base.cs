@@ -29,20 +29,20 @@ public sealed record DepaScanOptions(
 /// "GAP" (hit with evidence) or "BLOCKED" (cannot judge: missing annotations or
 /// insufficient observation) — BLOCKED is never folded into PASS.
 /// </summary>
-public sealed record DepaRuleFinding(string RuleId, string Verdict, string EntityId, string Message);
+public sealed record DepaRuleFinding(string RuleId, string Verdict, string ObjectId, string Message);
 
 /// <summary>
 /// Result of <c>DepaScanAsync</c>. Counts cover what this scan materialized/relinked
 /// (idempotent upserts — a second scan over the same data yields the same counts).
 /// </summary>
-/// <param name="EntityCounts">Materialized depa entities per type (depa_capsule, depa_contract, ...).</param>
-/// <param name="RelationCounts">Distinct structural links asserted per relation name (design §2.1).</param>
+/// <param name="ObjectCounts">Materialized depa objects per class (depa_capsule, depa_contract, ...).</param>
+/// <param name="RelationLinkCounts">Distinct structural links asserted per relation name (design §2.1).</param>
 /// <param name="RuleFindings">Existential-check findings (design §2.3) or the zero-annotation BLOCKED rows.</param>
-/// <param name="AnnotatedFromConfig">Entities whose judgement came from depa-map.json.</param>
-/// <param name="AnnotatedFromHeuristic">Entities produced by the heuristic fallback (confidence &lt;= 0.7).</param>
+/// <param name="AnnotatedFromConfig">Objects whose judgement came from depa-map.json.</param>
+/// <param name="AnnotatedFromHeuristic">Objects produced by the heuristic fallback (confidence &lt;= 0.7).</param>
 public sealed record DepaScanResult(
-    IReadOnlyDictionary<string, int> EntityCounts,
-    IReadOnlyDictionary<string, int> RelationCounts,
+    IReadOnlyDictionary<string, int> ObjectCounts,
+    IReadOnlyDictionary<string, int> RelationLinkCounts,
     IReadOnlyList<DepaRuleFinding> RuleFindings,
     int AnnotatedFromConfig,
     int AnnotatedFromHeuristic)
@@ -74,7 +74,7 @@ public sealed record DepaViolationSummary(
     string ViolationId,
     string RuleId,
     string Dimension,
-    string SubjectEntityId,
+    string SubjectObjectId,
     string Message,
     double Confidence,
     IReadOnlyList<DepaEvidenceRef> Evidence);

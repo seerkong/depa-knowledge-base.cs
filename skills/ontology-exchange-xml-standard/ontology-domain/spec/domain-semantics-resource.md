@@ -1,6 +1,6 @@
 # DomainSemantics resources
 
-DomainSemantics resources assign business and domain meaning to declared TypeSystem and DomainModel facts by reference. BusinessObject is a DomainModel manifest that owns a domain object type and its local behavior subtree; `Association`, `DomainPolicy`, `ConstraintHandler`, `BusinessProcess`, `Capability`, and `EventContract` are DomainSemantics resources. An `ownerRef` is the only allowed peer owner resource identity edge; it does not transfer ownership of the referenced resource's facts.
+DomainSemantics resources assign business and domain meaning to declared TypeSystem and DomainModel facts by reference. BusinessObject is a DomainModel manifest that owns a domain class and its local behavior subtree; `Association`, `DomainPolicy`, `ConstraintHandler`, `BusinessProcess`, `Capability`, and `EventContract` are DomainSemantics resources. An `ownerRef` is the only allowed peer owner resource identity edge; it does not transfer ownership of the referenced resource's facts.
 
 ## Semantic owner references
 
@@ -15,13 +15,13 @@ DomainSemantics resources assign business and domain meaning to declared TypeSys
 | `constraint` | required | `ConstraintHandler` |
 | `business-process` | required | `BusinessProcess` |
 | `capability` | required | `Capability` |
-| `raw` | optional | `ObjectType` only when a structured raw context is declared |
+| `raw` | optional | `Class` only when a structured raw context is declared |
 
-`business-object`, `association`, `constraint`, `business-process`, and `capability` always resolve to matching owner resource identities; an `ObjectType`, `Relation`, or `Rule` is not a valid fallback. `lifecycle` resolves to the `StateMachine` identity. A BusinessObject-local `Lifecycle` resource is an owned membership resource, not a replacement global lifecycle owner target.
+`business-object`, `association`, `constraint`, `business-process`, and `capability` always resolve to matching owner resource identities; an `Class`, `RelationDef`, or `Rule` is not a valid fallback. `lifecycle` resolves to the `StateMachine` identity. A BusinessObject-local `Lifecycle` resource is an owned membership resource, not a replacement global lifecycle owner target.
 
 ## BusinessObject
 
-BusinessObject is a manifest resource with an owned FS-native subtree, not a grouped `BusinessObjectCatalog` file. It directly declares identity/properties/computed properties and may own Action, Mutation, Interceptor, ComputedFunction, ConstraintHandler, and Lifecycle resources. See [business-object-resource.md](business-object-resource.md) for its tree, grammar, ownership closure, and `cozo-om` behavior projection boundary.
+BusinessObject is a manifest resource with an owned FS-native subtree, not a grouped `BusinessObjectCatalog` file. It directly declares identity/fields/computed fields and may own Operation, Mutation, Interceptor, ComputedFunction, ConstraintHandler, and Lifecycle resources. See [business-object-resource.md](business-object-resource.md) for its tree, grammar, ownership closure, and `cozo-om` behavior projection boundary.
 
 ## AssociationCatalog
 
@@ -29,7 +29,7 @@ BusinessObject is a manifest resource with an owned FS-native subtree, not a gro
 <AssociationCatalog fqn="ontology.maker-space.associations" id="MakerSpace.Associations">
   <Description>Workshop associations.</Description>
   <Associations>
-    <Association id="MakerSpace.Association.ToolReservation" relationRef="MakerSpace.Relation.ReservesTool">
+    <Association id="MakerSpace.Association.ToolReservation" relationDefRef="MakerSpace.RelationDef.ReservesTool">
       <Description>Reservation to reserved tool.</Description>
     </Association>
   </Associations>
@@ -37,11 +37,11 @@ BusinessObject is a manifest resource with an owned FS-native subtree, not a gro
 ```
 
 - `AssociationCatalog` requires resource `fqn` and semantic `id`; children are optional `Description`, then exactly one `Associations`.
-- `Association` requires FQN `id` and `relationRef`.
-- `relationRef` resolves to a declared `Relation`.
+- `Association` requires FQN `id` and `relationDefRef`.
+- `relationDefRef` resolves to a declared `RelationDef`.
 - Optional `status` is `accepted|hypothesis`.
 - Direct children are optional `Description`, optional `Evidences`, in that order.
-- `Association` must not contain `from`, `to`, `fromTypeRef`, `toTypeRef`, `directed`, `min`, `max`, or relation `Property` declarations.
+- `Association` must not contain `from`, `to`, `fromClassRef`, `toClassRef`, `directed`, `min`, `max`, or relation-def `Field` declarations.
 
 ## DomainPolicyCatalog
 
@@ -111,7 +111,7 @@ BusinessObject is a manifest resource with an owned FS-native subtree, not a gro
 - `BusinessProcessCatalog` requires resource `fqn` and semantic `id`; children are optional `Description`, then exactly one `BusinessProcesses`.
 - `BusinessProcess` requires FQN `id`; optional `status` is `accepted|hypothesis`.
 - Direct children are optional `Description`, exactly one `Participants`, optional `Policies`, optional `Evidences`, in that order.
-- `Participants` contains `Type ref="..."` references to ObjectType or BusinessObject declarations, plus `Relation` or `StateMachine` references; each may have optional `role`.
+- `Participants` contains `Type ref="..."` references to Class or BusinessObject declarations, plus `RelationDef` or `StateMachine` references; each may have optional `role`.
 - `Policies` contains `Rule ref="RuleFqn"` references. A `BusinessProcess` must not reference `DomainPolicy` as an alternate source of rule truth.
 
 ## CapabilityCatalog
@@ -133,7 +133,7 @@ BusinessObject is a manifest resource with an owned FS-native subtree, not a gro
 - `CapabilityCatalog` requires resource `fqn` and semantic `id`; children are optional `Description`, then exactly one `Capabilities`.
 - `Capability` requires FQN `id`; optional `status` is `accepted|hypothesis`.
 - Direct children are optional `Description`, optional `Inputs`, optional `Outputs`, optional `Evidences`, in that order.
-- `Inputs` and `Outputs` contain `Type ref="ObjectTypeOrBusinessObjectFqn"` references.
+- `Inputs` and `Outputs` contain `Type ref="ClassOrBusinessObjectFqn"` references.
 - Capability is a DomainSemantics grouping resource. It must not own type declarations or implementation bodies.
 
 ## EventContractCatalog
@@ -154,10 +154,10 @@ BusinessObject is a manifest resource with an owned FS-native subtree, not a gro
 
 - `EventContractCatalog` requires resource `fqn` and semantic `id`; children are optional `Description`, then exactly one `EventContracts`.
 - `EventContract` requires FQN `id` and `eventTypeRef`.
-- `eventTypeRef` resolves to a declared event payload `ObjectType`.
+- `eventTypeRef` resolves to a declared event payload `Class`.
 - Direct children are optional `Description`, optional `Subjects`, optional `Evidences`, in that order.
-- `Subjects` contains `Type ref="..."` references to ObjectType or BusinessObject declarations, or `Relation` references.
+- `Subjects` contains `Type ref="..."` references to Class or BusinessObject declarations, or `RelationDef` references.
 
 ## Shared rejection rules
 
-Validators must reject non-BO DomainSemantics declarations that include structural facts such as relation endpoints/cardinality, rule predicates, lifecycle states/transitions, or executable routing bodies; BusinessObject property entries using `Property@ref`; references whose target kind does not match the container; owner refs inconsistent with the shared semantic owner target kind; executable code in explanatory text; and a DomainSemantics resource that claims execution support without a matching `Operation` and, when executable projection is required, a matching `RuntimeBinding`.
+Validators must reject non-BO DomainSemantics declarations that include structural facts such as relation-def endpoints/cardinality, rule predicates, lifecycle states/transitions, or executable routing bodies; BusinessObject field entries using `Field@ref`; references whose target kind does not match the container; owner refs inconsistent with the shared semantic owner target kind; executable code in explanatory text; and a DomainSemantics resource that claims execution support without a matching `Operation` and, when executable projection is required, a matching `RuntimeBinding`.

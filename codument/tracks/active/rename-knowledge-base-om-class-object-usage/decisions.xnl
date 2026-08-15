@@ -1,0 +1,15 @@
+decisions "rename-knowledge-base-om-class-object-usage" {
+  decision "no-compatibility-consumer-migration" {
+    status = "accepted"
+    context = "ontology-core has already adopted a breaking Class/Object/Field/Operation contract"
+    decision = "depa-knowledge-base.cs shall migrate directly to the new ontology contract and shall not add old-name compatibility wrappers"
+    consequence = "tests, docs, and skills must be updated rather than dual-named"
+  }
+
+  decision "preserve-non-om-domain-language" {
+    status = "accepted"
+    context = "knowledge-base contains code graph, programming-language, JSON, and C# terminology that can legitimately use Type, Edge, or Property"
+    decision = "legacy-looking terms are renamed only when they refer to ontology OM concepts"
+    consequence = "verification reports must classify remaining findings instead of blindly rewriting all text"
+  }
+}

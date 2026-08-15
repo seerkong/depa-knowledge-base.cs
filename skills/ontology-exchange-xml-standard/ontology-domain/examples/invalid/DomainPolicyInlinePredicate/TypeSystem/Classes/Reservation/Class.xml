@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Class fqn="ontology.invalid.domain-policy-inline-predicate.classes.resource" id="Invalid.Resource" kind="entity">
+  <Description>Minimal reusable parent class.</Description>
+</Class>

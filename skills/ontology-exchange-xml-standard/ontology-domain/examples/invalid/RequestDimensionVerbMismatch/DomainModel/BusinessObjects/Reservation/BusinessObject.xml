@@ -3,6 +3,6 @@
   <Description>Support BusinessObject for the request mismatch negative case.</Description>
   <Purpose>Minimal reservation business object.</Purpose>
   <Identity>
-    <Property name="reservationNumber" typeRef="builtin:String" required="true" />
+    <Field name="reservationNumber" typeRef="builtin:String" required="true" />
   </Identity>
 </BusinessObject>

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Track id="rename-knowledge-base-om-class-object-usage" version="1" xmlns:cdt="urn:codument:v1">
+  <Metadata>
+    <Status>completed</Status>
+    <Goal>Migrate depa-knowledge-base.cs to the renamed ontology Class/Object/Field/ComputedProp/Relation/Operation contract.</Goal>
+    <Description>Dependent-project mission slice for ontology API calls, direct Cozo OM queries, tests, docs, and project skills.</Description>
+    <QuestionMode>decision-tree</QuestionMode>
+    <QuestionSeverity>auto</QuestionSeverity>
+    <CommitMode>manual</CommitMode>
+    <CreatedAt>2026-08-14T22:41:34Z</CreatedAt>
+    <UpdatedAt>2026-08-14T22:56:06Z</UpdatedAt>
+  </Metadata>
+
+  <Ports scope="track">
+    <MaterialBundle role="input" name="behavior-deltas" domain="behavior" path="vfs://./behavior_deltas/"/>
+    <MaterialBundle role="input" name="modeling-deltas" domain="modeling" path="vfs://./modeling_deltas/"/>
+    <MaterialBundle role="output" name="behavior" domain="codument" path="vfs://@/codument/behaviors/"/>
+    <MaterialBundle role="output" name="modeling" domain="codument" path="vfs://@/codument/modeling/"/>
+  </Ports>
+
+  <TaskSpace id="space_rename-knowledge-base-om-class-object-usage" name="rename-knowledge-base-om-class-object-usage" version="1">
+    <Description>Apply the host ontology-core breaking rename to knowledge-base code, tests, and skill assets.</Description>
+    <SubNodes>
+      <TaskGroup id="P1" name="Contracts and tests" status="DONE" order="0">
+        <Description>Update knowledge-base integration tests and direct Cozo contract fixtures to the renamed ontology storage/API vocabulary.</Description>
+        <SubNodes>
+          <Task id="T1.1" name="Update public-surface, schema-evolution, permission, existential, and scripting fixtures" status="DONE" order="0" priority="P0"/>
+          <Task id="T1.2" name="Update direct OM table and column assertions for Class/Object/FieldValue/RelationLink/Operation" status="DONE" order="1" priority="P0"/>
+        </SubNodes>
+      </TaskGroup>
+
+      <TaskGroup id="P2" name="Knowledge-base implementation" status="DONE" order="1">
+        <Description>Update production source and any direct ontology interactions to the new host package contract.</Description>
+        <SubNodes>
+          <Task id="T2.1" name="Migrate production ontology API calls, models, and direct queries" status="DONE" order="0" priority="P0"/>
+          <Task id="T2.2" name="Preserve unrelated domain graph vocabulary where Edge/Type/Property are not OM concepts" status="DONE" order="1" priority="P1"/>
+        </SubNodes>
+      </TaskGroup>
+
+      <TaskGroup id="P3" name="Skills, prompts, and docs" status="DONE" order="2">
+        <Description>Update project skills and current Codument docs so they teach Class/Object/Field/ComputedProp/Relation/Operation consistently.</Description>
+        <SubNodes>
+          <Task id="T3.1" name="Migrate skills directory docs, scripts, validators, tests, and examples" status="DONE" order="0" priority="P0"/>
+          <Task id="T3.2" name="Update current behavior/modeling records that mention the old OM vocabulary" status="DONE" order="1" priority="P1"/>
+        </SubNodes>
+      </TaskGroup>
+
+      <TaskGroup id="P4" name="Verification" status="DONE" order="3">
+        <Description>Build, test, scan, and record evidence that knowledge-base follows the renamed ontology contract without compatibility aliases.</Description>
+        <SubNodes>
+          <Task id="T4.1" name="Run knowledge-base build and integration tests" status="DONE" order="0" priority="P0"/>
+          <Task id="T4.2" name="Scan source, tests, docs, and skills for legacy OM vocabulary" status="DONE" order="1" priority="P0"/>
+          <Task id="T4.3" name="Record implementation report" status="DONE" order="2" priority="P1"/>
+        </SubNodes>
+        <Hooks>
+          <Hook on="phase:after"><cdt:GapLoop max-rounds="3" on-exhausted="block" verify-round="false"/></Hook>
+        </Hooks>
+      </TaskGroup>
+    </SubNodes>
+  </TaskSpace>
+
+  <Schedule/>
+
+  <Hooks/>
+</Track>

@@ -47,7 +47,7 @@ public sealed record DepaConformanceReport(
 
 /// <summary>One graded fact-source node of the grade map (fact-source-truth ladder, grade 1-7).</summary>
 public sealed record DepaFactGradeNode(
-    string EntityId,
+    string ObjectId,
     string Label,
     int Grade,
     string GradeId,
@@ -55,8 +55,8 @@ public sealed record DepaFactGradeNode(
     string Path,
     int Line);
 
-/// <summary>One adjacency edge of the grade map (fact_written_by | projection_derived_from).</summary>
-public sealed record DepaFactGradeEdge(string Relation, string FromId, string ToId);
+/// <summary>One adjacency relation link of the grade map (fact_written_by | projection_derived_from).</summary>
+public sealed record DepaFactGradeEdge(string Relation, string FromObjectId, string ToObjectId);
 
 /// <summary>
 /// The fact-source grade map (design §5.3): every depa_fact_source node with its grading

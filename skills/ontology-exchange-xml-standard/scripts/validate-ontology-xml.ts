@@ -13,18 +13,18 @@ type DeclarationKind =
   | "scalar-type"
   | "enum-type"
   | "mixin"
-  | "object-type"
+  | "class"
   | "union-type"
   | "collection-type"
   | "property"
-  | "computed-property"
-  | "relation"
+  | "computed-prop"
+  | "relation-def"
   | "rule"
   | "state-machine"
   | "derivation"
   | "transition"
   | "business-object"
-  | "action"
+  | "operation"
   | "mutation"
   | "interceptor"
   | "computed-function"
@@ -113,11 +113,11 @@ type ElementSpec = {
   text?: "required" | "optional" | "forbidden";
 };
 
-type PropertyInfo = {
+type FieldInfo = {
   id: string;
   name: string;
   owner: string;
-  ownerKind: "object-type" | "business-object" | "mixin" | "relation";
+  ownerKind: "class" | "business-object" | "mixin" | "relation-def";
   typeRef: string;
   required: boolean;
   computed: boolean;
@@ -128,8 +128,8 @@ type PropertyInfo = {
 type TypeModel = {
   parentByType: Map<string, string>;
   mixinsByOwner: Map<string, string[]>;
-  propertiesByOwner: Map<string, PropertyInfo[]>;
-  propertyById: Map<string, PropertyInfo>;
+  fieldsByOwner: Map<string, FieldInfo[]>;
+  fieldById: Map<string, FieldInfo>;
 };
 
 type OperationInfo = {
@@ -144,10 +144,10 @@ const resourceLayers = new Map<string, number>([
   ["ScalarType", 0],
   ["EnumType", 0],
   ["Mixin", 0],
-  ["ObjectType", 0],
+  ["Class", 0],
   ["UnionType", 0],
   ["CollectionType", 0],
-  ["Relation", 1],
+  ["RelationDef", 1],
   ["Rule", 2],
   ["StateMachine", 3],
   ["BusinessObject", 4],
@@ -157,7 +157,7 @@ const resourceLayers = new Map<string, number>([
   ["BusinessProcessCatalog", 4],
   ["CapabilityCatalog", 4],
   ["EventContractCatalog", 4],
-  ["Action", 5],
+  ["Operation", 5],
   ["Mutation", 5],
   ["Interceptor", 5],
   ["ComputedFunction", 5],
@@ -195,25 +195,25 @@ const statusValues = new Set(["accepted", "hypothesis"]);
 const typeKinds = new Set(["entity", "value", "document", "view", "raw"]);
 const collectionKinds = new Set(["list", "set", "map"]);
 const ruleKinds = new Set(["conditional", "cross-entity", "computed-dependency", "existential", "uniqueness", "cardinality", "custom"]);
-const profilePropertyRoles = new Set(["member", "state", "display-name", "external-id", "classification", "measurement", "raw"]);
+const profileFieldRoles = new Set(["member", "state", "display-name", "external-id", "classification", "measurement", "raw"]);
 const ownerKinds = new Set(["domain-context", "business-object", "association", "lifecycle", "constraint", "business-process", "capability", "raw"]);
-const behaviorKinds = new Set(["action", "mutation", "query", "transition", "validate", "computed", "composed", "raw"]);
+const behaviorKinds = new Set(["operation", "mutation", "query", "transition", "validate", "computed", "composed", "raw"]);
 const subjectKinds = new Set(["none", "single", "selection"]);
 const invocationModes = new Set(["single", "batch"]);
 const effects = new Set(["read-only", "write", "mixed"]);
 const atomicityValues = new Set(["atomic", "best-effort"]);
 const observationValues = new Set(["before", "after", "diff", "trace", "plan"]);
 const portabilityValues = new Set(["portable", "extension-point", "target-specific"]);
-const runtimeTargetKinds = new Set(["operation", "computed-property", "rule", "transition", "projection"]);
+const runtimeTargetKinds = new Set(["operation", "computed-prop", "rule", "transition", "projection"]);
 const mappingTargetKinds = new Set([
-  "object-type",
+  "class",
   "property",
-  "relation",
+  "relation-def",
   "rule",
   "state-machine",
   "transition",
   "business-object",
-  "action",
+  "operation",
   "mutation",
   "interceptor",
   "computed-function",
@@ -227,16 +227,16 @@ const mappingTargetKinds = new Set([
   "operation",
   "runtime-binding",
 ]);
-const evolutionKinds = new Set([...mappingTargetKinds, "mixin", "computed-property", "implementation-mapping", "local-name"]);
+const evolutionKinds = new Set([...mappingTargetKinds, "mixin", "computed-prop", "implementation-mapping", "local-name"]);
 const predicateElements = new Set([
   "All",
   "Any",
   "Not",
-  "PropertyPresent",
-  "PropertyEquals",
-  "PropertyNotEquals",
-  "PropertyIn",
-  "PropertyCompare",
+  "FieldPresent",
+  "FieldEquals",
+  "FieldNotEquals",
+  "FieldIn",
+  "FieldCompare",
   "TypeIs",
   "RelatedExists",
   "EveryRelated",
@@ -244,7 +244,7 @@ const predicateElements = new Set([
   "ExistsRelated",
 ]);
 const fqnPattern = /^[A-Z][A-Za-z0-9]*(?:\.[A-Z][A-Za-z0-9]*)+$/;
-const propertyRefPattern = /^([A-Z][A-Za-z0-9]*(?:\.[A-Z][A-Za-z0-9]*)+)#([a-z][A-Za-z0-9]*)$/;
+const fieldRefPattern = /^([A-Z][A-Za-z0-9]*(?:\.[A-Z][A-Za-z0-9]*)+)#([a-z][A-Za-z0-9]*)$/;
 const ontologyIdPattern = /^[A-Z][A-Za-z0-9]*(?:\.[A-Z][A-Za-z0-9]*)*$/;
 const resourceFqnPattern = /^[a-z][a-z0-9-]*(?:\.[a-z][a-z0-9-]*)+$/;
 const localNamePattern = /^[a-z][A-Za-z0-9]*$/;
@@ -270,15 +270,15 @@ const migrationAlterAspects = new Set([
 ]);
 const depaPattern = /depa_/i;
 const maxXmlBytes = 1024 * 1024;
-const valueTypeKinds: DeclarationKind[] = ["scalar-type", "enum-type", "object-type", "union-type", "collection-type"];
-const entityTypeKinds: DeclarationKind[] = ["object-type", "business-object"];
+const valueTypeKinds: DeclarationKind[] = ["scalar-type", "enum-type", "class", "union-type", "collection-type"];
+const entityTypeKinds: DeclarationKind[] = ["class", "business-object"];
 const typeLikeReferenceKinds: DeclarationKind[] = [...valueTypeKinds, "business-object"];
 
 const refElementKinds: Record<string, DeclarationKind[]> = {
   Evidence: ["evidence"],
   Type: typeLikeReferenceKinds,
   Mixin: ["mixin"],
-  Relation: ["relation"],
+  RelationDef: ["relation-def"],
   Rule: ["rule"],
   StateMachine: ["state-machine"],
   Mutation: ["mutation"],
@@ -288,18 +288,18 @@ const refElementKinds: Record<string, DeclarationKind[]> = {
 };
 
 const targetKindMap: Record<string, DeclarationKind[]> = {
-  "object-type": ["object-type"],
+  "class": ["class"],
   "scalar-type": ["scalar-type"],
   "enum-type": ["enum-type"],
   mixin: ["mixin"],
-  property: [],
-  "computed-property": [],
-  relation: ["relation"],
+  field: [],
+  "computed-prop": [],
+  "relation-def": ["relation-def"],
   rule: ["rule"],
   "state-machine": ["state-machine"],
   transition: ["transition"],
   "business-object": ["business-object"],
-  action: ["action"],
+  operation: ["operation"],
   mutation: ["mutation"],
   interceptor: ["interceptor"],
   "computed-function": ["computed-function"],
@@ -323,12 +323,12 @@ const ownerTargetKinds: Record<string, { required: boolean; kinds: DeclarationKi
   constraint: { required: true, kinds: ["constraint-handler"] },
   "business-process": { required: true, kinds: ["business-process"] },
   capability: { required: true, kinds: ["capability"] },
-  raw: { required: false, kinds: ["object-type"] },
+  raw: { required: false, kinds: ["class"] },
 };
 
 const genericContainers = {
   Evidences: { children: { Evidence: { min: 1 } }, order: ["Evidence"], minElementChildren: 1 },
-  Properties: { children: { Property: { min: 1 } }, order: ["Property"], minElementChildren: 1 },
+  Fields: { children: { Field: { min: 1 } }, order: ["Field"], minElementChildren: 1 },
   Mixins: { children: { Mixin: { min: 1 } }, order: ["Mixin"], minElementChildren: 1 },
   Description: { text: "required" as const },
   Purpose: { text: "required" as const },
@@ -535,19 +535,19 @@ const specs: Record<string, ElementSpec> = {
   EnumType: { attributes: ["fqn", "id", "status"], requiredAttributes: ["id"], children: { Description: { max: 1 }, Members: { min: 1, max: 1 }, Evidences: { max: 1 } }, order: ["Description", "Members", "Evidences"] },
   Members: { children: { Member: { min: 1 } }, order: ["Member"], minElementChildren: 1 },
   Member: { attributes: ["id", "value"], requiredAttributes: ["id", "value"], children: { Description: { max: 1 } }, order: ["Description"] },
-  ObjectTypes: { children: { ObjectType: { min: 1 } }, order: ["ObjectType"], minElementChildren: 1 },
-  ObjectType: { attributes: ["fqn", "id", "parentRef", "abstract", "kind", "status"], requiredAttributes: ["id"], children: { Description: { max: 1 }, Mixins: { max: 1 }, Properties: { max: 1 }, ComputedProperties: { max: 1 }, Evidences: { max: 1 } }, order: ["Description", "Mixins", "Properties", "ComputedProperties", "Evidences"] },
-  Mixin: { attributes: ["fqn", "id", "status"], requiredAttributes: ["id"], children: { Description: { max: 1 }, Properties: { max: 1 }, Evidences: { max: 1 } }, order: ["Description", "Properties", "Evidences"] },
-  Property: { attributes: ["name", "typeRef", "required", "role", "status", "defaultKind"], requiredAttributes: ["name", "typeRef", "required"], children: { Description: { max: 1 }, Evidences: { max: 1 } }, order: ["Description", "Evidences"] },
-  ComputedProperties: { children: { ComputedProperty: { min: 1 } }, order: ["ComputedProperty"], minElementChildren: 1 },
-  ComputedProperty: { attributes: ["name", "typeRef", "status"], requiredAttributes: ["name", "typeRef"], children: { Description: { max: 1 }, Statement: { max: 1 }, Evidences: { max: 1 } }, order: ["Description", "Statement", "Evidences"] },
+  Classes: { children: { Class: { min: 1 } }, order: ["Class"], minElementChildren: 1 },
+  Class: { attributes: ["fqn", "id", "parentRef", "abstract", "kind", "status"], requiredAttributes: ["id"], children: { Description: { max: 1 }, Mixins: { max: 1 }, Fields: { max: 1 }, ComputedProps: { max: 1 }, Evidences: { max: 1 } }, order: ["Description", "Mixins", "Fields", "ComputedProps", "Evidences"] },
+  Mixin: { attributes: ["fqn", "id", "status"], requiredAttributes: ["id"], children: { Description: { max: 1 }, Fields: { max: 1 }, Evidences: { max: 1 } }, order: ["Description", "Fields", "Evidences"] },
+  Field: { attributes: ["name", "typeRef", "required", "role", "status", "defaultKind"], requiredAttributes: ["name", "typeRef", "required"], children: { Description: { max: 1 }, Evidences: { max: 1 } }, order: ["Description", "Evidences"] },
+  ComputedProps: { children: { ComputedProp: { min: 1 } }, order: ["ComputedProp"], minElementChildren: 1 },
+  ComputedProp: { attributes: ["name", "typeRef", "status"], requiredAttributes: ["name", "typeRef"], children: { Description: { max: 1 }, Statement: { max: 1 }, Evidences: { max: 1 } }, order: ["Description", "Statement", "Evidences"] },
   UnionTypes: { children: { UnionType: { min: 1 } }, order: ["UnionType"], minElementChildren: 1 },
   UnionType: { attributes: ["fqn", "id", "status"], requiredAttributes: ["id"], children: { Description: { max: 1 }, Options: { min: 1, max: 1 }, Evidences: { max: 1 } }, order: ["Description", "Options", "Evidences"] },
   Options: { children: { Type: { min: 2 } }, order: ["Type"], minElementChildren: 2 },
   CollectionTypes: { children: { CollectionType: { min: 1 } }, order: ["CollectionType"], minElementChildren: 1 },
   CollectionType: { attributes: ["fqn", "id", "collection", "itemTypeRef", "keyTypeRef", "status"], requiredAttributes: ["id", "collection", "itemTypeRef"], children: { Description: { max: 1 }, Evidences: { max: 1 } }, order: ["Description", "Evidences"] },
-  Relations: { children: { Relation: { min: 1 } }, order: ["Relation"], minElementChildren: 1 },
-  Relation: { attributes: ["fqn", "id", "name", "fromTypeRef", "toTypeRef", "directed", "min", "max", "status"], requiredAttributes: ["id", "name", "fromTypeRef", "toTypeRef", "directed"], children: { Description: { max: 1 }, Properties: { max: 1 }, Evidences: { max: 1 } }, order: ["Description", "Properties", "Evidences"] },
+  RelationDefs: { children: { RelationDef: { min: 1 } }, order: ["RelationDef"], minElementChildren: 1 },
+  RelationDef: { attributes: ["fqn", "id", "name", "fromClassRef", "toClassRef", "directed", "min", "max", "status"], requiredAttributes: ["id", "name", "fromClassRef", "toClassRef", "directed"], children: { Description: { max: 1 }, Fields: { max: 1 }, Evidences: { max: 1 } }, order: ["Description", "Fields", "Evidences"] },
   Rules: { children: { Rule: { min: 1 } }, order: ["Rule"], minElementChildren: 1 },
   Rule: { attributes: ["fqn", "id", "scopeTypeRef", "kind", "status"], requiredAttributes: ["id", "scopeTypeRef", "kind"], children: { Statement: { min: 1, max: 1 }, When: { max: 1 }, Require: { min: 1, max: 1 }, Violation: { min: 1, max: 1 }, Evidences: { max: 1 } }, order: ["Statement", "When", "Require", "Violation", "Evidences"] },
   When: { children: predicateChildren(), minElementChildren: 1, maxElementChildren: 1 },
@@ -556,20 +556,20 @@ const specs: Record<string, ElementSpec> = {
   All: { children: predicateChildren(), minElementChildren: 2 },
   Any: { children: predicateChildren(), minElementChildren: 2 },
   Not: { children: predicateChildren(), minElementChildren: 1, maxElementChildren: 1 },
-  PropertyPresent: { attributes: ["propertyRef"], requiredAttributes: ["propertyRef"] },
-  PropertyEquals: { attributes: ["propertyRef", "value"], requiredAttributes: ["propertyRef", "value"] },
-  PropertyNotEquals: { attributes: ["propertyRef", "value"], requiredAttributes: ["propertyRef", "value"] },
-  PropertyIn: { attributes: ["propertyRef"], requiredAttributes: ["propertyRef"], children: { Value: { min: 1 } }, order: ["Value"], minElementChildren: 1 },
+  FieldPresent: { attributes: ["fieldRef"], requiredAttributes: ["fieldRef"] },
+  FieldEquals: { attributes: ["fieldRef", "value"], requiredAttributes: ["fieldRef", "value"] },
+  FieldNotEquals: { attributes: ["fieldRef", "value"], requiredAttributes: ["fieldRef", "value"] },
+  FieldIn: { attributes: ["fieldRef"], requiredAttributes: ["fieldRef"], children: { Value: { min: 1 } }, order: ["Value"], minElementChildren: 1 },
   Value: { attributes: ["value"], requiredAttributes: ["value"] },
-  PropertyCompare: { attributes: ["propertyRef", "op", "value", "otherPropertyRef"], requiredAttributes: ["propertyRef", "op"] },
+  FieldCompare: { attributes: ["fieldRef", "op", "value", "otherFieldRef"], requiredAttributes: ["fieldRef", "op"] },
   TypeIs: { attributes: ["typeRef"], requiredAttributes: ["typeRef"] },
-  RelatedExists: { attributes: ["relationRef"], requiredAttributes: ["relationRef"], children: predicateChildren(), minElementChildren: 1, maxElementChildren: 1 },
-  EveryRelated: { attributes: ["relationRef"], requiredAttributes: ["relationRef"], children: predicateChildren(), minElementChildren: 1, maxElementChildren: 1 },
-  RelatedCount: { attributes: ["relationRef", "op", "value"], requiredAttributes: ["relationRef", "op", "value"] },
-  ExistsRelated: { attributes: ["relationRef", "direction", "targetTypeRef"], requiredAttributes: ["relationRef", "direction", "targetTypeRef"] },
+  RelatedExists: { attributes: ["relationDefRef"], requiredAttributes: ["relationDefRef"], children: predicateChildren(), minElementChildren: 1, maxElementChildren: 1 },
+  EveryRelated: { attributes: ["relationDefRef"], requiredAttributes: ["relationDefRef"], children: predicateChildren(), minElementChildren: 1, maxElementChildren: 1 },
+  RelatedCount: { attributes: ["relationDefRef", "op", "value"], requiredAttributes: ["relationDefRef", "op", "value"] },
+  ExistsRelated: { attributes: ["relationDefRef", "direction", "targetTypeRef"], requiredAttributes: ["relationDefRef", "direction", "targetTypeRef"] },
   Violation: { attributes: ["code", "message"], requiredAttributes: ["code", "message"] },
   StateMachines: { children: { StateMachine: { min: 1 } }, order: ["StateMachine"], minElementChildren: 1 },
-  StateMachine: { attributes: ["fqn", "id", "subjectTypeRef", "statePropertyRef", "initial", "status"], requiredAttributes: ["id", "subjectTypeRef", "statePropertyRef", "initial"], children: { Description: { max: 1 }, States: { min: 1, max: 1 }, Derivations: { max: 1 }, Transitions: { min: 1, max: 1 }, Evidences: { max: 1 } }, order: ["Description", "States", "Derivations", "Transitions", "Evidences"] },
+  StateMachine: { attributes: ["fqn", "id", "subjectTypeRef", "stateFieldRef", "initial", "status"], requiredAttributes: ["id", "subjectTypeRef", "stateFieldRef", "initial"], children: { Description: { max: 1 }, States: { min: 1, max: 1 }, Derivations: { max: 1 }, Transitions: { min: 1, max: 1 }, Evidences: { max: 1 } }, order: ["Description", "States", "Derivations", "Transitions", "Evidences"] },
   States: { children: { State: { min: 1 } }, order: ["State"], minElementChildren: 1 },
   State: { attributes: ["id", "terminal", "status"], requiredAttributes: ["id"], children: { Description: { max: 1 } }, order: ["Description"] },
   Derivations: { children: { Derivation: { min: 1 } }, order: ["Derivation"], minElementChildren: 1 },
@@ -577,34 +577,34 @@ const specs: Record<string, ElementSpec> = {
   Yields: { attributes: ["state"], requiredAttributes: ["state"] },
   Transitions: { children: { Transition: { min: 1 } }, order: ["Transition"], minElementChildren: 1 },
   Transition: { attributes: ["id", "trigger", "from", "to", "status"], requiredAttributes: ["id", "trigger", "from", "to"], children: { Description: { max: 1 }, Guard: { max: 1 }, Effects: { max: 1 }, Evidences: { max: 1 } }, order: ["Description", "Guard", "Effects", "Evidences"] },
-  Effects: { children: { SetProperty: {}, ClearProperty: {}, CreateRelation: {}, RemoveRelation: {} }, minElementChildren: 1 },
-  SetProperty: { attributes: ["propertyRef", "value"], requiredAttributes: ["propertyRef", "value"] },
-  ClearProperty: { attributes: ["propertyRef"], requiredAttributes: ["propertyRef"] },
-  CreateRelation: { attributes: ["relationRef", "targetRef"], requiredAttributes: ["relationRef", "targetRef"] },
-  RemoveRelation: { attributes: ["relationRef", "targetRef"], requiredAttributes: ["relationRef", "targetRef"] },
-  BusinessObject: { attributes: ["fqn", "id", "parentRef", "abstract", "status"], requiredAttributes: ["fqn", "id"], children: { Description: { min: 1, max: 1 }, Purpose: { min: 1, max: 1 }, Mixins: { max: 1 }, Identity: { max: 1 }, Properties: { max: 1 }, ComputedProperties: { max: 1 }, Constraints: { max: 1 }, Lifecycles: { max: 1 }, Evidences: { max: 1 }, ManifestResourceCatalog: {} }, order: ["Description", "Purpose", "Mixins", "Identity", "Properties", "ComputedProperties", "Constraints", "Lifecycles", "Evidences", "ManifestResourceCatalog"] },
-  Identity: { children: { Property: { min: 1 } }, order: ["Property"], minElementChildren: 1 },
+  Effects: { children: { SetField: {}, ClearField: {}, CreateRelationDef: {}, RemoveRelationDef: {} }, minElementChildren: 1 },
+  SetField: { attributes: ["fieldRef", "value"], requiredAttributes: ["fieldRef", "value"] },
+  ClearField: { attributes: ["fieldRef"], requiredAttributes: ["fieldRef"] },
+  CreateRelationDef: { attributes: ["relationDefRef", "targetRef"], requiredAttributes: ["relationDefRef", "targetRef"] },
+  RemoveRelationDef: { attributes: ["relationDefRef", "targetRef"], requiredAttributes: ["relationDefRef", "targetRef"] },
+  BusinessObject: { attributes: ["fqn", "id", "parentRef", "abstract", "status"], requiredAttributes: ["fqn", "id"], children: { Description: { min: 1, max: 1 }, Purpose: { min: 1, max: 1 }, Mixins: { max: 1 }, Identity: { max: 1 }, Fields: { max: 1 }, ComputedProps: { max: 1 }, Constraints: { max: 1 }, Lifecycles: { max: 1 }, Evidences: { max: 1 }, ManifestResourceCatalog: {} }, order: ["Description", "Purpose", "Mixins", "Identity", "Fields", "ComputedProps", "Constraints", "Lifecycles", "Evidences", "ManifestResourceCatalog"] },
+  Identity: { children: { Field: { min: 1 } }, order: ["Field"], minElementChildren: 1 },
   Constraints: { children: { Rule: { min: 1 } }, order: ["Rule"], minElementChildren: 1 },
   Lifecycles: { children: { StateMachine: { min: 1 } }, order: ["StateMachine"], minElementChildren: 1 },
   AssociationCatalog: { attributes: ["fqn", "id"], requiredAttributes: ["fqn", "id"], children: { Description: { max: 1 }, Associations: { min: 1, max: 1 } }, order: ["Description", "Associations"] },
   Associations: { children: { Association: { min: 1 } }, order: ["Association"], minElementChildren: 1 },
-  Association: { attributes: ["id", "relationRef", "status"], requiredAttributes: ["id", "relationRef"], children: { Description: { max: 1 }, Evidences: { max: 1 } }, order: ["Description", "Evidences"] },
+  Association: { attributes: ["id", "relationDefRef", "status"], requiredAttributes: ["id", "relationDefRef"], children: { Description: { max: 1 }, Evidences: { max: 1 } }, order: ["Description", "Evidences"] },
   DomainPolicyCatalog: { attributes: ["fqn", "id"], requiredAttributes: ["fqn", "id"], children: { Description: { max: 1 }, DomainPolicies: { min: 1, max: 1 } }, order: ["Description", "DomainPolicies"] },
   DomainPolicies: { children: { DomainPolicy: { min: 1 } }, order: ["DomainPolicy"], minElementChildren: 1 },
   DomainPolicy: { attributes: ["id", "ownerKind", "ownerRef", "status"], requiredAttributes: ["id", "ownerKind"], children: { Description: { max: 1 }, Statement: { min: 1, max: 1 }, Rules: { max: 1 }, Evidences: { max: 1 } }, order: ["Description", "Statement", "Rules", "Evidences"] },
   ConstraintHandlerCatalog: { attributes: ["fqn", "id"], requiredAttributes: ["fqn", "id"], children: { Description: { max: 1 }, ConstraintHandlers: { min: 1, max: 1 } }, order: ["Description", "ConstraintHandlers"] },
   ConstraintHandlers: { children: { ConstraintHandler: { min: 1 } }, order: ["ConstraintHandler"], minElementChildren: 1 },
   ConstraintHandler: { attributes: ["fqn", "id", "ownerKind", "ownerRef", "portability", "status"], requiredAttributes: ["id", "ownerKind", "portability"], children: { Description: { max: 1 }, Statement: { min: 1, max: 1 }, Rules: { max: 1 }, Evidences: { max: 1 } }, order: ["Description", "Statement", "Rules", "Evidences"] },
-  Action: { attributes: ["fqn", "id", "ownerRef", "portability", "status"], requiredAttributes: ["fqn", "id", "ownerRef", "portability"], children: { Description: { min: 1, max: 1 }, Mutations: { max: 1 }, InternalLogic: { max: 1 }, Evidences: { max: 1 } }, order: ["Description", "Mutations", "InternalLogic", "Evidences"] },
+  Operation: { attributes: ["fqn", "id", "ownerRef", "portability", "status"], requiredAttributes: ["fqn", "id", "ownerRef", "portability"], children: { Description: { min: 1, max: 1 }, Mutations: { max: 1 }, InternalLogic: { max: 1 }, Evidences: { max: 1 } }, order: ["Description", "Mutations", "InternalLogic", "Evidences"] },
   Mutation: { attributes: ["fqn", "id", "ownerRef", "portability", "status"], requiredAttributes: ["fqn", "id", "ownerRef", "portability"], children: { Description: { min: 1, max: 1 }, InternalLogic: { max: 1 }, Evidences: { max: 1 } }, order: ["Description", "InternalLogic", "Evidences"] },
   Mutations: { children: { Mutation: { min: 1 } }, order: ["Mutation"], minElementChildren: 1 },
-  Interceptor: { attributes: ["fqn", "id", "ownerRef", "actionRef", "phase", "seq", "portability", "status"], requiredAttributes: ["fqn", "id", "ownerRef", "actionRef", "phase", "seq", "portability"], children: { Description: { min: 1, max: 1 }, InternalLogic: { max: 1 }, Evidences: { max: 1 } }, order: ["Description", "InternalLogic", "Evidences"] },
+  Interceptor: { attributes: ["fqn", "id", "ownerRef", "operationRef", "phase", "seq", "portability", "status"], requiredAttributes: ["fqn", "id", "ownerRef", "operationRef", "phase", "seq", "portability"], children: { Description: { min: 1, max: 1 }, InternalLogic: { max: 1 }, Evidences: { max: 1 } }, order: ["Description", "InternalLogic", "Evidences"] },
   ComputedFunction: { attributes: ["fqn", "id", "ownerRef", "name", "returnTypeRef", "portability", "status"], requiredAttributes: ["fqn", "id", "ownerRef", "name", "returnTypeRef", "portability"], children: { Description: { min: 1, max: 1 }, Statement: { max: 1 }, Evidences: { max: 1 } }, order: ["Description", "Statement", "Evidences"] },
   Lifecycle: { attributes: ["fqn", "id", "ownerRef", "stateMachineRef", "status"], requiredAttributes: ["fqn", "id", "ownerRef", "stateMachineRef"], children: { Description: { min: 1, max: 1 }, Evidences: { max: 1 } }, order: ["Description", "Evidences"] },
   BusinessProcessCatalog: { attributes: ["fqn", "id"], requiredAttributes: ["fqn", "id"], children: { Description: { max: 1 }, BusinessProcesses: { min: 1, max: 1 } }, order: ["Description", "BusinessProcesses"] },
   BusinessProcesses: { children: { BusinessProcess: { min: 1 } }, order: ["BusinessProcess"], minElementChildren: 1 },
   BusinessProcess: { attributes: ["id", "status"], requiredAttributes: ["id"], children: { Description: { max: 1 }, Participants: { min: 1, max: 1 }, Policies: { max: 1 }, Evidences: { max: 1 } }, order: ["Description", "Participants", "Policies", "Evidences"] },
-  Participants: { children: { Type: {}, Relation: {}, StateMachine: {} }, minElementChildren: 1 },
+  Participants: { children: { Type: {}, RelationDef: {}, StateMachine: {} }, minElementChildren: 1 },
   Policies: { children: { Rule: { min: 1 } }, order: ["Rule"], minElementChildren: 1 },
   CapabilityCatalog: { attributes: ["fqn", "id"], requiredAttributes: ["fqn", "id"], children: { Description: { max: 1 }, Capabilities: { min: 1, max: 1 } }, order: ["Description", "Capabilities"] },
   Capabilities: { children: { Capability: {}, Atomicity: {}, Observation: {} }, minElementChildren: 1 },
@@ -614,10 +614,10 @@ const specs: Record<string, ElementSpec> = {
   EventContractCatalog: { attributes: ["fqn", "id"], requiredAttributes: ["fqn", "id"], children: { Description: { max: 1 }, EventContracts: { min: 1, max: 1 } }, order: ["Description", "EventContracts"] },
   EventContracts: { children: { EventContract: { min: 1 } }, order: ["EventContract"], minElementChildren: 1 },
   EventContract: { attributes: ["id", "eventTypeRef", "status"], requiredAttributes: ["id", "eventTypeRef"], children: { Description: { max: 1 }, Subjects: { max: 1 }, Evidences: { max: 1 } }, order: ["Description", "Subjects", "Evidences"] },
-  Subjects: { children: { Type: {}, Relation: {} }, minElementChildren: 1 },
+  Subjects: { children: { Type: {}, RelationDef: {} }, minElementChildren: 1 },
   OperationCatalog: { attributes: ["fqn", "id"], requiredAttributes: ["fqn", "id"], children: { Description: { max: 1 }, Operations: { min: 1, max: 1 }, InvocationPresets: { max: 1 } }, order: ["Description", "Operations", "InvocationPresets"] },
   Operations: { children: { Operation: { min: 1 } }, order: ["Operation"], minElementChildren: 1 },
-  Operation: { attributes: ["id", "verb", "owner", "ownerRef", "behavior", "subject", "invocation", "effect", "subjectTypeRef", "inputTypeRef", "outputTypeRef", "status"], requiredAttributes: ["id", "verb", "owner", "behavior", "subject", "invocation", "effect"], children: { Description: { max: 1 }, Purpose: { max: 1 }, InternalLogic: { max: 1 }, Composition: { max: 1 }, Constraints: { max: 1 }, Capabilities: { min: 1, max: 1 }, Evidences: { max: 1 } }, order: ["Description", "Purpose", "InternalLogic", "Composition", "Constraints", "Capabilities", "Evidences"] },
+  Operation: { attributes: ["fqn", "id", "ownerRef", "portability", "verb", "owner", "behavior", "subject", "invocation", "effect", "subjectTypeRef", "inputTypeRef", "outputTypeRef", "status"], requiredAttributes: ["id"], children: { Description: { max: 1 }, Purpose: { max: 1 }, Mutations: { max: 1 }, InternalLogic: { max: 1 }, Composition: { max: 1 }, Constraints: { max: 1 }, Capabilities: { max: 1 }, Evidences: { max: 1 } }, order: ["Description", "Purpose", "Mutations", "InternalLogic", "Composition", "Constraints", "Capabilities", "Evidences"] },
   Composition: { children: { Operation: { min: 1 } }, order: ["Operation"], minElementChildren: 1 },
   Atomicity: { attributes: ["value"], requiredAttributes: ["value"] },
   Observation: { attributes: ["value"], requiredAttributes: ["value"] },
@@ -827,8 +827,8 @@ function parseDslResource(source: string, uri: string): XmlObject {
 function specFor(element: string, node: XmlObject, parent: string | null): ElementSpec | undefined {
   if (element === "Type" && hasAttribute(node, "ref")) return { attributes: ["ref", "role"], requiredAttributes: ["ref"] };
   if (element === "Mixin" && hasAttribute(node, "ref")) return { attributes: ["ref"], requiredAttributes: ["ref"] };
-  if (["Property", "Relation", "Rule", "StateMachine", "Operation", "Mutation", "Evidence", "RuntimeBinding", "ImplementationMapping"].includes(element) && hasAttribute(node, "ref")) {
-    const attributes = element === "Property" ? ["ref", "role"] : ["ref", "role"];
+  if (["Field", "RelationDef", "Rule", "StateMachine", "Operation", "Mutation", "Evidence", "RuntimeBinding", "ImplementationMapping"].includes(element) && hasAttribute(node, "ref")) {
+    const attributes = element === "Field" ? ["ref", "role"] : ["ref", "role"];
     return { attributes, requiredAttributes: ["ref"] };
   }
   if (element === "Capability" && !hasAttribute(node, "id") && (parent === "Capabilities" || hasAttribute(node, "name"))) {
@@ -934,18 +934,18 @@ function declarationKind(element: string, node: XmlObject, parentElement: string
     case "ScalarType": return "scalar-type";
     case "EnumType": return "enum-type";
     case "Mixin": return "mixin";
-    case "ObjectType": return "object-type";
+    case "Class": return "class";
     case "UnionType": return "union-type";
     case "CollectionType": return "collection-type";
-    case "Property": return null;
-    case "ComputedProperty": return null;
-    case "Relation": return "relation";
+    case "Field": return null;
+    case "ComputedProp": return null;
+    case "RelationDef": return "relation-def";
     case "Rule": return "rule";
     case "StateMachine": return "state-machine";
     case "Derivation": return "derivation";
     case "Transition": return "transition";
     case "BusinessObject": return "business-object";
-    case "Action": return "action";
+    case "Operation": return "operation";
     case "Mutation": return "mutation";
     case "Interceptor": return "interceptor";
     case "ComputedFunction": return "computed-function";
@@ -1137,7 +1137,7 @@ function loadDocument(
       continue;
     }
     if (catalogKind === "SchemaEvolutionModule") schemaEvolutionCount += 1;
-    if (catalogKind === "ObjectType") typeCount += 1;
+    if (catalogKind === "Class") typeCount += 1;
     const rootResolution = resolveCatalogRoot(context, dirname(file), catalogRoot);
     if (!rootResolution.directory) {
       add(context, file, rootResolution.error!);
@@ -1182,7 +1182,7 @@ function loadDocument(
   for (const member of discovered.sort((left, right) => left.layer - right.layer || left.kind.localeCompare(right.kind) || left.file.localeCompare(right.file))) {
     loadDocument(context, member.file, member.kind, member.layer, member.sourceShape, attribute(root, "id"));
   }
-  if (rootName === "Ontology" && typeCount === 0) add(context, file, "Ontology ResourceCatalogs require at least one ObjectType catalog.");
+  if (rootName === "Ontology" && typeCount === 0) add(context, file, "Ontology ResourceCatalogs require at least one Class catalog.");
   if (rootName === "Ontology" && schemaEvolutionCount > 1) add(context, file, "Ontology may reference at most one SchemaEvolutionModule.");
 }
 
@@ -1500,21 +1500,21 @@ function validateGenericElementSemantics(context: ValidationContext): void {
     if (["Description", "Purpose", "Statement", "InternalLogic", "Title"].includes(element)) {
       validateExecutableText(context, file, `<${element}>`, nodeText(node));
     }
-    if (element === "Property") {
+    if (element === "Field") {
       const owner = entry.parentDeclaration?.id ?? "profile";
       const ownerKind = entry.parentDeclaration?.kind;
       if (ownerKind === "business-object" && hasAttribute(node, "ref")) {
-        add(context, file, `BUSINESS_OBJECT_PROPERTY_REF_REJECTED: BusinessObject '${owner}' must declare Property facts directly; Property@ref is not allowed.`);
+        add(context, file, `BUSINESS_OBJECT_PROPERTY_REF_REJECTED: BusinessObject '${owner}' must declare Field facts directly; Field@ref is not allowed.`);
       }
       if (hasAttribute(node, "role")) {
-        if (ownerKind !== "business-object") add(context, file, `Property '${owner}#${attribute(node, "name")}' role is only allowed on BusinessObject-owned properties.`);
-        else if (!profilePropertyRoles.has(attribute(node, "role"))) add(context, file, `BusinessObject '${owner}' Property role '${attribute(node, "role")}' is invalid.`);
+        if (ownerKind !== "business-object") add(context, file, `Field '${owner}#${attribute(node, "name")}' role is only allowed on BusinessObject-owned properties.`);
+        else if (!profileFieldRoles.has(attribute(node, "role"))) add(context, file, `BusinessObject '${owner}' Field role '${attribute(node, "role")}' is invalid.`);
       }
     }
     if (element === "Evidence" && hasAttribute(node, "ref")) {
       expectReference(context, file, "<Evidence> @ref", attribute(node, "ref"), ["evidence"]);
     }
-    if (hasAttribute(node, "ref") && refElementKinds[element] && element !== "Evidence" && element !== "Property") {
+    if (hasAttribute(node, "ref") && refElementKinds[element] && element !== "Evidence" && element !== "Field") {
       expectReference(context, file, `<${element}> @ref`, attribute(node, "ref"), refElementKinds[element]!);
     }
   }
@@ -1595,16 +1595,16 @@ function buildTypeModel(context: ValidationContext): TypeModel {
   const model: TypeModel = {
     parentByType: new Map(),
     mixinsByOwner: new Map(),
-    propertiesByOwner: new Map(),
-    propertyById: new Map(),
+    fieldsByOwner: new Map(),
+    fieldById: new Map(),
   };
   const ownerFiles = new Map<string, string>();
 
   for (const declaration of context.declarations.values()) {
-    if (!["object-type", "business-object", "mixin", "relation"].includes(declaration.kind)) continue;
+    if (!["class", "business-object", "mixin", "relation-def"].includes(declaration.kind)) continue;
     const id = declaration.id;
     ownerFiles.set(id, declaration.file);
-    const mixinRefs = declaration.kind === "object-type" || declaration.kind === "business-object"
+    const mixinRefs = declaration.kind === "class" || declaration.kind === "business-object"
       ? childObjects(declaration.node, "Mixins")
         .flatMap((container) => childObjects(container, "Mixin"))
         .map((node) => attribute(node, "ref"))
@@ -1617,18 +1617,18 @@ function buildTypeModel(context: ValidationContext): TypeModel {
       expectReference(context, declaration.file, `${declaration.element} '${id}' Mixin`, ref, ["mixin"]);
     }
     model.mixinsByOwner.set(id, mixinRefs);
-    const properties: PropertyInfo[] = [];
-    const declaredProperties = [
-      ...childObjects(declaration.node, "Identity").flatMap((container) => childObjects(container, "Property")),
-      ...childObjects(declaration.node, "Properties").flatMap((container) => childObjects(container, "Property")),
+    const properties: FieldInfo[] = [];
+    const declaredFields = [
+      ...childObjects(declaration.node, "Identity").flatMap((container) => childObjects(container, "Field")),
+      ...childObjects(declaration.node, "Fields").flatMap((container) => childObjects(container, "Field")),
     ];
-    for (const property of declaredProperties) {
+    for (const property of declaredFields) {
       const name = attribute(property, "name");
       const info = {
         id: `${id}#${name}`,
         name,
         owner: id,
-        ownerKind: declaration.kind as "object-type" | "business-object" | "mixin" | "relation",
+        ownerKind: declaration.kind as "class" | "business-object" | "mixin" | "relation-def",
         typeRef: attribute(property, "typeRef"),
         required: attribute(property, "required") === "true",
         computed: false,
@@ -1636,16 +1636,16 @@ function buildTypeModel(context: ValidationContext): TypeModel {
         file: declaration.file,
       };
       properties.push(info);
-      if (model.propertyById.has(info.id)) add(context, declaration.file, `${declaration.element} '${id}' declares duplicate Property '${name}'.`);
-      model.propertyById.set(info.id, info);
+      if (model.fieldById.has(info.id)) add(context, declaration.file, `${declaration.element} '${id}' declares duplicate Field '${name}'.`);
+      model.fieldById.set(info.id, info);
     }
-    for (const property of childObjects(declaration.node, "ComputedProperties").flatMap((container) => childObjects(container, "ComputedProperty"))) {
+    for (const property of childObjects(declaration.node, "ComputedProps").flatMap((container) => childObjects(container, "ComputedProp"))) {
       const name = attribute(property, "name");
       const info = {
         id: `${id}#${name}`,
         name,
         owner: id,
-        ownerKind: declaration.kind as "object-type" | "business-object" | "mixin" | "relation",
+        ownerKind: declaration.kind as "class" | "business-object" | "mixin" | "relation-def",
         typeRef: attribute(property, "typeRef"),
         required: false,
         computed: true,
@@ -1653,10 +1653,10 @@ function buildTypeModel(context: ValidationContext): TypeModel {
         file: declaration.file,
       };
       properties.push(info);
-      if (model.propertyById.has(info.id)) add(context, declaration.file, `${declaration.element} '${id}' declares duplicate property '${name}'.`);
-      model.propertyById.set(info.id, info);
+      if (model.fieldById.has(info.id)) add(context, declaration.file, `${declaration.element} '${id}' declares duplicate property '${name}'.`);
+      model.fieldById.set(info.id, info);
     }
-    model.propertiesByOwner.set(id, properties);
+    model.fieldsByOwner.set(id, properties);
   }
 
   for (const declaration of context.declarations.values()) {
@@ -1674,7 +1674,7 @@ function buildTypeModel(context: ValidationContext): TypeModel {
         if (!attribute(member, "value").trim()) add(context, file, `EnumType '${id}' Member '${memberId}' requires non-empty @value.`);
       }
     }
-    if (kind === "object-type" || kind === "business-object") {
+    if (kind === "class" || kind === "business-object") {
       const parentRef = attribute(node, "parentRef");
       if (parentRef) {
         expectReference(context, file, `${declaration.element} '${id}' @parentRef`, parentRef, entityTypeKinds);
@@ -1682,7 +1682,7 @@ function buildTypeModel(context: ValidationContext): TypeModel {
         model.parentByType.set(id, parentRef);
       }
       if (hasAttribute(node, "abstract")) validateBoolean(context, file, `${declaration.element} '${id}' @abstract`, attribute(node, "abstract"));
-      if (kind === "object-type" && attribute(node, "kind") && !typeKinds.has(attribute(node, "kind"))) add(context, file, `ObjectType '${id}' has invalid kind '${attribute(node, "kind")}'.`);
+      if (kind === "class" && attribute(node, "kind") && !typeKinds.has(attribute(node, "kind"))) add(context, file, `Class '${id}' has invalid kind '${attribute(node, "kind")}'.`);
     }
     if (kind === "union-type") {
       const refs = childObjects(node, "Options").flatMap((container) => childObjects(container, "Type")).map((type) => attribute(type, "ref"));
@@ -1706,9 +1706,9 @@ function buildTypeModel(context: ValidationContext): TypeModel {
     }
   }
 
-  for (const [owner, properties] of model.propertiesByOwner) {
+  for (const [owner, properties] of model.fieldsByOwner) {
     for (const property of properties) {
-      const ownerLabel = `${property.computed ? "ComputedProperty" : "Property"} '${property.id}'`;
+      const ownerLabel = `${property.computed ? "ComputedProp" : "Field"} '${property.id}'`;
       validateLocalName(context, property.file, ownerLabel, property.name);
       validateTypeRef(context, property.file, `${ownerLabel} @typeRef`, property.typeRef);
       if (!property.computed) validateBoolean(context, property.file, `${ownerLabel} @required`, attribute(property.node, "required"));
@@ -1717,13 +1717,13 @@ function buildTypeModel(context: ValidationContext): TypeModel {
 
   const parentGraph = new Map<string, string[]>();
   for (const declaration of context.declarations.values()) {
-    if (declaration.kind === "object-type" || declaration.kind === "business-object") parentGraph.set(declaration.id, model.parentByType.has(declaration.id) ? [model.parentByType.get(declaration.id)!] : []);
+    if (declaration.kind === "class" || declaration.kind === "business-object") parentGraph.set(declaration.id, model.parentByType.has(declaration.id) ? [model.parentByType.get(declaration.id)!] : []);
   }
-  detectCycles(context, parentGraph, "ObjectType inheritance", ownerFiles);
-  validateMixinPropertyCompatibility(context, model, ownerFiles);
-  validateComposedPropertyNames(context, model, ownerFiles);
+  detectCycles(context, parentGraph, "Class inheritance", ownerFiles);
+  validateMixinFieldCompatibility(context, model, ownerFiles);
+  validateComposedFieldNames(context, model, ownerFiles);
 
-  for (const [owner, properties] of model.propertiesByOwner) {
+  for (const [owner, properties] of model.fieldsByOwner) {
     const seen = new Map<string, string>();
     for (const property of properties) {
       const existing = seen.get(property.name);
@@ -1734,9 +1734,9 @@ function buildTypeModel(context: ValidationContext): TypeModel {
   return model;
 }
 
-function validateMixinPropertyCompatibility(context: ValidationContext, model: TypeModel, ownerFiles: Map<string, string>): void {
+function validateMixinFieldCompatibility(context: ValidationContext, model: TypeModel, ownerFiles: Map<string, string>): void {
   for (const declaration of context.declarations.values()) {
-    if (declaration.kind !== "object-type" && declaration.kind !== "business-object") continue;
+    if (declaration.kind !== "class" && declaration.kind !== "business-object") continue;
     const applicableMixins: string[] = [];
     const visitedTypes = new Set<string>();
     let currentType: string | undefined = declaration.id;
@@ -1748,15 +1748,15 @@ function validateMixinPropertyCompatibility(context: ValidationContext, model: T
       currentType = model.parentByType.get(currentType);
     }
 
-    const contributions = new Map<string, PropertyInfo>();
+    const contributions = new Map<string, FieldInfo>();
     for (const mixin of applicableMixins) {
-      for (const property of model.propertiesByOwner.get(mixin) ?? []) {
+      for (const property of model.fieldsByOwner.get(mixin) ?? []) {
         const existing = contributions.get(property.name);
         if (existing && (existing.typeRef !== property.typeRef || existing.required !== property.required)) {
           add(
             context,
             ownerFiles.get(declaration.id) ?? declaration.file,
-            `COZO_OM_MIXIN_PROPERTY_AMBIGUOUS: ${declaration.element} '${declaration.id}' receives incompatible Mixin Property '${property.name}' from '${existing.owner}' and '${property.owner}'. Current cozo-om storage does not persist mixin application order.`,
+            `COZO_OM_MIXIN_PROPERTY_AMBIGUOUS: ${declaration.element} '${declaration.id}' receives incompatible Mixin Field '${property.name}' from '${existing.owner}' and '${property.owner}'. Current cozo-om storage does not persist mixin application order.`,
           );
         }
         contributions.set(property.name, property);
@@ -1771,33 +1771,33 @@ function isScalarMapKeyType(context: ValidationContext, typeRef: string): boolea
   return Boolean(declaration?.kind === "scalar-type" && builtinScalarKeys.has(attribute(declaration.node, "base")));
 }
 
-function validateComposedPropertyNames(context: ValidationContext, model: TypeModel, ownerFiles: Map<string, string>): void {
-  const memo = new Map<string, PropertyInfo[]>();
-  const collect = (ownerId: string, visiting: Set<string>): PropertyInfo[] => {
+function validateComposedFieldNames(context: ValidationContext, model: TypeModel, ownerFiles: Map<string, string>): void {
+  const memo = new Map<string, FieldInfo[]>();
+  const collect = (ownerId: string, visiting: Set<string>): FieldInfo[] => {
     if (memo.has(ownerId)) return memo.get(ownerId)!;
     if (visiting.has(ownerId)) return [];
     visiting.add(ownerId);
-    const properties: PropertyInfo[] = [];
+    const properties: FieldInfo[] = [];
     for (const mixin of model.mixinsByOwner.get(ownerId) ?? []) properties.push(...collect(mixin, visiting));
     const parent = model.parentByType.get(ownerId);
     if (parent) properties.push(...collect(parent, visiting));
-    properties.push(...(model.propertiesByOwner.get(ownerId) ?? []));
+    properties.push(...(model.fieldsByOwner.get(ownerId) ?? []));
     visiting.delete(ownerId);
     memo.set(ownerId, properties);
     return properties;
   };
 
   for (const declaration of context.declarations.values()) {
-    if (declaration.kind !== "object-type" && declaration.kind !== "business-object" && declaration.kind !== "mixin") continue;
-    const seen = new Map<string, PropertyInfo>();
+    if (declaration.kind !== "class" && declaration.kind !== "business-object" && declaration.kind !== "mixin") continue;
+    const seen = new Map<string, FieldInfo>();
     for (const property of collect(declaration.id, new Set())) {
       const existing = seen.get(property.name);
       if (existing) {
         if (existing.typeRef !== property.typeRef) {
-          add(context, ownerFiles.get(declaration.id) ?? declaration.file, `${declaration.element} '${declaration.id}' cannot change inherited or mixed-in Property '${property.name}' from '${existing.typeRef}' to '${property.typeRef}'.`);
+          add(context, ownerFiles.get(declaration.id) ?? declaration.file, `${declaration.element} '${declaration.id}' cannot change inherited or mixed-in Field '${property.name}' from '${existing.typeRef}' to '${property.typeRef}'.`);
         }
         if (existing.required && !property.required && property.owner === declaration.id) {
-          add(context, ownerFiles.get(declaration.id) ?? declaration.file, `${declaration.element} '${declaration.id}' cannot loosen inherited required Property '${property.name}'.`);
+          add(context, ownerFiles.get(declaration.id) ?? declaration.file, `${declaration.element} '${declaration.id}' cannot loosen inherited required Field '${property.name}'.`);
         }
       }
       seen.set(property.name, property);
@@ -1817,19 +1817,19 @@ function isTypeAssignable(context: ValidationContext, model: TypeModel, actual: 
   return Boolean(entityTypeKinds.includes(context.declarations.get(actual)?.kind as DeclarationKind) && entityTypeKinds.includes(context.declarations.get(expected)?.kind as DeclarationKind) && actual === expected);
 }
 
-function effectiveProperties(model: TypeModel, ownerId: string): Map<string, PropertyInfo> {
-  const memo = new Map<string, Map<string, PropertyInfo>>();
-  const resolveOwner = (id: string, visiting: Set<string>): Map<string, PropertyInfo> => {
+function effectiveFields(model: TypeModel, ownerId: string): Map<string, FieldInfo> {
+  const memo = new Map<string, Map<string, FieldInfo>>();
+  const resolveOwner = (id: string, visiting: Set<string>): Map<string, FieldInfo> => {
     if (memo.has(id)) return memo.get(id)!;
     if (visiting.has(id)) return new Map();
     visiting.add(id);
-    const properties = new Map<string, PropertyInfo>();
+    const properties = new Map<string, FieldInfo>();
     for (const mixin of model.mixinsByOwner.get(id) ?? []) {
       for (const [name, prop] of resolveOwner(mixin, visiting)) properties.set(name, prop);
     }
     const parent = model.parentByType.get(id);
     if (parent) for (const [name, prop] of resolveOwner(parent, visiting)) properties.set(name, prop);
-    for (const property of model.propertiesByOwner.get(id) ?? []) properties.set(property.name, property);
+    for (const property of model.fieldsByOwner.get(id) ?? []) properties.set(property.name, property);
     visiting.delete(id);
     memo.set(id, properties);
     return properties;
@@ -1837,31 +1837,31 @@ function effectiveProperties(model: TypeModel, ownerId: string): Map<string, Pro
   return resolveOwner(ownerId, new Set());
 }
 
-function propertyAvailable(model: TypeModel, propertyRef: string, contextType: string): boolean {
-  const parsed = propertyRefPattern.exec(propertyRef);
+function propertyAvailable(model: TypeModel, fieldRef: string, contextType: string): boolean {
+  const parsed = fieldRefPattern.exec(fieldRef);
   if (!parsed) return false;
   const [, owner, name] = parsed;
   if (owner !== contextType) return false;
-  return effectiveProperties(model, contextType).has(name!);
+  return effectiveFields(model, contextType).has(name!);
 }
 
-function resolvePropertyReference(context: ValidationContext, model: TypeModel, file: string, owner: string, propertyRef: string, contextType?: string): PropertyInfo | null {
-  const parsed = propertyRefPattern.exec(propertyRef);
+function resolveFieldReference(context: ValidationContext, model: TypeModel, file: string, owner: string, fieldRef: string, contextType?: string): FieldInfo | null {
+  const parsed = fieldRefPattern.exec(fieldRef);
   if (!parsed) {
-    add(context, file, `${owner} property reference '${propertyRef}' must use <TypeOrRelationFqn>#<localName>.`);
+    add(context, file, `${owner} property reference '${fieldRef}' must use <TypeOrRelationDefFqn>#<localName>.`);
     return null;
   }
   const [, propertyOwner, propertyName] = parsed;
   const declaration = context.declarations.get(propertyOwner!);
-  if (!declaration || !["object-type", "business-object", "mixin", "relation"].includes(declaration.kind)) {
-    add(context, file, `${owner} property reference '${propertyRef}' has undeclared ObjectType, BusinessObject, Mixin, or Relation owner '${propertyOwner}'.`);
+  if (!declaration || !["class", "business-object", "mixin", "relation-def"].includes(declaration.kind)) {
+    add(context, file, `${owner} property reference '${fieldRef}' has undeclared Class, BusinessObject, Mixin, or RelationDef owner '${propertyOwner}'.`);
     return null;
   }
   if (contextType && propertyOwner !== contextType) {
-    add(context, file, `${owner} property reference '${propertyRef}' must use its active context type '${contextType}'.`);
+    add(context, file, `${owner} property reference '${fieldRef}' must use its active context type '${contextType}'.`);
     return null;
   }
-  const property = effectiveProperties(model, propertyOwner!).get(propertyName!);
+  const property = effectiveFields(model, propertyOwner!).get(propertyName!);
   if (!property) {
     add(context, file, `${owner} property '${propertyName}' is not available on '${propertyOwner}' through local, inherited, or mixed-in declarations.`);
     return null;
@@ -1869,11 +1869,11 @@ function resolvePropertyReference(context: ValidationContext, model: TypeModel, 
   return property;
 }
 
-function expectTargetReference(context: ValidationContext, model: TypeModel, file: string, owner: string, targetKind: string, targetRef: string, fallbackKinds: DeclarationKind[]): Declaration | PropertyInfo | null {
-  if (targetKind === "property" || targetKind === "computed-property") {
-    const property = resolvePropertyReference(context, model, file, owner, targetRef);
-    if (property && (targetKind === "computed-property") !== property.computed) {
-      add(context, file, `${owner} references '${targetRef}' as ${targetKind}, but it is ${property.computed ? "computed-property" : "property"}.`);
+function expectTargetReference(context: ValidationContext, model: TypeModel, file: string, owner: string, targetKind: string, targetRef: string, fallbackKinds: DeclarationKind[]): Declaration | FieldInfo | null {
+  if (targetKind === "property" || targetKind === "computed-prop") {
+    const property = resolveFieldReference(context, model, file, owner, targetRef);
+    if (property && (targetKind === "computed-prop") !== property.computed) {
+      add(context, file, `${owner} references '${targetRef}' as ${targetKind}, but it is ${property.computed ? "computed-prop" : "property"}.`);
       return null;
     }
     return property;
@@ -1890,26 +1890,26 @@ function normalizedTypeBase(context: ValidationContext, typeRef: string): string
   return null;
 }
 
-function isRelationEdgePropertyType(context: ValidationContext, typeRef: string): boolean {
+function isRelationDefEdgeFieldType(context: ValidationContext, typeRef: string): boolean {
   if (builtins.has(typeRef)) return true;
   const declaration = context.declarations.get(typeRef);
   if (!declaration) return false;
   if (declaration.kind === "scalar-type" || declaration.kind === "enum-type") return true;
-  return declaration.kind === "object-type" && attribute(declaration.node, "kind") === "value";
+  return declaration.kind === "class" && attribute(declaration.node, "kind") === "value";
 }
 
-function normalizedPropertyBase(context: ValidationContext, model: TypeModel, propertyRef: string): string | null {
-  const parsed = propertyRefPattern.exec(propertyRef);
-  const property = parsed ? effectiveProperties(model, parsed[1]!).get(parsed[2]!) : undefined;
-  if (!property) return null;
-  return normalizedTypeBase(context, property.typeRef);
+function normalizedFieldBase(context: ValidationContext, model: TypeModel, fieldRef: string): string | null {
+  const parsed = fieldRefPattern.exec(fieldRef);
+  const fieldInfo = parsed ? effectiveFields(model, parsed[1]!).get(parsed[2]!) : undefined;
+  if (!fieldInfo) return null;
+  return normalizedTypeBase(context, fieldInfo.typeRef);
 }
 
-function relationEndpointContext(context: ValidationContext, model: TypeModel, relationRef: string, currentType: string, direction?: string): string | null {
-  const relation = context.declarations.get(relationRef);
-  if (!relation || relation.kind !== "relation") return null;
-  const from = attribute(relation.node, "fromTypeRef");
-  const to = attribute(relation.node, "toTypeRef");
+function relationDefEndpointContext(context: ValidationContext, model: TypeModel, relationDefRef: string, currentType: string, direction?: string): string | null {
+  const relationDef = context.declarations.get(relationDefRef);
+  if (!relationDef || relationDef.kind !== "relation-def") return null;
+  const from = attribute(relationDef.node, "fromClassRef");
+  const to = attribute(relationDef.node, "toClassRef");
   if (direction === "out") return isTypeAssignable(context, model, currentType, from) ? to : null;
   if (direction === "in") return isTypeAssignable(context, model, currentType, to) ? from : null;
   if (isTypeAssignable(context, model, currentType, from)) return to;
@@ -1943,36 +1943,36 @@ function validatePredicate(context: ValidationContext, model: TypeModel, file: s
     for (const [childName, child] of predicates) validatePredicate(context, model, file, childName, child, currentType);
     return;
   }
-  if (["PropertyPresent", "PropertyEquals", "PropertyNotEquals", "PropertyIn"].includes(element)) {
-    const propertyRef = attribute(node, "propertyRef");
-    resolvePropertyReference(context, model, file, `<${element}> @propertyRef`, propertyRef, currentType);
-    if (["PropertyEquals", "PropertyNotEquals"].includes(element)) validateExecutableText(context, file, `<${element}> @value`, attribute(node, "value"), true);
+  if (["FieldPresent", "FieldEquals", "FieldNotEquals", "FieldIn"].includes(element)) {
+    const fieldRef = attribute(node, "fieldRef");
+    resolveFieldReference(context, model, file, `<${element}> @fieldRef`, fieldRef, currentType);
+    if (["FieldEquals", "FieldNotEquals"].includes(element)) validateExecutableText(context, file, `<${element}> @value`, attribute(node, "value"), true);
     return;
   }
-  if (element === "PropertyCompare") {
-    const propertyRef = attribute(node, "propertyRef");
-    const otherPropertyRef = attribute(node, "otherPropertyRef");
+  if (element === "FieldCompare") {
+    const fieldRef = attribute(node, "fieldRef");
+    const otherFieldRef = attribute(node, "otherFieldRef");
     const value = attribute(node, "value");
-    const id = propertyRef || "<missing>";
-    resolvePropertyReference(context, model, file, "PropertyCompare @propertyRef", propertyRef, currentType);
-    if (!["lt", "lte", "gt", "gte"].includes(attribute(node, "op"))) add(context, file, `PropertyCompare '${id}' has invalid op '${attribute(node, "op")}'.`);
-    if ((value ? 1 : 0) + (otherPropertyRef ? 1 : 0) !== 1) add(context, file, `PropertyCompare '${id}' requires exactly one of @value or @otherPropertyRef.`);
-    const lhsBase = normalizedPropertyBase(context, model, propertyRef);
+    const id = fieldRef || "<missing>";
+    resolveFieldReference(context, model, file, "FieldCompare @fieldRef", fieldRef, currentType);
+    if (!["lt", "lte", "gt", "gte"].includes(attribute(node, "op"))) add(context, file, `FieldCompare '${id}' has invalid op '${attribute(node, "op")}'.`);
+    if ((value ? 1 : 0) + (otherFieldRef ? 1 : 0) !== 1) add(context, file, `FieldCompare '${id}' requires exactly one of @value or @otherFieldRef.`);
+    const lhsBase = normalizedFieldBase(context, model, fieldRef);
     if (!lhsBase || !orderableBuiltins.has(lhsBase)) {
-      add(context, file, `PropertyCompare '${id}' left operand must have an orderable normalized base.`);
+      add(context, file, `FieldCompare '${id}' left operand must have an orderable normalized base.`);
     }
-    if (otherPropertyRef) {
-      resolvePropertyReference(context, model, file, "PropertyCompare @otherPropertyRef", otherPropertyRef, currentType);
-      const rhsBase = normalizedPropertyBase(context, model, otherPropertyRef);
+    if (otherFieldRef) {
+      resolveFieldReference(context, model, file, "FieldCompare @otherFieldRef", otherFieldRef, currentType);
+      const rhsBase = normalizedFieldBase(context, model, otherFieldRef);
       if (!lhsBase || !rhsBase || lhsBase !== rhsBase || !orderableBuiltins.has(lhsBase)) {
-        add(context, file, `PropertyCompare '${id}' operands must have the same orderable normalized base.`);
+        add(context, file, `FieldCompare '${id}' operands must have the same orderable normalized base.`);
       }
     }
     if (value) {
-      validateExecutableText(context, file, `PropertyCompare '${id}' @value`, value, true);
-      if (lhsBase === "builtin:Number" && !isJsonNumberLexical(value)) add(context, file, `PropertyCompare '${id}' value '${value}' is not a finite JSON number.`);
-      if (lhsBase === "builtin:Decimal" && !isDecimalLexical(value)) add(context, file, `PropertyCompare '${id}' value '${value}' is not an exact base-10 decimal.`);
-      if (lhsBase === "builtin:DateTime" && !isRfc3339(value)) add(context, file, `PropertyCompare '${id}' value '${value}' is not an RFC 3339 timestamp with offset.`);
+      validateExecutableText(context, file, `FieldCompare '${id}' @value`, value, true);
+      if (lhsBase === "builtin:Number" && !isJsonNumberLexical(value)) add(context, file, `FieldCompare '${id}' value '${value}' is not a finite JSON number.`);
+      if (lhsBase === "builtin:Decimal" && !isDecimalLexical(value)) add(context, file, `FieldCompare '${id}' value '${value}' is not an exact base-10 decimal.`);
+      if (lhsBase === "builtin:DateTime" && !isRfc3339(value)) add(context, file, `FieldCompare '${id}' value '${value}' is not an RFC 3339 timestamp with offset.`);
     }
     return;
   }
@@ -1981,55 +1981,55 @@ function validatePredicate(context: ValidationContext, model: TypeModel, file: s
     return;
   }
   if (element === "RelatedExists" || element === "EveryRelated") {
-    const relationRef = attribute(node, "relationRef");
-    expectReference(context, file, `<${element}> @relationRef`, relationRef, ["relation"]);
-    const nextType = relationEndpointContext(context, model, relationRef, currentType);
-    if (!nextType) add(context, file, `<${element}> relationRef '${relationRef}' is not compatible with predicate context object type '${currentType}'.`);
+    const relationDefRef = attribute(node, "relationDefRef");
+    expectReference(context, file, `<${element}> @relationDefRef`, relationDefRef, ["relation-def"]);
+    const nextType = relationDefEndpointContext(context, model, relationDefRef, currentType);
+    if (!nextType) add(context, file, `<${element}> relationDefRef '${relationDefRef}' is not compatible with predicate context class '${currentType}'.`);
     for (const [childName, child] of exactlyOnePredicate()) validatePredicate(context, model, file, childName, child, nextType ?? currentType);
     return;
   }
   if (element === "RelatedCount") {
-    const relationRef = attribute(node, "relationRef");
-    expectReference(context, file, "<RelatedCount> @relationRef", relationRef, ["relation"]);
-    if (!relationEndpointContext(context, model, relationRef, currentType)) add(context, file, `<RelatedCount> relationRef '${relationRef}' is not compatible with predicate context object type '${currentType}'.`);
+    const relationDefRef = attribute(node, "relationDefRef");
+    expectReference(context, file, "<RelatedCount> @relationDefRef", relationDefRef, ["relation-def"]);
+    if (!relationDefEndpointContext(context, model, relationDefRef, currentType)) add(context, file, `<RelatedCount> relationDefRef '${relationDefRef}' is not compatible with predicate context class '${currentType}'.`);
     if (!["eq", "neq", "lt", "lte", "gt", "gte"].includes(attribute(node, "op"))) add(context, file, `<RelatedCount> has invalid op '${attribute(node, "op")}'.`);
     if (!/^\d+$/.test(attribute(node, "value"))) add(context, file, "<RelatedCount> value must be a non-negative integer.");
     return;
   }
   if (element === "ExistsRelated") {
-    const relationRef = attribute(node, "relationRef");
-    expectReference(context, file, "<ExistsRelated> @relationRef", relationRef, ["relation"]);
+    const relationDefRef = attribute(node, "relationDefRef");
+    expectReference(context, file, "<ExistsRelated> @relationDefRef", relationDefRef, ["relation-def"]);
     expectReference(context, file, "<ExistsRelated> @targetTypeRef", attribute(node, "targetTypeRef"), entityTypeKinds);
     if (!["out", "in"].includes(attribute(node, "direction"))) add(context, file, `<ExistsRelated> has invalid direction '${attribute(node, "direction")}'.`);
-    const nextType = relationEndpointContext(context, model, relationRef, currentType, attribute(node, "direction"));
-    if (!nextType) add(context, file, `<ExistsRelated> relationRef '${relationRef}' direction '${attribute(node, "direction")}' is not compatible with predicate context object type '${currentType}'.`);
+    const nextType = relationDefEndpointContext(context, model, relationDefRef, currentType, attribute(node, "direction"));
+    if (!nextType) add(context, file, `<ExistsRelated> relationDefRef '${relationDefRef}' direction '${attribute(node, "direction")}' is not compatible with predicate context class '${currentType}'.`);
     else if (!isTypeAssignable(context, model, nextType, attribute(node, "targetTypeRef"))) {
-      add(context, file, `<ExistsRelated> targetTypeRef '${attribute(node, "targetTypeRef")}' is not compatible with relation endpoint '${nextType}'.`);
+      add(context, file, `<ExistsRelated> targetTypeRef '${attribute(node, "targetTypeRef")}' is not compatible with relation-def endpoint '${nextType}'.`);
     }
   }
 }
 
-function validateRelations(context: ValidationContext, model: TypeModel): void {
+function validateRelationDefs(context: ValidationContext, model: TypeModel): void {
   for (const declaration of context.declarations.values()) {
-    if (declaration.kind !== "relation") continue;
+    if (declaration.kind !== "relation-def") continue;
     const node = declaration.node;
     const id = declaration.id;
-    validateLocalName(context, declaration.file, `Relation '${id}' @name`, attribute(node, "name"));
-    for (const endpoint of ["fromTypeRef", "toTypeRef"]) {
+    validateLocalName(context, declaration.file, `RelationDef '${id}' @name`, attribute(node, "name"));
+    for (const endpoint of ["fromClassRef", "toClassRef"]) {
       const ref = attribute(node, endpoint);
-      const target = expectReference(context, declaration.file, `Relation '${id}' @${endpoint}`, ref, entityTypeKinds);
+      const target = expectReference(context, declaration.file, `RelationDef '${id}' @${endpoint}`, ref, entityTypeKinds);
       if (!target && context.declarations.has(ref)) {
-        add(context, declaration.file, `RELATION_ENDPOINT_KIND_MISMATCH: Relation '${id}' endpoint @${endpoint} must resolve to an entity ObjectType or BusinessObject declaration, not '${context.declarations.get(ref)!.kind}'.`);
+        add(context, declaration.file, `RELATION_ENDPOINT_KIND_MISMATCH: RelationDef '${id}' endpoint @${endpoint} must resolve to an entity Class or BusinessObject declaration, not '${context.declarations.get(ref)!.kind}'.`);
       }
     }
-    validateBoolean(context, declaration.file, `Relation '${id}' @directed`, attribute(node, "directed"));
+    validateBoolean(context, declaration.file, `RelationDef '${id}' @directed`, attribute(node, "directed"));
     const min = attribute(node, "min");
     const max = attribute(node, "max");
-    if (min && !/^\d+$/.test(min)) add(context, declaration.file, `Relation '${id}' @min must be a non-negative integer.`);
-    if (max && max !== "*" && !/^\d+$/.test(max)) add(context, declaration.file, `Relation '${id}' @max must be a non-negative integer or '*'.`);
-    if (min && max && /^\d+$/.test(min) && /^\d+$/.test(max) && Number(max) < Number(min)) add(context, declaration.file, `Relation '${id}' cardinality requires max >= min.`);
-    for (const property of model.propertiesByOwner.get(id) ?? []) {
-      if (!isRelationEdgePropertyType(context, property.typeRef)) add(context, declaration.file, `Relation '${id}' edge Property '${property.id}' must resolve to a scalar, enum, value, or JSON-compatible type.`);
+    if (min && !/^\d+$/.test(min)) add(context, declaration.file, `RelationDef '${id}' @min must be a non-negative integer.`);
+    if (max && max !== "*" && !/^\d+$/.test(max)) add(context, declaration.file, `RelationDef '${id}' @max must be a non-negative integer or '*'.`);
+    if (min && max && /^\d+$/.test(min) && /^\d+$/.test(max) && Number(max) < Number(min)) add(context, declaration.file, `RelationDef '${id}' cardinality requires max >= min.`);
+    for (const property of model.fieldsByOwner.get(id) ?? []) {
+      if (!isRelationDefEdgeFieldType(context, property.typeRef)) add(context, declaration.file, `RelationDef '${id}' edge Field '${property.id}' must resolve to a scalar, enum, value, or JSON-compatible type.`);
     }
   }
 }
@@ -2056,8 +2056,8 @@ function validateLifecycles(context: ValidationContext, model: TypeModel): void 
     const node = declaration.node;
     const subjectTypeRef = attribute(node, "subjectTypeRef");
     expectReference(context, declaration.file, `StateMachine '${id}' @subjectTypeRef`, subjectTypeRef, entityTypeKinds);
-    const statePropertyRef = attribute(node, "statePropertyRef");
-    resolvePropertyReference(context, model, declaration.file, `StateMachine '${id}' @statePropertyRef`, statePropertyRef, subjectTypeRef);
+    const stateFieldRef = attribute(node, "stateFieldRef");
+    resolveFieldReference(context, model, declaration.file, `StateMachine '${id}' @stateFieldRef`, stateFieldRef, subjectTypeRef);
     const states = childObjects(node, "States").flatMap((container) => childObjects(container, "State"));
     const stateIds = new Set<string>();
     const terminalStates = new Set<string>();
@@ -2088,13 +2088,13 @@ function validateLifecycles(context: ValidationContext, model: TypeModel): void 
       for (const guard of childObjects(transition, "Guard")) validatePredicate(context, model, declaration.file, "Guard", guard, subjectTypeRef);
       for (const effect of childObjects(transition, "Effects").flatMap((container) => directChildEntries(container))) {
         const [effectName, effectNode] = effect;
-        if (effectName === "SetProperty" || effectName === "ClearProperty") {
-          const propertyRef = attribute(effectNode, "propertyRef");
-          resolvePropertyReference(context, model, declaration.file, `<${effectName}> @propertyRef`, propertyRef, subjectTypeRef);
-        } else if (effectName === "CreateRelation" || effectName === "RemoveRelation") {
-          const relationRef = attribute(effectNode, "relationRef");
-          expectReference(context, declaration.file, `<${effectName}> @relationRef`, relationRef, ["relation"]);
-          if (!relationEndpointContext(context, model, relationRef, subjectTypeRef)) add(context, declaration.file, `<${effectName}> relationRef '${relationRef}' is not compatible with StateMachine '${id}' subjectTypeRef.`);
+        if (effectName === "SetField" || effectName === "ClearField") {
+          const fieldRef = attribute(effectNode, "fieldRef");
+          resolveFieldReference(context, model, declaration.file, `<${effectName}> @fieldRef`, fieldRef, subjectTypeRef);
+        } else if (effectName === "CreateRelationDef" || effectName === "RemoveRelationDef") {
+          const relationDefRef = attribute(effectNode, "relationDefRef");
+          expectReference(context, declaration.file, `<${effectName}> @relationDefRef`, relationDefRef, ["relation-def"]);
+          if (!relationDefEndpointContext(context, model, relationDefRef, subjectTypeRef)) add(context, declaration.file, `<${effectName}> relationDefRef '${relationDefRef}' is not compatible with StateMachine '${id}' subjectTypeRef.`);
         }
       }
     }
@@ -2164,11 +2164,11 @@ function validateProfiles(context: ValidationContext, model: TypeModel): void {
       }
     }
     if (kind === "association") {
-      for (const forbidden of ["from", "to", "fromTypeRef", "toTypeRef", "directed", "min", "max"]) {
-        if (hasAttribute(node, forbidden)) add(context, file, `ASSOCIATION_INLINE_RELATION_FACT: Association '${id}' must not redeclare DomainModel relation endpoints or cardinality.`);
+      for (const forbidden of ["from", "to", "fromClassRef", "toClassRef", "directed", "min", "max"]) {
+        if (hasAttribute(node, forbidden)) add(context, file, `ASSOCIATION_INLINE_RELATION_FACT: Association '${id}' must not redeclare DomainModel relation-def endpoints or cardinality.`);
       }
-      expectReference(context, file, `Association '${id}' @relationRef`, attribute(node, "relationRef"), ["relation"]);
-      if (childObjects(node, "Properties").length > 0) add(context, file, `ASSOCIATION_INLINE_RELATION_FACT: Association '${id}' must not redeclare DomainModel relation endpoints or edge properties.`);
+      expectReference(context, file, `Association '${id}' @relationDefRef`, attribute(node, "relationDefRef"), ["relation-def"]);
+      if (childObjects(node, "Fields").length > 0) add(context, file, `ASSOCIATION_INLINE_RELATION_FACT: Association '${id}' must not redeclare DomainModel relation-def endpoints or edge properties.`);
     }
     if (kind === "domain-policy") {
       validateOwnerRef(context, file, `DomainPolicy '${id}'`, attribute(node, "ownerKind"), attribute(node, "ownerRef"));
@@ -2200,7 +2200,7 @@ function validateProfiles(context: ValidationContext, model: TypeModel): void {
       }
     }
     if (kind === "event-contract") {
-      expectReference(context, file, `EventContract '${id}' @eventTypeRef`, attribute(node, "eventTypeRef"), ["object-type"]);
+      expectReference(context, file, `EventContract '${id}' @eventTypeRef`, attribute(node, "eventTypeRef"), ["class"]);
       for (const [element, ref] of childObjects(node, "Subjects").flatMap((container) => directChildEntries(container))) {
         expectReference(context, file, `EventContract '${id}' ${element}`, attribute(ref, "ref"), refElementKinds[element] ?? []);
       }
@@ -2209,7 +2209,7 @@ function validateProfiles(context: ValidationContext, model: TypeModel): void {
 }
 
 function validateBusinessObjectMembers(context: ValidationContext, model: TypeModel): void {
-  const allowedMemberKinds = new Set(["Action", "Mutation", "Interceptor", "ComputedFunction", "ConstraintHandler", "Lifecycle"]);
+  const allowedMemberKinds = new Set(["Operation", "Mutation", "Interceptor", "ComputedFunction", "ConstraintHandler", "Lifecycle"]);
   for (const document of context.documents.values()) {
     if (document.rootName === "BusinessObject") {
       const catalogIds = new Set<string>();
@@ -2234,15 +2234,15 @@ function validateBusinessObjectMembers(context: ValidationContext, model: TypeMo
     if (hasAttribute(document.root, "portability") && !portabilityValues.has(attribute(document.root, "portability"))) {
       add(context, document.file, `${document.rootName} '${declaration.id}' has invalid portability '${attribute(document.root, "portability")}'.`);
     }
-    if (document.rootName === "Action") {
+    if (document.rootName === "Operation") {
       for (const mutationRef of childObjects(document.root, "Mutations").flatMap((container) => childObjects(container, "Mutation"))) {
-        const mutation = expectReference(context, document.file, `Action '${declaration.id}' Mutation`, attribute(mutationRef, "ref"), ["mutation"]);
-        if (mutation && attribute(mutation.node, "ownerRef") !== ownerRef) add(context, document.file, `Action '${declaration.id}' composes Mutation '${mutation.id}' owned by a different BusinessObject.`);
+        const mutation = expectReference(context, document.file, `Operation '${declaration.id}' Mutation`, attribute(mutationRef, "ref"), ["mutation"]);
+        if (mutation && attribute(mutation.node, "ownerRef") !== ownerRef) add(context, document.file, `Operation '${declaration.id}' composes Mutation '${mutation.id}' owned by a different BusinessObject.`);
       }
     }
     if (document.rootName === "Interceptor") {
-      const action = expectReference(context, document.file, `Interceptor '${declaration.id}' @actionRef`, attribute(document.root, "actionRef"), ["action"]);
-      if (action && attribute(action.node, "ownerRef") !== ownerRef) add(context, document.file, `Interceptor '${declaration.id}' targets Action '${action.id}' owned by a different BusinessObject.`);
+      const operation = expectReference(context, document.file, `Interceptor '${declaration.id}' @operationRef`, attribute(document.root, "operationRef"), ["operation"]);
+      if (operation && attribute(operation.node, "ownerRef") !== ownerRef) add(context, document.file, `Interceptor '${declaration.id}' targets Operation '${operation.id}' owned by a different BusinessObject.`);
       if (!["before", "after"].includes(attribute(document.root, "phase"))) add(context, document.file, `Interceptor '${declaration.id}' phase must be 'before' or 'after'.`);
       if (!/^\d+$/.test(attribute(document.root, "seq"))) add(context, document.file, `Interceptor '${declaration.id}' seq must be a non-negative integer.`);
     }
@@ -2257,9 +2257,9 @@ function validateBusinessObjectMembers(context: ValidationContext, model: TypeMo
       const stateMachine = expectReference(context, document.file, `Lifecycle '${declaration.id}' @stateMachineRef`, attribute(document.root, "stateMachineRef"), ["state-machine"]);
       const businessObject = owner?.kind === "business-object" ? owner : null;
       if (stateMachine && businessObject) {
-        const businessObjectType = businessObject.id;
-        if (!isTypeAssignable(context, model, businessObjectType, attribute(stateMachine.node, "subjectTypeRef"))) {
-          add(context, document.file, `Lifecycle '${declaration.id}' stateMachineRef is not compatible with BusinessObject '${businessObjectType}'.`);
+        const businessClass = businessObject.id;
+        if (!isTypeAssignable(context, model, businessClass, attribute(stateMachine.node, "subjectTypeRef"))) {
+          add(context, document.file, `Lifecycle '${declaration.id}' stateMachineRef is not compatible with BusinessObject '${businessClass}'.`);
         }
       }
     }
@@ -2313,6 +2313,8 @@ function buildOperations(context: ValidationContext, model: TypeModel): Map<stri
     const effect = attribute(node, "effect");
     const subjectTypeRef = attribute(node, "subjectTypeRef");
     const ownerRef = attribute(node, "ownerRef");
+    const isCatalogOperation = Boolean(attribute(node, "verb") || owner || behavior || attribute(node, "subject") || attribute(node, "invocation") || effect);
+    if (!isCatalogOperation) continue;
     if (!verbPattern.test(attribute(node, "verb"))) add(context, declaration.file, `Operation '${id}' verb "${attribute(node, "verb")}" must be lowerCamelCase or PascalCase.`);
     if (!ownerKinds.has(attribute(node, "owner"))) add(context, declaration.file, `Operation '${id}' has invalid owner '${attribute(node, "owner")}'.`);
     if (!behaviorKinds.has(attribute(node, "behavior"))) add(context, declaration.file, `Operation '${id}' has invalid behavior '${attribute(node, "behavior")}'.`);
@@ -2417,7 +2419,7 @@ function validateJsonValueForType(context: ValidationContext, file: string, owne
     }
   }
   if (declaration?.kind === "union-type") return;
-  if (declaration?.kind === "object-type" || declaration?.kind === "business-object" || declaration?.kind === "mixin") {
+  if (declaration?.kind === "class" || declaration?.kind === "business-object" || declaration?.kind === "mixin") {
     validateObjectPayloadJson(context, file, owner, value, typeRef, model);
   }
 }
@@ -2427,7 +2429,7 @@ function validateObjectPayloadJson(context: ValidationContext, file: string, own
     add(context, file, `${owner} must be object for inputTypeRef "${inputTypeRef}".`);
     return;
   }
-  const properties = [...effectiveProperties(model, inputTypeRef).values()];
+  const properties = [...effectiveFields(model, inputTypeRef).values()];
   const byName = new Map(properties.map((property) => [property.name, property]));
   for (const property of properties) {
     if (property.required && !Object.hasOwn(payload, property.name)) add(context, file, `${owner} missing required field "${property.name}" for inputTypeRef "${inputTypeRef}".`);
@@ -2446,7 +2448,7 @@ function validatePayloadJson(context: ValidationContext, file: string, owner: st
   const inputTypeRef = attribute(operation, "inputTypeRef");
   if (!inputTypeRef) return;
   const declaration = context.declarations.get(inputTypeRef);
-  if (declaration?.kind === "object-type" || declaration?.kind === "business-object" || declaration?.kind === "mixin") validateObjectPayloadJson(context, file, owner, payload, inputTypeRef, model);
+  if (declaration?.kind === "class" || declaration?.kind === "business-object" || declaration?.kind === "mixin") validateObjectPayloadJson(context, file, owner, payload, inputTypeRef, model);
   else validateJsonValueForType(context, file, owner, payload, inputTypeRef, model);
 }
 
@@ -2623,7 +2625,7 @@ function validateOperationsAndBindings(context: ValidationContext, model: TypeMo
       const targetRef = attribute(declaration.node, "targetRef");
       if (!runtimeTargetKinds.has(targetKind)) add(context, declaration.file, `RuntimeBinding '${declaration.id}' has invalid targetKind '${targetKind}'.`);
       const expected = targetKind === "projection"
-        ? ["object-type", "relation", "rule", "state-machine", "operation", "business-object", "association", "domain-policy", "constraint-handler", "business-process", "capability", "event-contract"] as DeclarationKind[]
+        ? ["class", "relation-def", "rule", "state-machine", "operation", "business-object", "association", "domain-policy", "constraint-handler", "business-process", "capability", "event-contract"] as DeclarationKind[]
         : targetKindMap[targetKind] ?? [];
       const target = expectTargetReference(context, model, declaration.file, `RuntimeBinding '${declaration.id}' @targetRef`, targetKind, targetRef, expected);
       if (!portabilityValues.has(attribute(declaration.node, "portability"))) add(context, declaration.file, `RuntimeBinding '${declaration.id}' has invalid portability '${attribute(declaration.node, "portability")}'.`);
@@ -2697,12 +2699,12 @@ function validateEvolution(context: ValidationContext, model: TypeModel): void {
       const ownerRef = attribute(declaration.node, "ownerRef");
       if (!evolutionKinds.has(kind)) add(context, declaration.file, `Alias '${declaration.id}' has invalid kind '${kind}'.`);
       if (kind === "local-name") {
-        const owner = expectReference(context, declaration.file, `Alias '${declaration.id}' @ownerRef`, ownerRef, ["object-type", "mixin", "relation"]);
+        const owner = expectReference(context, declaration.file, `Alias '${declaration.id}' @ownerRef`, ownerRef, ["class", "mixin", "relation-def"]);
         if (!localNamePattern.test(from) || !localNamePattern.test(to)) add(context, declaration.file, `Alias '${declaration.id}' local-name @from and @to must be lowerCamelCase.`);
-        if (owner && ![...effectiveProperties(model, owner.id).values()].some((property) => property.name === to)) add(context, declaration.file, `Alias '${declaration.id}' @to local-name '${to}' is not declared by owner '${owner.id}'.`);
+        if (owner && ![...effectiveFields(model, owner.id).values()].some((property) => property.name === to)) add(context, declaration.file, `Alias '${declaration.id}' @to local-name '${to}' is not declared by owner '${owner.id}'.`);
       } else {
         if (hasAttribute(declaration.node, "ownerRef")) add(context, declaration.file, `Alias '${declaration.id}' forbids @ownerRef for kind '${kind}'.`);
-        const identityPattern = kind === "property" || kind === "computed-property" ? propertyRefPattern : fqnPattern;
+        const identityPattern = kind === "property" || kind === "computed-prop" ? fieldRefPattern : fqnPattern;
         if (!identityPattern.test(from) || !identityPattern.test(to)) add(context, declaration.file, `Alias '${declaration.id}' @from and @to must use the canonical identity syntax for kind '${kind}'.`);
         expectTargetReference(context, model, declaration.file, `Alias '${declaration.id}' @to`, kind, to, targetKindMap[kind] ?? []);
       }
@@ -2731,7 +2733,7 @@ function validateEvolution(context: ValidationContext, model: TypeModel): void {
         if (!["Add", "Remove", "Rename", "Alter"].includes(operation)) add(context, declaration.file, `Migration '${declaration.id}' has invalid change operation <${operation}>.`);
         if (!evolutionKinds.has(kind) || kind === "local-name") add(context, declaration.file, `Migration '${declaration.id}' <${operation}> has invalid kind '${kind}'.`);
         const currentTarget = operation === "Rename" ? attribute(node, "to") : attribute(node, "targetRef");
-        const identityPattern = kind === "property" || kind === "computed-property" ? propertyRefPattern : fqnPattern;
+        const identityPattern = kind === "property" || kind === "computed-prop" ? fieldRefPattern : fqnPattern;
         if (operation === "Rename" && !identityPattern.test(attribute(node, "from"))) add(context, declaration.file, `Migration '${declaration.id}' <Rename> @from must use the canonical identity syntax for kind '${kind}'.`);
         if (operation !== "Remove" && currentTarget) expectTargetReference(context, model, declaration.file, `Migration '${declaration.id}' <${operation}> target`, kind, currentTarget, targetKindMap[kind] ?? []);
         if (operation === "Remove" && currentTarget && !identityPattern.test(currentTarget)) add(context, declaration.file, `Migration '${declaration.id}' <Remove> targetRef must use the canonical identity syntax for kind '${kind}'.`);
@@ -2764,7 +2766,7 @@ function validateEvolution(context: ValidationContext, model: TypeModel): void {
 function validateGeneratedAndHypothesisModes(context: ValidationContext): void {
   if (context.generated && context.hypothesisOnly) return;
   const evidenceBearing = new Set<DeclarationKind>([
-    "object-type", "mixin", "relation", "rule", "state-machine", "derivation", "transition",
+    "class", "mixin", "relation-def", "rule", "state-machine", "derivation", "transition",
     "business-object", "association", "domain-policy", "constraint-handler", "business-process", "capability", "event-contract",
     "operation", "invocation-preset", "runtime-binding", "implementation-mapping", "alias", "migration",
   ]);
@@ -2787,7 +2789,7 @@ function validateBundleSemantics(context: ValidationContext): void {
   validateGenericElementSemantics(context);
   validateEvidence(context);
   const typeModel = buildTypeModel(context);
-  validateRelations(context, typeModel);
+  validateRelationDefs(context, typeModel);
   validateRules(context, typeModel);
   validateLifecycles(context, typeModel);
   validateProfiles(context, typeModel);

@@ -3,7 +3,7 @@
 `StateMachine` is a DomainModel mechanism manifest resource. It owns state-machine meaning independently from BusinessObject local lifecycle membership, controller methods, UI pages, event handlers, and operation handlers.
 
 ```xml
-<StateMachine fqn="ontology.maker-space.lifecycles.reservation" id="MakerSpace.Lifecycle.Reservation" subjectTypeRef="MakerSpace.Reservation" statePropertyRef="MakerSpace.Reservation#workflowState" initial="draft">
+<StateMachine fqn="ontology.maker-space.lifecycles.reservation" id="MakerSpace.Lifecycle.Reservation" subjectTypeRef="MakerSpace.Reservation" stateFieldRef="MakerSpace.Reservation#workflowState" initial="draft">
   <Description>Core reservation lifecycle.</Description>
   <States>
     <State id="draft" />
@@ -14,10 +14,10 @@
   <Transitions>
     <Transition id="MakerSpace.Transition.ApproveReservation" trigger="approveReservation" from="draft" to="approved">
       <Guard>
-        <PropertyEquals propertyRef="MakerSpace.Reservation#workflowState" value="draft" />
+        <FieldEquals fieldRef="MakerSpace.Reservation#workflowState" value="draft" />
       </Guard>
       <Effects>
-        <SetProperty propertyRef="MakerSpace.Reservation#workflowState" value="approved" />
+        <SetField fieldRef="MakerSpace.Reservation#workflowState" value="approved" />
       </Effects>
     </Transition>
   </Transitions>
@@ -26,9 +26,9 @@
 
 ## Grammar
 
-- `StateMachine` requires resource `fqn`, semantic `id`, `subjectTypeRef`, `statePropertyRef`, and local `initial` state ID.
-- `subjectTypeRef` resolves to a declared entity `ObjectType` or `BusinessObject`.
-- `statePropertyRef` resolves to a declared `Property` on the subject type, BusinessObject, inherited parent, or composed mixins.
+- `StateMachine` requires resource `fqn`, semantic `id`, `subjectTypeRef`, `stateFieldRef`, and local `initial` state ID.
+- `subjectTypeRef` resolves to a declared entity `Class` or `BusinessObject`.
+- `stateFieldRef` resolves to a declared `Field` on the subject type, BusinessObject, inherited parent, or composed mixins.
 - Optional `status` is `accepted|hypothesis`.
 - Direct children are optional `Description`, exactly one `States`, optional `Derivations`, exactly one `Transitions`, optional `Evidences`, in that order.
 - `initial` must name a declared state.
@@ -59,20 +59,20 @@
 - Direct children are optional `Description`, optional `Guard`, optional `Effects`, optional `Evidences`, in that order.
 - `Guard` contains exactly one predicate from the rule predicate vocabulary.
 - `Effects` contains one or more declarative effects.
-- Accepted transitions require evidence. Hypothesis transitions are not projected as executable actions by default.
+- Accepted transitions require evidence. Hypothesis transitions are not projected as executable operations by default.
 - A transition does not own an `Operation`; an `Operation` with `owner="lifecycle"` and `behavior="transition"` may reference this transition.
 
 ## Effect vocabulary
 
 ```xml
-<SetProperty propertyRef="MakerSpace.Reservation#workflowState" value="approved" />
-<ClearProperty propertyRef="MakerSpace.Reservation#holdReason" />
-<CreateRelation relationRef="MakerSpace.Relation.ReservesTool" targetRef="subject.requestedTool" />
-<RemoveRelation relationRef="MakerSpace.Relation.ReservesTool" targetRef="transition.previousTool" />
+<SetField fieldRef="MakerSpace.Reservation#workflowState" value="approved" />
+<ClearField fieldRef="MakerSpace.Reservation#holdReason" />
+<CreateRelationDef relationDefRef="MakerSpace.RelationDef.ReservesTool" targetRef="subject.requestedTool" />
+<RemoveRelationDef relationDefRef="MakerSpace.RelationDef.ReservesTool" targetRef="transition.previousTool" />
 ```
 
-- `SetProperty` and `ClearProperty` require `propertyRef` compatible with `subjectTypeRef`.
-- `CreateRelation` and `RemoveRelation` require `relationRef`; the relation endpoint must be compatible with the state machine subject.
+- `SetField` and `ClearField` require `fieldRef` compatible with `subjectTypeRef`.
+- `CreateRelationDef` and `RemoveRelationDef` require `relationDefRef`; the relation-def endpoint must be compatible with the state machine subject.
 - `targetRef` is a declarative projection reference whose supported vocabulary must be defined by the consuming compiler. It is not an executable expression.
 - Event publication is modeled by a DomainSemantics `EventContract` resource and/or an `Operation` that references this state machine or transition. `StateMachine` must not reference `EventContract` directly.
 
@@ -80,4 +80,4 @@ Semantic validation checks duplicate transitions, missing states, unreachable st
 
 ## Rejection rules
 
-Validators must reject lifecycle declarations nested under `BusinessObject` when they attempt to define a state machine inline instead of referencing a `StateMachine` resource; `statePropertyRef` that does not resolve to a declared property on the subject type; transition `trigger` values used as executable handler names without an `Operation` and `RuntimeBinding`; and effects that contain scripts, SQL, arbitrary expression strings, or runtime data mutations not represented by the typed effect vocabulary.
+Validators must reject lifecycle declarations nested under `BusinessObject` when they attempt to define a state machine inline instead of referencing a `StateMachine` resource; `stateFieldRef` that does not resolve to a declared field on the subject type; transition `trigger` values used as executable handler names without an `Operation` and `RuntimeBinding`; and effects that contain scripts, SQL, arbitrary expression strings, or runtime data mutations not represented by the typed effect vocabulary.

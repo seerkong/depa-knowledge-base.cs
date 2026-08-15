@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Class fqn="ontology.maker-space.classes.resource" id="MakerSpace.Resource" abstract="true" kind="entity">
+  <Description>Base persistent MakerSpace resource.</Description>
+  <Mixins>
+    <Mixin ref="MakerSpace.Mixin.Auditable" />
+  </Mixins>
+  <Fields>
+    <Field name="displayName" typeRef="builtin:String" required="false" />
+  </Fields>
+</Class>

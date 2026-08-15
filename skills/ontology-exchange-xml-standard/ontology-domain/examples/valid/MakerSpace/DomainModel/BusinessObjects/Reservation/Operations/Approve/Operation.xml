@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Operation fqn="ontology.maker-space.business-object.reservation.operation.approve" id="MakerSpace.Reservation.Operation.Approve" ownerRef="MakerSpace.Reservation" portability="portable">
+  <Description>Approve a requested reservation after its DomainModel rules pass.</Description>
+  <Mutations>
+    <Mutation ref="MakerSpace.Reservation.Mutation.MarkApproved" />
+  </Mutations>
+  <InternalLogic>Evaluate reservation approval constraints, then apply the declared mutation.</InternalLogic>
+  <Evidences>
+    <Evidence ref="manual:makerspace-policy" />
+  </Evidences>
+</Operation>

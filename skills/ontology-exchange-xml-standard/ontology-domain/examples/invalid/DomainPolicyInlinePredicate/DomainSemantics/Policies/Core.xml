@@ -5,7 +5,7 @@
     <DomainPolicy id="Invalid.Policy.Reservation" ownerKind="business-object" ownerRef="Invalid.Reservation">
       <Statement>Invalidly owns predicate content.</Statement>
       <When>
-        <PropertyEquals propertyRef="Invalid.Reservation#workflowState" value="requested" />
+        <FieldEquals fieldRef="Invalid.Reservation#workflowState" value="requested" />
       </When>
     </DomainPolicy>
   </DomainPolicies>

@@ -4,11 +4,11 @@
   <ManifestResourceCatalog id="scalar-types" kind="ScalarType" root="vfs://@/TypeSystem/ScalarTypes/" entry="ScalarType.xml" />
   <ManifestResourceCatalog id="enum-types" kind="EnumType" root="vfs://@/TypeSystem/EnumTypes/" entry="EnumType.xml" />
   <ManifestResourceCatalog id="mixins" kind="Mixin" root="vfs://@/TypeSystem/Mixins/" entry="Mixin.xml" />
-  <ManifestResourceCatalog id="object-types" kind="ObjectType" root="vfs://@/TypeSystem/ObjectTypes/" entry="ObjectType.xml" />
+  <ManifestResourceCatalog id="classes" kind="Class" root="vfs://@/TypeSystem/Classes/" entry="Class.xml" />
   <ManifestResourceCatalog id="union-types" kind="UnionType" root="vfs://@/TypeSystem/TypeExpressions/UnionTypes/" entry="UnionType.xml" />
   <ManifestResourceCatalog id="collection-types" kind="CollectionType" root="vfs://@/TypeSystem/TypeExpressions/CollectionTypes/" entry="CollectionType.xml" />
   <ManifestResourceCatalog id="business-objects" kind="BusinessObject" root="vfs://@/DomainModel/BusinessObjects/" entry="BusinessObject.xml" />
-  <ManifestResourceCatalog id="relations" kind="Relation" root="vfs://@/DomainModel/Relations/" entry="Relation.xml" />
+  <ManifestResourceCatalog id="relation-defs" kind="RelationDef" root="vfs://@/DomainModel/RelationDefs/" entry="RelationDef.xml" />
   <ManifestResourceCatalog id="rules" kind="Rule" root="vfs://@/DomainModel/Rules/" entry="Rule.xml" />
   <ManifestResourceCatalog id="state-machines" kind="StateMachine" root="vfs://@/DomainModel/StateMachines/" entry="StateMachine.xml" />
   <FileResourceCatalog id="associations" kind="AssociationCatalog" root="vfs://@/DomainSemantics/Associations/" />

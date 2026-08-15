@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Ontology fqn="ontology.invalid.bo-field-ref" id="Invalid.BoFieldRef" version="1.0.0">
+  <Description>Invalid BO field reference fixture.</Description>
+  <ManifestResourceCatalog id="classes" kind="Class" root="vfs://@/TypeSystem/Classes/" entry="Class.xml" />
+  <ManifestResourceCatalog id="business-objects" kind="BusinessObject" root="vfs://@/DomainModel/BusinessObjects/" entry="BusinessObject.xml" />
+</Ontology>

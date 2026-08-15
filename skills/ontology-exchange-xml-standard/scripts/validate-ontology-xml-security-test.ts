@@ -46,11 +46,11 @@ function replaceInManifest(tree: string, search: string, replacement: string): v
 
 try {
   const dotDotTree = copyCanonical("dot-dot");
-  replaceInManifest(dotDotTree, 'root="vfs://@/TypeSystem/ObjectTypes/"', 'root="vfs://@/../outside/types/"');
+  replaceInManifest(dotDotTree, 'root="vfs://@/TypeSystem/Classes/"', 'root="vfs://@/../outside/types/"');
   assertRejected(join(dotDotTree, "Manifest.xml"), dotDotTree, "dot-dot catalog root", /\.\.|escapes workspace root|catalog root.*unsafe/i);
 
   const percentTree = copyCanonical("percent");
-  replaceInManifest(percentTree, 'root="vfs://@/TypeSystem/ObjectTypes/"', 'root="vfs://@/%2e%2e/outside/types/"');
+  replaceInManifest(percentTree, 'root="vfs://@/TypeSystem/Classes/"', 'root="vfs://@/%2e%2e/outside/types/"');
   assertRejected(join(percentTree, "Manifest.xml"), percentTree, "percent-encoded catalog root", /percent|decode|\.\.|escapes workspace root|catalog root.*unsafe/i);
 
   const rootLinkWorkspace = join(root, "root-link-workspace");
@@ -65,9 +65,9 @@ try {
   const outsideTypes = join(root, "outside-types");
   mkdirSync(outsideTypes, { recursive: true });
   mkdirSync(join(outsideTypes, "Resource"), { recursive: true });
-  writeFileSync(join(outsideTypes, "Resource", "ObjectType.xml"), readFileSync(join(catalogLinkTree, "TypeSystem", "ObjectTypes", "Resource", "ObjectType.xml"), "utf8"));
-  rmSync(join(catalogLinkTree, "TypeSystem", "ObjectTypes"), { recursive: true, force: true });
-  symlinkSync(outsideTypes, join(catalogLinkTree, "TypeSystem", "ObjectTypes"));
+  writeFileSync(join(outsideTypes, "Resource", "Class.xml"), readFileSync(join(catalogLinkTree, "TypeSystem", "Classes", "Resource", "Class.xml"), "utf8"));
+  rmSync(join(catalogLinkTree, "TypeSystem", "Classes"), { recursive: true, force: true });
+  symlinkSync(outsideTypes, join(catalogLinkTree, "TypeSystem", "Classes"));
   assertRejected(join(catalogLinkTree, "Manifest.xml"), catalogLinkTree, "catalog-directory symlink", /symbolic link|escapes workspace root|catalog root.*unsafe/i);
 
   const doctypeTree = copyCanonical("doctype");

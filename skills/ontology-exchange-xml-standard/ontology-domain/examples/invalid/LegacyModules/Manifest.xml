@@ -2,6 +2,6 @@
 <Ontology fqn="ontology.invalid.legacy-modules" id="Invalid.LegacyModules" version="1.0.0">
   <Description>Invalid legacy Modules assembly.</Description>
   <Modules>
-    <Module kind="ObjectType" href="TypeSystem/ObjectTypes/Resource/ObjectType.xml" />
+    <Module kind="Class" href="TypeSystem/Classes/Resource/Class.xml" />
   </Modules>
 </Ontology>

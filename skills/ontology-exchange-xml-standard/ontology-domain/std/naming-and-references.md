@@ -2,15 +2,15 @@
 
 ## XML casing
 
-Use PascalCase for element names and FQN segments. XML attributes remain lower-case or lowerCamelCase as specified. Do not infer semantic identity from file layout.
+Use PascalCase for element names and FQN segments. XML fields remain lower-case or lowerCamelCase as specified. Do not infer semantic identity from file layout.
 
 ## Resource identity and semantic identity
 
-FS-native resource descriptors normalize to `kind`, `description`, and either `fqn` or `name`. In this ontology-domain package, the canonical resource identity is the root element's `fqn` attribute. The root `id` attribute remains a semantic declaration identity and must not be used as the FS-native identity source.
+FS-native resource descriptors normalize to `kind`, `description`, and either `fqn` or `name`. In this ontology-domain package, the canonical resource identity is the root element's `fqn` field. The root `id` field remains a semantic declaration identity and must not be used as the FS-native identity source.
 
 ```xml
 <Ontology fqn="ontology.maker-space" id="MakerSpace.Ontology" version="1.0.0">
-<ObjectType fqn="ontology.maker-space.object-types.resource" id="MakerSpace.Resource">
+<Class fqn="ontology.maker-space.classes.resource" id="MakerSpace.Resource">
 <OperationCatalog fqn="ontology.maker-space.operations" id="MakerSpace.Operations">
 ```
 
@@ -18,7 +18,7 @@ Semantic declaration IDs remain stable domain references:
 
 ```text
 MakerSpace.Reservation
-MakerSpace.Relation.ReservesTool
+MakerSpace.RelationDef.ReservesTool
 MakerSpace.Rule.ToolRequiresCertification
 MakerSpace.Lifecycle.Reservation
 MakerSpace.Operation.ApproveReservation
@@ -54,23 +54,23 @@ Reject absolute filesystem paths, bare relative paths, backslashes, and traversa
 Semantic references use IDs, not file paths:
 
 ```xml
-<PropertyPresent propertyRef="MakerSpace.Reservation#reservationNumber" />
+<FieldPresent fieldRef="MakerSpace.Reservation#reservationNumber" />
 <Evidence ref="backend:reservation-approval-policy" />
 <Operation ref="MakerSpace.Operation.ApproveReservation" />
 ```
 
 ## Reference kind table
 
-| Attribute or element | Required target kind |
+| Field or element | Required target kind |
 | --- | --- |
-| `typeRef` on Property-like value slots | built-in or declared scalar, enum, value/object ObjectType, union, or collection type; a Mixin is not a value type |
-| `subjectTypeRef`, relation endpoint refs, request subject `ref.type` | declared entity `ObjectType` or `BusinessObject` |
-| `inputTypeRef`, `outputTypeRef`, capability `Type@ref` | built-in or declared scalar, enum, ObjectType, BusinessObject, union, or collection type; a Mixin is not a value type |
-| `eventTypeRef` | declared event payload `ObjectType` |
-| `parentRef` | declared entity `ObjectType` or `BusinessObject` |
+| `typeRef` on Field-like value slots | built-in or declared scalar, enum, value/object Class, union, or collection type; a Mixin is not a value kind |
+| `subjectTypeRef`, relation-def endpoint refs, request subject `ref.type` | declared entity `Class` or `BusinessObject` |
+| `inputTypeRef`, `outputTypeRef`, capability `Type@ref` | built-in or declared scalar, enum, Class, BusinessObject, union, or collection type; a Mixin is not a value kind |
+| `eventTypeRef` | declared event payload `Class` |
+| `parentRef` | declared entity `Class` or `BusinessObject` |
 | `mixinRef`, `Mixin@ref` in a ref context | declared mixin |
-| `propertyRef`, `otherPropertyRef`, `statePropertyRef` | derived property path `<ObjectTypeOrBusinessObjectOrRelationFqn>#<localName>`; the local member is embedded in its owner and has no authored global ID |
-| `relationRef`, `Relation@ref` in a ref context | declared manifest `Relation` |
+| `fieldRef`, `otherFieldRef`, `stateFieldRef` | derived field path `<ClassOrBusinessObjectOrRelationDefFqn>#<localName>`; the local member is embedded in its owner and has no authored global ID |
+| `relationDefRef`, `RelationDef@ref` in a ref context | declared manifest `RelationDef` |
 | `ruleRef`, `Rule@ref` in a ref context | declared manifest `Rule` |
 | `stateMachineRef`, `StateMachine@ref` in a ref context | declared manifest `StateMachine`; a BusinessObject-local `Lifecycle` resource still has its own member id and points here |
 | `profileRef` | declared DomainSemantics or DomainModel profile resource |
@@ -83,7 +83,7 @@ Semantic references use IDs, not file paths:
 | `evidenceRef`, `Evidence@ref` in a ref context | declared `Evidence` |
 | `targetRef` in evolution operations | declaration kind named by `kind` |
 
-Do not overload one attribute with both FQN and path semantics. Do not overload a root `id` as both resource identity and semantic declaration identity.
+Do not overload one field with both FQN and path semantics. Do not overload a root `id` as both resource identity and semantic declaration identity.
 
 ## Semantic owner reference table
 
@@ -98,9 +98,9 @@ The same mapping applies to `DomainPolicy@ownerKind`, `ConstraintHandler@ownerKi
 | `constraint` | required | `ConstraintHandler` |
 | `business-process` | required | `BusinessProcess` |
 | `capability` | required | `Capability` |
-| `raw` | optional | `ObjectType` only for an explicitly structured raw context |
+| `raw` | optional | `Class` only for an explicitly structured raw context |
 
-The owner rows are identity references, not shortcuts to structural facts. Validators must reject a `business-object` ownerRef to a non-BO `ObjectType`, an `association` ownerRef to `Relation`, and a `constraint` ownerRef to `Rule`. The `lifecycle` row is deliberately `StateMachine`: the state-machine declaration owns lifecycle identity, while a BusinessObject-local `Lifecycle` resource is only a membership node.
+The owner rows are identity references, not shortcuts to structural facts. Validators must reject a `business-object` ownerRef to a non-BO `Class`, an `association` ownerRef to `RelationDef`, and a `constraint` ownerRef to `Rule`. The `lifecycle` row is deliberately `StateMachine`: the state-machine declaration owns lifecycle identity, while a BusinessObject-local `Lifecycle` resource is only a membership node.
 
 ## Execute request identity mapping
 
@@ -137,8 +137,8 @@ Do not introduce `*Refs` wrapper elements in latest XML. A singular element with
 
 Aliases are explicit `SchemaEvolutionModule` objects, not alternate declarations. `Alias@from` is a compatibility identity and `Alias@to` resolves to the canonical declaration of the matching kind.
 
-- ObjectType, mixin, relation, rule, lifecycle, profile, operation, binding, and mapping aliases use FQNs in both `from` and `to`.
-- Property and computed-property aliases use derived `<owner-fqn>#<localName>` paths; prefer `kind="local-name"` with `ownerRef` for ordinary attribute renames.
+- Class, mixin, relation-def, rule, lifecycle, profile, operation, binding, and mapping aliases use FQNs in both `from` and `to`.
+- Field and computed-prop aliases use derived `<owner-fqn>#<localName>` paths; prefer `kind="local-name"` with `ownerRef` for ordinary field renames.
 - Local-name aliases use lowerCamelCase `from` and `to` plus `ownerRef`.
 - Alias chains must resolve to one canonical declaration.
 - Self-aliases, cycles, conflicting sources, and kind mismatches are invalid.
@@ -149,4 +149,4 @@ Never define two semantic declarations because frontend, backend, database, or H
 
 `Ontology@version` is the immutable semantic schema version for one coherent ontology meaning. Existing bundles may use a documented monotonic token such as `v5`; new version lines should prefer semantic versions such as `1.2.0`.
 
-Start a new ontology version when changing object type, property, relation, lifecycle, rule, operation dimensions, request schema, effect, capability sets, binding contract, identity, or alias policy. Do not change semantic version merely because source revisions, file locations, evidence lines, resolver versions, generation time, output digest, seed data, or runtime rows changed.
+Start a new ontology version when changing class, field, relation-def, lifecycle, rule, operation dimensions, request schema, effect, capability sets, binding contract, identity, or alias policy. Do not change semantic version merely because source revisions, file locations, evidence lines, resolver versions, generation time, output digest, seed data, or runtime rows changed.

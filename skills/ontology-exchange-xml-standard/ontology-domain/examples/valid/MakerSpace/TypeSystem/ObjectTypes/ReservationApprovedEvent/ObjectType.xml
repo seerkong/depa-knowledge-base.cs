@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<ObjectType fqn="ontology.maker-space.object-types.reservation-approved-event" id="MakerSpace.EventType.ReservationApproved" kind="document">
-  <Description>Reservation approved event payload.</Description>
-  <Properties>
-    <Property name="reservationNumber" typeRef="MakerSpace.Type.ReservationNumber" required="true" />
-    <Property name="approvedAt" typeRef="builtin:DateTime" required="true" />
-  </Properties>
-</ObjectType>

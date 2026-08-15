@@ -1,4 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<ObjectType fqn="ontology.invalid.domain-policy-inline-predicate.object-types.resource" id="Invalid.Resource" kind="entity">
-  <Description>Minimal reusable parent type.</Description>
-</ObjectType>

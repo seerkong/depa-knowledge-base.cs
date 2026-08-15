@@ -27,10 +27,10 @@
 - Direct children are optional `Description`, then exactly one `Mappings`.
 - `Mappings` contains one or more `ImplementationMapping` declarations.
 - `ImplementationMapping` requires FQN `id`, `targetKind`, and `targetRef`.
-- `targetKind` is `object-type|property|relation|rule|state-machine|transition|business-object|association|domain-policy|constraint-handler|business-process|capability|event-contract|operation|runtime-binding`.
+- `targetKind` is `class|field|relation-def|rule|state-machine|transition|business-object|association|domain-policy|constraint-handler|business-process|capability|event-contract|operation|runtime-binding`.
 - `targetRef` resolves to the declaration kind named by `targetKind`.
 - Owner-level concepts use matching mapping target kinds: `business-object` -> `BusinessObject`, `association` -> `Association`, `constraint-handler` -> `ConstraintHandler`, `business-process` -> `BusinessProcess`, `capability` -> `Capability`, and `state-machine` -> lifecycle `StateMachine`.
-- A mapping whose `targetKind` is `object-type`, `relation`, or `rule` describes that DomainModel declaration only. It must not be interpreted as a mapping for a `business-object`, `association`, or constraint owner that references the lower declaration.
+- A mapping whose `targetKind` is `class`, `relation-def`, or `rule` describes that DomainModel declaration only. It must not be interpreted as a mapping for a `business-object`, `association`, or constraint owner that references the lower declaration.
 - `ImplementationMapping` does not allow `owner`, `ownerKind`, or `ownerRef`; ownership remains on the directly referenced semantic declaration.
 - Optional `status` is `accepted|hypothesis`.
 - Direct children are optional `Description`, optional `RepresentedBy`, optional `ImplementedBy`, optional `PresentedBy`, optional `StoredBy`, optional `ExposedBy`, optional `Enforces`, optional `Evidences`, in that order.
@@ -40,7 +40,7 @@
 
 ## CodeRef
 
-`CodeRef` requires stable `repository`, normalized `language`, bounded `kind`, and stable `symbol`. Optional attributes are `path`, `resolver`, and `confidence`. A Spring-derived role remains implementation evidence; the mapping is the explicit interpretation boundary.
+`CodeRef` requires stable `repository`, normalized `language`, bounded `kind`, and stable `symbol`. Optional fields are `path`, `resolver`, and `confidence`. A Spring-derived role remains implementation evidence; the mapping is the explicit interpretation boundary.
 
 ## Boundary rules
 

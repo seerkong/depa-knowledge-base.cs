@@ -56,8 +56,8 @@ type ManifestRepository = {
 type RequiredDomain = {
   domain: string;
   status: "covered" | "partial" | "missing";
-  typeRefs: string[];
-  relationRefs?: string[];
+  classRefs: string[];
+  relationDefRefs?: string[];
   ruleRefs?: string[];
   stateMachineRefs?: string[];
   transitionRefs?: string[];
@@ -107,8 +107,8 @@ type CoverageManifest = {
 };
 
 type OntologyCounts = {
-  types: number;
-  relations: number;
+  classes: number;
+  relationDefs: number;
   rules: number;
   stateMachines: number;
   transitions: number;
@@ -133,7 +133,7 @@ export type CoverageReport = {
   domains: Array<{
     domain: string;
     status: string;
-    types: number;
+    classes: number;
     mappings: number;
     evidence: number;
     waiverRef?: string;
@@ -179,8 +179,8 @@ export type CoverageValidationResult = {
 };
 
 const moduleRootNames = new Set([
-  "TypeModule",
-  "RelationModule",
+  "ClassModule",
+  "RelationDefModule",
   "RuleModule",
   "LifecycleModule",
   "ImplementationMappingModule",
@@ -197,7 +197,7 @@ function asArray<T>(value: T | T[] | undefined): T[] {
   return Array.isArray(value) ? value : [value];
 }
 
-function attribute(node: XmlObject, name: string): string {
+function field(node: XmlObject, name: string): string {
   return typeof node[`@_${name}`] === "string" ? String(node[`@_${name}`]) : "";
 }
 
@@ -238,8 +238,8 @@ type OntologyIndex = {
   documents: Array<{ file: string; rootName: string; source: string; root: XmlObject }>;
   transitionOwners: Map<string, string>;
   ids: {
-    types: Map<string, XmlObject>;
-    relations: Map<string, XmlObject>;
+    classes: Map<string, XmlObject>;
+    relationDefs: Map<string, XmlObject>;
     rules: Map<string, XmlObject>;
     stateMachines: Map<string, XmlObject>;
     transitions: Map<string, XmlObject>;
@@ -253,8 +253,8 @@ function emptyIndex(): OntologyIndex {
     documents: [],
     transitionOwners: new Map(),
     ids: {
-      types: new Map(),
-      relations: new Map(),
+      classes: new Map(),
+      relationDefs: new Map(),
       rules: new Map(),
       stateMachines: new Map(),
       transitions: new Map(),
@@ -313,7 +313,7 @@ function loadOntologyBundle(
     index.documents.push({ file, rootName, source, root });
 
     for (const [element, node] of objectEntriesDeep(root)) {
-      const href = attribute(node, "href");
+      const href = field(node, "href");
       if (!href || !moduleRootNames.has(element)) continue;
       const target = resolveHref(file, href, workspaceRoot);
       if (!target) {
@@ -327,8 +327,8 @@ function loadOntologyBundle(
   load(rootFile, "Ontology");
 
   const elementCollections: Record<string, keyof OntologyIndex["ids"]> = {
-    Type: "types",
-    Relation: "relations",
+    Class: "classes",
+    RelationDef: "relationDefs",
     Rule: "rules",
     StateMachine: "stateMachines",
     Transition: "transitions",
@@ -340,7 +340,7 @@ function loadOntologyBundle(
     for (const [element, node] of objectEntriesDeep(document.root)) {
       const collectionName = elementCollections[element];
       if (!collectionName) continue;
-      const id = attribute(node, "id");
+      const id = field(node, "id");
       if (!id) continue;
       const collection = index.ids[collectionName];
       if (collection.has(id)) {
@@ -353,7 +353,7 @@ function loadOntologyBundle(
   for (const [stateMachineId, stateMachine] of index.ids.stateMachines) {
     for (const [element, node] of objectEntriesDeep(stateMachine)) {
       if (element !== "Transition") continue;
-      const transitionId = attribute(node, "id");
+      const transitionId = field(node, "id");
       if (transitionId && !index.transitionOwners.has(transitionId)) {
         index.transitionOwners.set(transitionId, stateMachineId);
       }
@@ -368,8 +368,8 @@ function validatePortablePath(path: string): boolean {
 
 function knownSemanticIds(index: OntologyIndex): Set<string> {
   return new Set([
-    ...index.ids.types.keys(),
-    ...index.ids.relations.keys(),
+    ...index.ids.classes.keys(),
+    ...index.ids.relationDefs.keys(),
     ...index.ids.rules.keys(),
     ...index.ids.stateMachines.keys(),
     ...index.ids.transitions.keys(),
@@ -465,9 +465,9 @@ function validateEvidence(
 
   for (const [id, evidence] of [...index.ids.evidence.entries()].sort(([left], [right]) => left.localeCompare(right))) {
     const location = `evidence:${id}`;
-    const repositoryKey = attribute(evidence, "repository");
-    const revision = attribute(evidence, "revision");
-    const path = attribute(evidence, "path");
+    const repositoryKey = field(evidence, "repository");
+    const revision = field(evidence, "revision");
+    const path = field(evidence, "path");
     let anchorInvalid = false;
     if (!validatePortablePath(path)) {
       diagnostic(diagnostics, "EVIDENCE_PATH_INVALID", location, `Evidence path '${path}' must be repository-relative.`);
@@ -514,8 +514,8 @@ const domainRefCollections: Array<{
   ids: keyof OntologyIndex["ids"];
   code: string;
 }> = [
-  { field: "typeRefs", label: "type", ids: "types", code: "UNKNOWN_TYPE_REF" },
-  { field: "relationRefs", label: "relation", ids: "relations", code: "UNKNOWN_RELATION_REF" },
+  { field: "classRefs", label: "type", ids: "classes", code: "UNKNOWN_CLASS_REF" },
+  { field: "relationDefRefs", label: "relation-def", ids: "relationDefs", code: "UNKNOWN_RELATION_REF" },
   { field: "ruleRefs", label: "rule", ids: "rules", code: "UNKNOWN_RULE_REF" },
   { field: "stateMachineRefs", label: "state machine", ids: "stateMachines", code: "UNKNOWN_STATE_MACHINE_REF" },
   { field: "transitionRefs", label: "transition", ids: "transitions", code: "UNKNOWN_TRANSITION_REF" },
@@ -547,7 +547,7 @@ function validateDomains(
       diagnostic(diagnostics, "DOMAIN_STATUS_INVALID", location, `Unsupported domain status '${String(domain.status)}'.`);
     }
 
-    for (const requiredField of ["typeRefs", "mappingRefs", "evidenceRefs"] as const) {
+    for (const requiredField of ["classRefs", "mappingRefs", "evidenceRefs"] as const) {
       if (!Array.isArray(domain[requiredField])) {
         diagnostic(diagnostics, "DOMAIN_REFS_MISSING", location, `${requiredField} must be an array.`);
       } else if (domain.status === "covered" && domain[requiredField].length === 0) {
@@ -565,7 +565,7 @@ function validateDomains(
     reports.push({
       domain: domain.domain,
       status: domain.status,
-      types: asArray(domain.typeRefs).length,
+      classes: asArray(domain.classRefs).length,
       mappings: asArray(domain.mappingRefs).length,
       evidence: asArray(domain.evidenceRefs).length,
       ...(domain.waiverRef ? { waiverRef: domain.waiverRef } : {}),
@@ -670,8 +670,8 @@ function validateCanonicalCandidateCoverage(
     locationKind: string;
     label: string;
   }> = [
-    { ids: index.ids.types, locationKind: "type", label: "Type" },
-    { ids: index.ids.relations, locationKind: "relation", label: "Relation" },
+    { ids: index.ids.classes, locationKind: "class", label: "Class" },
+    { ids: index.ids.relationDefs, locationKind: "relation-def", label: "RelationDef" },
     { ids: index.ids.rules, locationKind: "rule", label: "Rule" },
     { ids: index.ids.stateMachines, locationKind: "state-machine", label: "StateMachine" },
     { ids: index.ids.mappings, locationKind: "mapping", label: "ImplementationMapping" },
@@ -774,7 +774,7 @@ function validateXmlEvidenceRefs(index: OntologyIndex, diagnostics: CoverageDiag
   for (const document of index.documents) {
     for (const [element, node] of objectEntriesDeep(document.root)) {
       if (element !== "EvidenceRef") continue;
-      const ref = attribute(node, "ref");
+      const ref = field(node, "ref");
       if (!index.ids.evidence.has(ref)) {
         diagnostic(diagnostics, "XML_EVIDENCE_REF_UNKNOWN", `${document.rootName}:${ref}`, `EvidenceRef '${ref}' does not resolve.`);
       }
@@ -847,7 +847,7 @@ export function validateOntologyCoverage(options: ValidateCoverageOptions): Cove
       report: {
         schemaVersion: 1,
         status: "FAIL",
-        ontology: { types: 0, relations: 0, rules: 0, stateMachines: 0, transitions: 0, mappings: 0, evidence: 0 },
+        ontology: { classes: 0, relationDefs: 0, rules: 0, stateMachines: 0, transitions: 0, mappings: 0, evidence: 0 },
         repositories: [],
         domains: [],
         candidates: { total: 0, mapped: 0, rejected: 0, unresolved: 0 },
@@ -911,8 +911,8 @@ export function validateOntologyCoverage(options: ValidateCoverageOptions): Cove
     schemaVersion: 1,
     status: sortedDiagnostics.length === 0 ? "PASS" : "FAIL",
     ontology: {
-      types: index.ids.types.size,
-      relations: index.ids.relations.size,
+      classes: index.ids.classes.size,
+      relationDefs: index.ids.relationDefs.size,
       rules: index.ids.rules.size,
       stateMachines: index.ids.stateMachines.size,
       transitions: index.ids.transitions.size,

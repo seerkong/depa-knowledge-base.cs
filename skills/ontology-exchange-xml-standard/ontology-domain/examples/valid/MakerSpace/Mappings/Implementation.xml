@@ -2,8 +2,8 @@
 <ImplementationMappingCatalog fqn="ontology.maker-space.mappings.implementation" id="MakerSpace.Mappings.Implementation">
   <Description>Implementation crosswalks for MakerSpace ontology declarations.</Description>
   <Mappings>
-    <ImplementationMapping id="MakerSpace.Mapping.ResourceRecord" targetKind="object-type" targetRef="MakerSpace.Resource" status="accepted">
-      <Description>Resource object type maps to the workbench resource record.</Description>
+    <ImplementationMapping id="MakerSpace.Mapping.ResourceRecord" targetKind="class" targetRef="MakerSpace.Resource" status="accepted">
+      <Description>Resource class maps to the workbench resource record.</Description>
       <RepresentedBy>
         <CodeRef repository="maker-workbench" language="typescript" kind="dto" symbol="ResourceRecord" path="src/contracts/resource.ts" resolver="manual" confidence="0.95" />
       </RepresentedBy>

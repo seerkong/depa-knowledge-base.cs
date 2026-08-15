@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ClassModule id="ExampleCatalog.Classes.Records">
+  <Classes>
+    <Class id="ExampleCatalog.Record" />
+  </Classes>
+</ClassModule>

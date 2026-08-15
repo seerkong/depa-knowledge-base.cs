@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<StateMachine fqn="ontology.maker-space.lifecycles.reservation" id="MakerSpace.Lifecycle.Reservation" subjectTypeRef="MakerSpace.Reservation" statePropertyRef="MakerSpace.Reservation#workflowState" initial="requested">
+<StateMachine fqn="ontology.maker-space.lifecycles.reservation" id="MakerSpace.Lifecycle.Reservation" subjectTypeRef="MakerSpace.Reservation" stateFieldRef="MakerSpace.Reservation#workflowState" initial="requested">
   <Description>Reservation state machine from request through return or cancellation.</Description>
   <States>
     <State id="requested" />
@@ -11,10 +11,10 @@
   <Transitions>
     <Transition id="MakerSpace.Transition.ApproveReservation" trigger="approveReservation" from="requested" to="approved">
       <Guard>
-        <PropertyEquals propertyRef="MakerSpace.Reservation#workflowState" value="requested" />
+        <FieldEquals fieldRef="MakerSpace.Reservation#workflowState" value="requested" />
       </Guard>
       <Effects>
-        <SetProperty propertyRef="MakerSpace.Reservation#workflowState" value="approved" />
+        <SetField fieldRef="MakerSpace.Reservation#workflowState" value="approved" />
       </Effects>
       <Evidences>
         <Evidence ref="manual:makerspace-policy" />
@@ -22,7 +22,7 @@
     </Transition>
     <Transition id="MakerSpace.Transition.CheckOutReservation" trigger="checkOutReservation" from="approved" to="checkedOut">
       <Effects>
-        <SetProperty propertyRef="MakerSpace.Reservation#workflowState" value="checkedOut" />
+        <SetField fieldRef="MakerSpace.Reservation#workflowState" value="checkedOut" />
       </Effects>
       <Evidences>
         <Evidence ref="manual:makerspace-policy" />
@@ -30,7 +30,7 @@
     </Transition>
     <Transition id="MakerSpace.Transition.ReturnReservation" trigger="returnReservation" from="checkedOut" to="returned">
       <Effects>
-        <SetProperty propertyRef="MakerSpace.Reservation#workflowState" value="returned" />
+        <SetField fieldRef="MakerSpace.Reservation#workflowState" value="returned" />
       </Effects>
       <Evidences>
         <Evidence ref="manual:makerspace-policy" />
@@ -38,7 +38,7 @@
     </Transition>
     <Transition id="MakerSpace.Transition.CancelReservation" trigger="cancelReservation" from="requested" to="cancelled">
       <Effects>
-        <SetProperty propertyRef="MakerSpace.Reservation#workflowState" value="cancelled" />
+        <SetField fieldRef="MakerSpace.Reservation#workflowState" value="cancelled" />
       </Effects>
       <Evidences>
         <Evidence ref="manual:makerspace-policy" />

@@ -13,7 +13,7 @@
     <Migration id="MakerSpace.Evolution.Migration.InitialReservation" fromVersion="0.9.0" toVersion="1.0.0" compatibility="breaking">
       <Description>Initial MakerSpace reservation ontology release.</Description>
       <Changes>
-        <Add kind="object-type" targetRef="MakerSpace.Resource" />
+        <Add kind="class" targetRef="MakerSpace.Resource" />
         <Add kind="business-object" targetRef="MakerSpace.Reservation" />
         <Add kind="operation" targetRef="MakerSpace.Operation.ApproveReservation" />
       </Changes>

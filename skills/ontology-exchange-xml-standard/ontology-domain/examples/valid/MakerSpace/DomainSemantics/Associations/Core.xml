@@ -2,13 +2,13 @@
 <AssociationCatalog fqn="ontology.maker-space.associations.core" id="MakerSpace.Associations.Core">
   <Description>MakerSpace association resources.</Description>
   <Associations>
-    <Association id="MakerSpace.Association.ReservationRequester" relationRef="MakerSpace.Relation.RequestedBy">
+    <Association id="MakerSpace.Association.ReservationRequester" relationDefRef="MakerSpace.RelationDef.RequestedBy">
       <Description>Reservation requester association resource.</Description>
       <Evidences>
         <Evidence ref="manual:makerspace-policy" />
       </Evidences>
     </Association>
-    <Association id="MakerSpace.Association.ReservedTool" relationRef="MakerSpace.Relation.ReservesTool">
+    <Association id="MakerSpace.Association.ReservedTool" relationDefRef="MakerSpace.RelationDef.ReservesTool">
       <Description>Reserved tool association resource.</Description>
       <Evidences>
         <Evidence ref="manual:makerspace-policy" />

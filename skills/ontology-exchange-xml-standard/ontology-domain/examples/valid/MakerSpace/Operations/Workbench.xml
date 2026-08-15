@@ -2,7 +2,7 @@
 <OperationCatalog fqn="ontology.maker-space.operations.workbench" id="MakerSpace.Operations.Workbench">
   <Description>MakerSpace workbench operation definitions and preview presets.</Description>
   <Operations>
-    <Operation id="MakerSpace.Operation.OpenShopDay" verb="OpenShopDay" owner="domain-context" behavior="action" subject="none" invocation="single" effect="mixed" inputTypeRef="MakerSpace.Raw.AdminCommand">
+    <Operation id="MakerSpace.Operation.OpenShopDay" verb="OpenShopDay" owner="domain-context" behavior="operation" subject="none" invocation="single" effect="mixed" inputTypeRef="MakerSpace.Raw.AdminCommand">
       <Description>Open a workshop operating day for reservations.</Description>
       <Capabilities>
         <Atomicity value="atomic" />
@@ -112,7 +112,7 @@
   <InvocationPresets>
     <InvocationPreset id="MakerSpace.Preset.OpenShopDay" operationRef="MakerSpace.Operation.OpenShopDay" default="true">
       <Title>Open shop day</Title>
-      <Description>Single no-subject domain-context action.</Description>
+      <Description>Single no-subject domain-context operation.</Description>
       <RequestJson><![CDATA[
 {
   "apiVersion": "1",
@@ -120,7 +120,7 @@
   "operation": {
     "ref": "MakerSpace.Operation.OpenShopDay",
     "ownerKind": "domain-context",
-    "behaviorKind": "action",
+    "behaviorKind": "operation",
     "subjectKind": "none",
     "invocationMode": "single",
     "effect": "mixed"

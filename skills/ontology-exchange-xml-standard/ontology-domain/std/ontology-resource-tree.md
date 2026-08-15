@@ -11,20 +11,20 @@ MakerSpace/
     ScalarTypes/*/ScalarType.xml
     EnumTypes/*/EnumType.xml
     Mixins/*/Mixin.xml
-    ObjectTypes/*/ObjectType.xml
+    Classes/*/Class.xml
     TypeExpressions/
       UnionTypes/*/UnionType.xml
       CollectionTypes/*/CollectionType.xml
   DomainModel/
     BusinessObjects/
       */BusinessObject.xml
-      */Actions/*/Action.xml
+      */Operations/*/Operation.xml
       */Mutations/*/Mutation.xml
       */Interceptors/*/Interceptor.xml
       */ComputedFunctions/*/ComputedFunction.xml
       */ConstraintHandlers/*/ConstraintHandler.xml
       */Lifecycles/*/Lifecycle.xml
-    Relations/*/Relation.xml
+    RelationDefs/*/RelationDef.xml
     Rules/*/Rule.xml
     StateMachines/*/StateMachine.xml
   DomainSemantics/
@@ -43,7 +43,7 @@ MakerSpace/
 
 Directory names are conventional, not identity. Catalog `kind` and each member descriptor decide resource kind and identity. Each ontology-domain resource root provides FS-native identity through `fqn`; `id` is the independent semantic identity carried by the resource.
 
-Composite concepts are represented by manifest resource nodes. A BusinessObject, ObjectType, Mixin, Relation, Rule, or StateMachine may own a local subtree and declare child catalogs relative to its own manifest boundary. The filesystem hierarchy is the explicit containment fact; global `id`/`fqn` remains identity and must not be used as the only signal for nested ownership.
+Composite concepts are represented by manifest resource nodes. A BusinessObject, Class, Mixin, RelationDef, Rule, or StateMachine may own a local subtree and declare child catalogs relative to its own manifest boundary. The filesystem hierarchy is the explicit containment fact; global `id`/`fqn` remains identity and must not be used as the only signal for nested ownership.
 
 Examples in this skill must use neutral domains such as MakerSpace. Do not reuse prior thread-specific business examples in skill documentation or fixtures.
 
@@ -58,11 +58,11 @@ The root must be an `Ontology` manifest Kind:
   <ManifestResourceCatalog id="scalar-types" kind="ScalarType" root="vfs://@/TypeSystem/ScalarTypes/" entry="ScalarType.xml" />
   <ManifestResourceCatalog id="enum-types" kind="EnumType" root="vfs://@/TypeSystem/EnumTypes/" entry="EnumType.xml" />
   <ManifestResourceCatalog id="mixins" kind="Mixin" root="vfs://@/TypeSystem/Mixins/" entry="Mixin.xml" />
-  <ManifestResourceCatalog id="object-types" kind="ObjectType" root="vfs://@/TypeSystem/ObjectTypes/" entry="ObjectType.xml" />
+  <ManifestResourceCatalog id="classes" kind="Class" root="vfs://@/TypeSystem/Classes/" entry="Class.xml" />
   <ManifestResourceCatalog id="union-types" kind="UnionType" root="vfs://@/TypeSystem/TypeExpressions/UnionTypes/" entry="UnionType.xml" />
   <ManifestResourceCatalog id="collection-types" kind="CollectionType" root="vfs://@/TypeSystem/TypeExpressions/CollectionTypes/" entry="CollectionType.xml" />
   <ManifestResourceCatalog id="business-objects" kind="BusinessObject" root="vfs://@/DomainModel/BusinessObjects/" entry="BusinessObject.xml" />
-  <ManifestResourceCatalog id="relations" kind="Relation" root="vfs://@/DomainModel/Relations/" entry="Relation.xml" />
+  <ManifestResourceCatalog id="relation-defs" kind="RelationDef" root="vfs://@/DomainModel/RelationDefs/" entry="RelationDef.xml" />
   <ManifestResourceCatalog id="rules" kind="Rule" root="vfs://@/DomainModel/Rules/" entry="Rule.xml" />
   <ManifestResourceCatalog id="state-machines" kind="StateMachine" root="vfs://@/DomainModel/StateMachines/" entry="StateMachine.xml" />
   <FileResourceCatalog id="associations" kind="AssociationCatalog" root="vfs://@/DomainSemantics/Associations/" />
@@ -85,9 +85,9 @@ Catalog discovery is first-level and shape-aware. File catalogs scan direct XML 
 
 | Layer | Resource kinds | Owns | Must not own |
 | --- | --- | --- | --- |
-| L0 TypeSystem | manifest `ScalarType`, `EnumType`, `Mixin`, `ObjectType`, `UnionType`, `CollectionType` | scalar aliases, enum types, neutral object/value types, unions, collections, mixins, embedded properties, computed property declarations | BO purpose, relation endpoints, predicates, lifecycle states, handlers |
-| L1 DomainModel mechanisms | manifest `BusinessObject`, `Relation`, `Rule`, `StateMachine`, and BO-owned `Action`, `Mutation`, `Interceptor`, `ComputedFunction`, `ConstraintHandler`, `Lifecycle` | BO object-type identity/properties, local behavior membership, relation endpoints/cardinality/edge properties, typed predicates/violations, states/transitions/derivations/effects | policy grouping, capability grouping, host code |
-| L2 DomainSemantics | file catalogs for associations, policies, constraint handlers, processes, capabilities, and events | semantic roles, participants, grouping, purpose, evidence, references to declared facts | relation endpoints, rule predicate bodies, lifecycle state machines, executable callbacks |
+| L0 TypeSystem | manifest `ScalarType`, `EnumType`, `Mixin`, `Class`, `UnionType`, `CollectionType` | scalar aliases, enum types, neutral object/value kinds, unions, collections, mixins, embedded fields, computed field declarations | BO purpose, relation-def endpoints, predicates, lifecycle states, handlers |
+| L1 DomainModel mechanisms | manifest `BusinessObject`, `RelationDef`, `Rule`, `StateMachine`, and BO-owned `Operation`, `Mutation`, `Interceptor`, `ComputedFunction`, `ConstraintHandler`, `Lifecycle` | BO class identity/fields, local behavior membership, relation-def endpoints/cardinality/edge fields, typed predicates/violations, states/transitions/derivations/effects | policy grouping, capability grouping, host code |
+| L2 DomainSemantics | file catalogs for associations, policies, constraint handlers, processes, capabilities, and events | semantic roles, participants, grouping, purpose, evidence, references to declared facts | relation-def endpoints, rule predicate bodies, lifecycle state machines, executable callbacks |
 | L3 operation definitions | `OperationCatalog` | operation identity, five dimensions, schemas, requestable capability sets, composition refs, complete `ExecuteOperationRequest v1` presets | lower structural facts, runtime implementation bodies, execution state or default execution choices |
 | L4 projection/governance | `EvidenceCatalog`, `RuntimeBindingCatalog`, `ImplementationMappingCatalog`, `SchemaEvolutionModule` | source material, runtime-supported capability sets, binding contracts, implementation crosswalks, aliases, migrations, generation provenance | executable code, duplicate current declarations, runtime data |
 
@@ -97,9 +97,9 @@ The validator may sort discovered resources by this dependency order before sema
 
 - `Manifest.xml` owns only ontology resource identity, ontology semantic identity, semantic version, description, and catalog declarations.
 - A TypeSystem or DomainModel resource owns the reusable structure it declares even when a DomainSemantics resource is the common human entry point.
-- A BusinessObject owns a local object-type manifest: identity, properties, computed properties, optional parent/Mixins, and BO-local Action, Mutation, Interceptor, ComputedFunction, ConstraintHandler, and Lifecycle concepts.
-- A BusinessObject subtree does not need or imply a shadow structural ObjectType with the same properties.
-- DomainSemantics resources reference declared facts through explicit `typeRef`, `propertyRef`, `relationRef`, `ruleRef`, and `stateMachineRef` attributes.
+- A BusinessObject owns a local class manifest: identity, fields, computed fields, optional parent/Mixins, and BO-local Operation, Mutation, Interceptor, ComputedFunction, ConstraintHandler, and Lifecycle concepts.
+- A BusinessObject subtree does not need or imply a shadow structural Class with the same fields.
+- DomainSemantics resources reference declared facts through explicit `typeRef`, `fieldRef`, `relationDefRef`, `ruleRef`, and `stateMachineRef` fields.
 - `DomainPolicy@ownerKind`, `ConstraintHandler@ownerKind`, and `Operation@owner` share the owner target-kind table in [naming-and-references.md](naming-and-references.md).
 - `OperationCatalog` references semantic owner identities and lower types. It is the authority for callable operation membership and does not make referenced facts its own.
 - An Operation's requestable capability set, a binding's runtime-supported subset, and a preset's execution choice are separate facts.
@@ -128,9 +128,9 @@ Validators must reject:
 - legacy per-resource assembly entries using `href`;
 - old grouped root assembly such as `BusinessObjects` under root assembly wrappers;
 - duplicate semantic IDs or evidence IDs;
-- any non-BO DomainSemantics resource that declares TypeSystem or DomainModel structural facts inline, and any BusinessObject property written as `Property@ref`;
-- any semantic owner ref that substitutes an `ObjectType`, `Relation`, or `Rule` for a matching `BusinessObject`, `Association`, or `ConstraintHandler` owner resource identity;
+- any non-BO DomainSemantics resource that declares TypeSystem or DomainModel structural facts inline, and any BusinessObject field written as `Field@ref`;
+- any semantic owner ref that substitutes an `Class`, `RelationDef`, or `Rule` for a matching `BusinessObject`, `Association`, or `ConstraintHandler` owner resource identity;
 - `Operation@atomicity`, `RuntimeBinding@atomicity`, a default atomicity, or unstructured generic capabilities that impersonate standard atomicity or observation sets;
 - an invocation preset using a simplified request envelope instead of a complete `ExecuteOperationRequest v1`;
 - any TypeSystem or DomainModel structural resource that references `Association`, `DomainPolicy`, `ConstraintHandler`, `BusinessProcess`, `Capability`, `EventContract`, or `Operation` in order to define its own structure;
-- any XML element or attribute that embeds executable code, callback bodies, arbitrary query strings, module paths for execution, or target-platform invocation instructions.
+- any XML element or field that embeds executable code, callback bodies, arbitrary query strings, module paths for execution, or target-platform invocation instructions.

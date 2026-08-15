@@ -3,12 +3,12 @@
   <Description>Member business-object resource.</Description>
   <Purpose>Represents a workshop member as a domain object.</Purpose>
   <Identity>
-    <Property name="memberNumber" typeRef="MakerSpace.Type.MemberNumber" required="true" />
+    <Field name="memberNumber" typeRef="MakerSpace.Type.MemberNumber" required="true" />
   </Identity>
-  <Properties>
-    <Property name="displayName" typeRef="builtin:String" required="true" role="display-name" />
-    <Property name="certificationState" typeRef="MakerSpace.Type.CertificationState" required="true" role="classification" />
-  </Properties>
+  <Fields>
+    <Field name="displayName" typeRef="builtin:String" required="true" role="display-name" />
+    <Field name="certificationState" typeRef="MakerSpace.Type.CertificationState" required="true" role="classification" />
+  </Fields>
   <Evidences>
     <Evidence ref="manual:makerspace-policy" />
   </Evidences>

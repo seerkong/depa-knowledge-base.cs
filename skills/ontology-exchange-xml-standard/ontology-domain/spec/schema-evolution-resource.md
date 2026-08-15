@@ -27,15 +27,15 @@
 - At least one of the three containers is required.
 - A bundle contains at most one `SchemaEvolutionModule`.
 - The module may reference declarations and evidence from the fully resolved bundle.
-- It must not duplicate current declarations from ObjectType, Relation, Rule, Lifecycle, profile, Operation, Evidence, Binding, or Mapping resources.
+- It must not duplicate current declarations from Class, RelationDef, Rule, Lifecycle, profile, Operation, Evidence, Binding, or Mapping resources.
 
 ## Alias grammar
 
 - `Aliases` contains one or more `Alias` declarations.
 - `Alias` requires FQN `id`, `kind`, `from`, `to`, and `sinceVersion`.
-- Optional attributes are `untilVersion` and `status`.
+- Optional fields are `untilVersion` and `status`.
 - `status` is `accepted|hypothesis`.
-- `kind` is `object-type|mixin|property|relation|rule|state-machine|transition|business-object|association|domain-policy|constraint-handler|business-process|capability|event-contract|operation|runtime-binding|implementation-mapping|local-name`.
+- `kind` is `class|mixin|field|relation-def|rule|state-machine|transition|business-object|association|domain-policy|constraint-handler|business-process|capability|event-contract|operation|runtime-binding|implementation-mapping|local-name`.
 - For all FQN kinds, `from` and `to` are FQNs and `ownerRef` is forbidden.
 - For `local-name`, `from` and `to` are local names and `ownerRef` is required; `ownerRef` resolves to the owning current declaration.
 - Direct children are optional `Description`, then optional `Evidences`.

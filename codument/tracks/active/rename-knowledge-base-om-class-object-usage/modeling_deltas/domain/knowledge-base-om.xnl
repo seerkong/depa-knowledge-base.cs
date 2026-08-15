@@ -1,0 +1,38 @@
+domain "knowledge-base-ontology-consumer" {
+  context "om-consumer-rename" {
+    concept "Class" {
+      description = "知识库消费 ontology OM 时使用的对象类别定义。"
+      replaces = "Type"
+    }
+
+    concept "Object" {
+      description = "知识库消费 ontology OM 时创建和读取的具体对象数据。"
+      replaces = "Entity"
+    }
+
+    concept "Field" {
+      description = "Class 定义上的字段。"
+      replaces = "Attribute"
+    }
+
+    concept "FieldValue" {
+      description = "Object 上持久化的字段值。"
+      replaces = "Property"
+    }
+
+    concept "ComputedProp" {
+      description = "Class 上的计算属性定义。"
+      replaces = "ComputedDef"
+    }
+
+    concept "RelationLink" {
+      description = "Object 到 Object 的显式持久化关系连线。"
+      replaces = "Edge"
+    }
+
+    concept "Operation" {
+      description = "Class 对外暴露的上层操作，可由 query 或 mutation 组合实现。"
+      replaces = "Action"
+    }
+  }
+}

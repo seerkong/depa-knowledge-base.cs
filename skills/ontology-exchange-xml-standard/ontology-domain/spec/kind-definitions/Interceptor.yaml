@@ -7,7 +7,7 @@ spec:
   sourceShapes: [manifest]
   descriptorSchema:
     rootElement: Interceptor
-    requiredAttributes: [fqn, id, ownerRef, actionRef, phase, seq, portability]
+    requiredAttributes: [fqn, id, ownerRef, operationRef, phase, seq, portability]
     requiredChildren: [Description]
   identity:
     fqn: { from: "@fqn", required: true }
@@ -17,8 +17,8 @@ spec:
   description: { path: Description, required: true, nonEmpty: true }
   crossResourceRules:
     - ownerRef-matches-containing-BusinessObject
-    - actionRef-resolves-to-same-owner-Action
+    - operationRef-resolves-to-same-owner-Operation
     - phase-is-before-or-after
   diagnostics:
     - code: INTERCEPTOR_TARGET_INVALID
-      message: Interceptor must target an Action owned by the same BusinessObject.
+      message: Interceptor must target an Operation owned by the same BusinessObject.

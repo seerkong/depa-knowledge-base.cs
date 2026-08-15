@@ -51,7 +51,7 @@ function machineProjection(coverageManifest: Record<string, unknown>) {
       conflictingEvidenceRefs: candidate.conflictingEvidenceRefs,
       acceptancePolicyRef: candidate.acceptancePolicyRef,
       reviewDecision: candidate.reviewDecision,
-      attributeNames: candidate.attributeNames,
+      fieldNames: candidate.fieldNames,
     })),
     signalDispositions: Object.fromEntries(
       Object.entries(signals).map(([family, dispositions]) => [
@@ -108,8 +108,8 @@ describe("localized ontology sidecars", () => {
     const recordCandidate = candidateRegister.candidates.find(
       (candidate: Record<string, unknown>) => candidate.proposedIdentity === "ExampleCatalog.Record",
     );
-    const recordDescription = readFileSync(resolve(ontologyDirectory, "types/records-storage.xml"), "utf8")
-      .match(/<Type id="ExampleCatalog\.Record"[\s\S]*?<Description>([^<]+)<\/Description>/)?.[1];
+    const recordDescription = readFileSync(resolve(ontologyDirectory, "classes/records-storage.xml"), "utf8")
+      .match(/<Class id="ExampleCatalog\.Record"[\s\S]*?<Description>([^<]+)<\/Description>/)?.[1];
     expect(recordCandidate.meaning).toBe(recordDescription);
   });
 });

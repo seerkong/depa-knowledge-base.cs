@@ -27,10 +27,10 @@ spec:
       - Association
     referencesLowerFactsOnly: true
   crossResourceRules:
-    - association-relationRef-resolves-to-Relation
+    - association-relationDefRef-resolves-to-RelationDef
     - no-inline-relation-endpoints-or-cardinality
   diagnostics:
     - code: ASSOCIATION_CATALOG_DESCRIPTION_MISSING
       message: AssociationCatalog must declare a non-empty Description.
     - code: ASSOCIATION_INLINE_RELATION_FACT
-      message: Association resources cannot repeat DomainModel relation endpoints or cardinality.
+      message: Association resources cannot repeat DomainModel relation-def endpoints or cardinality.

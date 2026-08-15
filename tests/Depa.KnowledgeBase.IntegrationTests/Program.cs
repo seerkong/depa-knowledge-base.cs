@@ -1080,29 +1080,29 @@ HarnessDiagnostics.Start("DEPA ontology and configuration");
     await depaOm.InitDepaOntologyAsync();
     await depaOm.InitDepaOntologyAsync();
 
-    string[] expectedDepaTypes =
+    string[] expectedDepaClasses =
     [
         "depa_capsule", "depa_contract", "depa_impl", "depa_reducer", "depa_projection",
         "depa_fact_source", "depa_runtime_param", "depa_runtime_carrier", "depa_entry",
         "depa_effect_api", "depa_violation",
     ];
-    var depaTypes = await depaOm.GetDescendantsAsync("depa_node");
-    Assert(depaTypes.Count == expectedDepaTypes.Length && expectedDepaTypes.All(depaTypes.Contains),
-        "depa_node should have exactly the 11 DEPA subtypes after double init (idempotent, no duplicates)");
-    Assert(await depaOm.IsSubtypeOfAsync("depa_violation", "depa_node"),
-        "every depa_* type should inherit from the depa_node root");
+    var depaClasses = await depaOm.GetDescendantsAsync("depa_node");
+    Assert(depaClasses.Count == expectedDepaClasses.Length && expectedDepaClasses.All(depaClasses.Contains),
+        "depa_node should have exactly the 11 DEPA subclasses after double init (idempotent, no duplicates)");
+    Assert(await depaOm.IsSubclassOfAsync("depa_violation", "depa_node"),
+        "every depa_* class should inherit from the depa_node root");
 
-    // Common attributes live on the root and are inherited; specific attributes on the subtype.
-    var violationAttrs = await depaOm.GetAttributeDefinitionsAsync("depa_violation");
+    // Common fields live on the root and are inherited; specific fields on the subtype.
+    var violationFields = await depaOm.GetFieldDefinitionsAsync("depa_violation");
     foreach (var attr in new[] { "symbol_id", "sym_key", "path", "line", "assigned_by", "confidence", "rule_id", "verdict", "dimension", "message", "evidence_json" })
     {
-        Assert(violationAttrs.ContainsKey(attr), $"depa_violation should expose inherited common + own attribute '{attr}'");
+        Assert(violationFields.ContainsKey(attr), $"depa_violation should expose inherited common + own field '{attr}'");
     }
-    var factSourceAttrs = await depaOm.GetAttributeDefinitionsAsync("depa_fact_source");
-    Assert(factSourceAttrs.ContainsKey("grade") && factSourceAttrs.ContainsKey("grade_id") && factSourceAttrs.ContainsKey("expected_owner"),
+    var factSourceFields = await depaOm.GetFieldDefinitionsAsync("depa_fact_source");
+    Assert(factSourceFields.ContainsKey("grade") && factSourceFields.ContainsKey("grade_id") && factSourceFields.ContainsKey("expected_owner"),
         "depa_fact_source should carry grade/grade_id/expected_owner");
-    var capsuleAttrs = await depaOm.GetAttributeDefinitionsAsync("depa_capsule");
-    Assert(capsuleAttrs.ContainsKey("name") && capsuleAttrs.ContainsKey("root_path") && capsuleAttrs.ContainsKey("internals_path"),
+    var capsuleFields = await depaOm.GetFieldDefinitionsAsync("depa_capsule");
+    Assert(capsuleFields.ContainsKey("name") && capsuleFields.ContainsKey("root_path") && capsuleFields.ContainsKey("internals_path"),
         "depa_capsule should carry name/root_path/internals_path");
 
     string[] expectedDepaRelations =
@@ -1127,37 +1127,37 @@ HarnessDiagnostics.Start("DEPA ontology and configuration");
         "exactly the five DEPA existential rules should exist after double init (idempotent)");
 
     // --- existential rules behave per design §2.3 (Check mode) ---
-    await depaOm.UpsertEntityAsync("depa:capsule:Sample", "depa_capsule", "Sample");
-    await depaOm.SetPropertyAsync("depa:capsule:Sample", "name", "Sample");
-    await depaOm.UpsertEntityAsync("depa:contract:IEffect", "depa_contract", "IEffect");
-    await depaOm.SetPropertyAsync("depa:contract:IEffect", "contract_kind", "effect");
-    await depaOm.UpsertEntityAsync("depa:contract:Dto", "depa_contract", "Dto");
-    await depaOm.SetPropertyAsync("depa:contract:Dto", "contract_kind", "types");
-    await depaOm.UpsertEntityAsync("depa:factsource:High", "depa_fact_source", "High");
-    await depaOm.SetPropertyAsync("depa:factsource:High", "grade", 2);
-    await depaOm.UpsertEntityAsync("depa:factsource:View", "depa_fact_source", "View");
-    await depaOm.SetPropertyAsync("depa:factsource:View", "grade", 6);
+    await depaOm.UpsertObjectAsync("depa:capsule:Sample", "depa_capsule", "Sample");
+    await depaOm.SetFieldValueAsync("depa:capsule:Sample", "name", "Sample");
+    await depaOm.UpsertObjectAsync("depa:contract:IEffect", "depa_contract", "IEffect");
+    await depaOm.SetFieldValueAsync("depa:contract:IEffect", "contract_kind", "effect");
+    await depaOm.UpsertObjectAsync("depa:contract:Dto", "depa_contract", "Dto");
+    await depaOm.SetFieldValueAsync("depa:contract:Dto", "contract_kind", "types");
+    await depaOm.UpsertObjectAsync("depa:factsource:High", "depa_fact_source", "High");
+    await depaOm.SetFieldValueAsync("depa:factsource:High", "grade", 2);
+    await depaOm.UpsertObjectAsync("depa:factsource:View", "depa_fact_source", "View");
+    await depaOm.SetFieldValueAsync("depa:factsource:View", "grade", 6);
 
     var depaCheck = await depaOm.CheckExistentialRulesAsync();
-    Assert(depaCheck.Any(v => v.Rule == "capsule_must_expose_entry" && v.EntityId == "depa:capsule:Sample"),
+    Assert(depaCheck.Any(v => v.Rule == "capsule_must_expose_entry" && v.ObjectId == "depa:capsule:Sample"),
         "capsule without an exposed entry should violate capsule_must_expose_entry");
-    Assert(depaCheck.Any(v => v.Rule == "contract_must_have_impl" && v.EntityId == "depa:contract:IEffect"),
+    Assert(depaCheck.Any(v => v.Rule == "contract_must_have_impl" && v.ObjectId == "depa:contract:IEffect"),
         "effect contract without impl should violate contract_must_have_impl");
-    Assert(!depaCheck.Any(v => v.Rule == "contract_must_have_impl" && v.EntityId == "depa:contract:Dto"),
+    Assert(!depaCheck.Any(v => v.Rule == "contract_must_have_impl" && v.ObjectId == "depa:contract:Dto"),
         "contract_must_have_impl should only apply where contract_kind=effect");
-    Assert(depaCheck.Any(v => v.Rule == "factsource_must_have_writer" && v.EntityId == "depa:factsource:High"),
+    Assert(depaCheck.Any(v => v.Rule == "factsource_must_have_writer" && v.ObjectId == "depa:factsource:High"),
         "grade<=3 fact source without writer should violate factsource_must_have_writer");
-    Assert(!depaCheck.Any(v => v.Rule == "factsource_must_have_writer" && v.EntityId == "depa:factsource:View"),
+    Assert(!depaCheck.Any(v => v.Rule == "factsource_must_have_writer" && v.ObjectId == "depa:factsource:View"),
         "factsource_must_have_writer should not apply above grade 3");
 
-    await depaOm.UpsertEntityAsync("depa:entry:Run", "depa_entry", "Run");
-    await depaOm.LinkEntitiesAsync("depa:capsule:Sample", "capsule_exposes", "depa:entry:Run");
-    await depaOm.UpsertEntityAsync("depa:violation:v1", "depa_violation", "v1");
-    await depaOm.LinkEntitiesAsync("depa:violation:v1", "violates", "depa:capsule:Sample");
+    await depaOm.UpsertObjectAsync("depa:entry:Run", "depa_entry", "Run");
+    await depaOm.CreateRelationLinkAsync("depa:capsule:Sample", "capsule_exposes", "depa:entry:Run");
+    await depaOm.UpsertObjectAsync("depa:violation:v1", "depa_violation", "v1");
+    await depaOm.CreateRelationLinkAsync("depa:violation:v1", "violates", "depa:capsule:Sample");
     var depaRecheck = await depaOm.CheckExistentialRulesAsync();
-    Assert(!depaRecheck.Any(v => v.Rule == "capsule_must_expose_entry" && v.EntityId == "depa:capsule:Sample"),
+    Assert(!depaRecheck.Any(v => v.Rule == "capsule_must_expose_entry" && v.ObjectId == "depa:capsule:Sample"),
         "capsule with a capsule_exposes edge should satisfy capsule_must_expose_entry");
-    Assert(!depaRecheck.Any(v => v.Rule == "violation_must_have_subject" && v.EntityId == "depa:violation:v1"),
+    Assert(!depaRecheck.Any(v => v.Rule == "violation_must_have_subject" && v.ObjectId == "depa:violation:v1"),
         "violates edge to any depa_node subtype should satisfy violation_must_have_subject");
 
     // --- built-in whitelist glob matching (design §4.1), table driven ---
@@ -1228,24 +1228,24 @@ HarnessDiagnostics.Start("DEPA ontology and configuration");
         // --- depa_effect_api materialization (SyncEffectApisAsync), idempotent upsert ---
         var builtinSynced = await depaOm.SyncEffectApisAsync();
         Assert(builtinSynced == DepaEffectCatalog.BuiltIn.Count
-            && (await depaOm.FindByTypeAsync("depa_effect_api")).Count == DepaEffectCatalog.BuiltIn.Count,
+            && (await depaOm.FindByClassAsync("depa_effect_api")).Count == DepaEffectCatalog.BuiltIn.Count,
             "sync without a user file should materialize exactly the built-in whitelist");
 
         var synced = await depaOm.SyncEffectApisAsync(effectsPath);
-        var effectApis = await depaOm.FindByTypeAsync("depa_effect_api");
+        var effectApis = await depaOm.FindByClassAsync("depa_effect_api");
         Assert(synced == DepaEffectCatalog.BuiltIn.Count + 2 && effectApis.Count == DepaEffectCatalog.BuiltIn.Count + 2,
             "sync with a user file should upsert overridden patterns in place and append new ones");
         const string consoleApiId = "depa:effectapi:System.Console.**";
-        Assert(AsString(await depaOm.GetPropertyAsync(consoleApiId, "category")) == "exempt_contract"
-            && AsString(await depaOm.GetPropertyAsync(consoleApiId, "target_pattern")) == "System.Console.**"
-            && AsString(await depaOm.GetPropertyAsync(consoleApiId, "assigned_by")) == "config",
+        Assert(AsString(await depaOm.GetFieldValueAsync(consoleApiId, "category")) == "exempt_contract"
+            && AsString(await depaOm.GetFieldValueAsync(consoleApiId, "target_pattern")) == "System.Console.**"
+            && AsString(await depaOm.GetFieldValueAsync(consoleApiId, "assigned_by")) == "config",
             "materialized depa_effect_api should carry target_pattern/category/assigned_by, with user override applied");
-        Assert(AsString(await depaOm.GetPropertyAsync("depa:effectapi:MyIo.**", "direction")) == "write",
+        Assert(AsString(await depaOm.GetFieldValueAsync("depa:effectapi:MyIo.**", "direction")) == "write",
             "materialized user entry should carry its direction");
 
         var syncedAgain = await depaOm.SyncEffectApisAsync(effectsPath);
-        Assert(syncedAgain == synced && (await depaOm.FindByTypeAsync("depa_effect_api")).Count == effectApis.Count,
-            "repeated sync should be an idempotent upsert (no duplicate entities)");
+        Assert(syncedAgain == synced && (await depaOm.FindByClassAsync("depa_effect_api")).Count == effectApis.Count,
+            "repeated sync should be an idempotent upsert (no duplicate objects)");
 
         // --- depa-map.json parsing (design §4.3): full / missing / partial ---
         var mapPath = Path.Combine(depaTmp.FullName, "depa-map.json");
@@ -1259,7 +1259,7 @@ HarnessDiagnostics.Start("DEPA ontology and configuration");
           "runtimeCarrierTypes": ["CozoOmRuntime"],
           "factSources": [
             { "symbolOrPath": "CozoOmRuntime.SchemaCache", "grade": 6, "expectedOwner": "depa:impl:SchemaLogic" },
-            { "symbolOrPath": "om_entity", "grade": 1 }
+            { "symbolOrPath": "om_object", "grade": 1 }
           ]
         }
         """);
@@ -1380,7 +1380,7 @@ HarnessDiagnostics.Start("DEPA observation and scan");
         await scanOm.IndexCodeKnowledgeAsync(DepaScanFixture());
 
         var scanResult = await scanOm.DepaScanAsync(new DepaScanOptions(MapPath: scanMapPath));
-        // capsule + contract + fact source (config channel) plus the impl/entry entities derived
+        // capsule + contract + fact source (config channel) plus the impl/entry objects derived
         // through them inherit config; the fact-writer impl inferred from a write ACCESSES edge is
         // the single heuristic-grade judgement.
         Assert(scanResult.AnnotatedFromConfig == 5 && scanResult.AnnotatedFromHeuristic == 1,
@@ -1391,30 +1391,30 @@ HarnessDiagnostics.Start("DEPA observation and scan");
         const string implId = "depa:impl:csharp:Demo.StoreImpl#0";
         const string entryId = "depa:entry:csharp:Demo.Api.Run#0";
         const string factId = "depa:factsource:csharp:Demo.StoreImpl.SchemaCache#0";
-        Assert(AsString(await scanOm.GetPropertyAsync(capsuleId, "assigned_by")) == "config"
-            && AsString(await scanOm.GetPropertyAsync(capsuleId, "root_path")) == "src/Om.Core",
+        Assert(AsString(await scanOm.GetFieldValueAsync(capsuleId, "assigned_by")) == "config"
+            && AsString(await scanOm.GetFieldValueAsync(capsuleId, "root_path")) == "src/Om.Core",
             "declared capsule should materialize as depa_capsule with assigned_by=config");
-        Assert(AsString(await scanOm.GetPropertyAsync(contractId, "assigned_by")) == "config"
-            && AsString(await scanOm.GetPropertyAsync(contractId, "contract_kind")) == "effect"
-            && AsString(await scanOm.GetPropertyAsync(contractId, "symbol_id")) == "sym:istore"
-            && AsString(await scanOm.GetPropertyAsync(contractId, "path")) == "src/Om.Core/Contracts/IStore.cs",
+        Assert(AsString(await scanOm.GetFieldValueAsync(contractId, "assigned_by")) == "config"
+            && AsString(await scanOm.GetFieldValueAsync(contractId, "contract_kind")) == "effect"
+            && AsString(await scanOm.GetFieldValueAsync(contractId, "symbol_id")) == "sym:istore"
+            && AsString(await scanOm.GetFieldValueAsync(contractId, "path")) == "src/Om.Core/Contracts/IStore.cs",
             "contract-package interface should materialize as depa_contract (config, effect kind, ck anchor)");
-        Assert(AsString(await scanOm.GetPropertyAsync(factId, "grade_id")) == "authoritative_fact"
-            && (await scanOm.GetPropertyAsync(factId, "grade"))?.GetDouble() == 1,
+        Assert(AsString(await scanOm.GetFieldValueAsync(factId, "grade_id")) == "authoritative_fact"
+            && (await scanOm.GetFieldValueAsync(factId, "grade"))?.GetDouble() == 1,
             "graded fact source should carry grade + the fact-source-truth grade_id vocabulary");
 
         var containsOut = await scanOm.GetNeighborsAsync(capsuleId, "capsule_contains", OmDirection.Outgoing);
-        Assert(containsOut.Outgoing.Select(n => n.EntityId).ToHashSet()
+        Assert(containsOut.Outgoing.Select(n => n.ObjectId).ToHashSet()
                 .IsSupersetOf([contractId, implId, entryId, factId]),
             "capsule_contains should cover every anchored member under the capsule root (contract/impl/entry/fact source)");
-        Assert((await scanOm.GetNeighborsAsync(capsuleId, "capsule_exposes", OmDirection.Outgoing)).Outgoing.Single().EntityId == entryId
-            && AsString(await scanOm.GetPropertyAsync(entryId, "entry_kind")) == "public_api",
+        Assert((await scanOm.GetNeighborsAsync(capsuleId, "capsule_exposes", OmDirection.Outgoing)).Outgoing.Single().ObjectId == entryId
+            && AsString(await scanOm.GetFieldValueAsync(entryId, "entry_kind")) == "public_api",
             "ck_entry_point ∩ capsule members should materialize depa_entry + capsule_exposes");
-        Assert((await scanOm.GetNeighborsAsync(contractId, "contract_implemented_by", OmDirection.Outgoing)).Outgoing.Single().EntityId == implId,
+        Assert((await scanOm.GetNeighborsAsync(contractId, "contract_implemented_by", OmDirection.Outgoing)).Outgoing.Single().ObjectId == implId,
             "IMPLEMENTS observation should materialize contract_implemented_by onto a depa_impl");
-        Assert((await scanOm.GetNeighborsAsync(entryId, "entry_delegates_to", OmDirection.Outgoing)).Outgoing.Single().EntityId == implId,
+        Assert((await scanOm.GetNeighborsAsync(entryId, "entry_delegates_to", OmDirection.Outgoing)).Outgoing.Single().ObjectId == implId,
             "CALLS from the entry into a depa_impl should materialize entry_delegates_to");
-        Assert((await scanOm.GetNeighborsAsync(factId, "fact_written_by", OmDirection.Outgoing)).Outgoing.Single().EntityId == "depa:impl:csharp:Demo.StoreImpl.Save#1",
+        Assert((await scanOm.GetNeighborsAsync(factId, "fact_written_by", OmDirection.Outgoing)).Outgoing.Single().ObjectId == "depa:impl:csharp:Demo.StoreImpl.Save#1",
             "write-evidence ACCESSES should materialize fact_written_by up to the writer impl");
         // With the ③ detection segment in place (track add-llm-wiki-depa-conformance-tools),
         // a fixture that satisfies all five existential rules still reports BLOCKED for the
@@ -1438,21 +1438,21 @@ HarnessDiagnostics.Start("DEPA observation and scan");
             && scanResult.DetectionVerdicts["V-L3"] == "PASS" && scanResult.DetectionVerdicts["V-E1"] == "BLOCKED",
             "runnable detectors with no hits should report PASS while input-missing detectors report BLOCKED");
         Assert(scanResult.Violations.Count == 0,
-            "a compliant fixture should materialize zero depa_violation entities");
+            "a compliant fixture should materialize zero depa_violation objects");
 
         // --- scan-idempotent (delta case): second scan over the same data — same output, no
-        // duplicate entities or relations ---
+        // duplicate objects or relations ---
         var scanAgain = await scanOm.DepaScanAsync(new DepaScanOptions(MapPath: scanMapPath));
-        Assert(scanAgain.EntityCounts.OrderBy(p => p.Key, StringComparer.Ordinal).SequenceEqual(scanResult.EntityCounts.OrderBy(p => p.Key, StringComparer.Ordinal))
-            && scanAgain.RelationCounts.OrderBy(p => p.Key, StringComparer.Ordinal).SequenceEqual(scanResult.RelationCounts.OrderBy(p => p.Key, StringComparer.Ordinal))
+        Assert(scanAgain.ObjectCounts.OrderBy(p => p.Key, StringComparer.Ordinal).SequenceEqual(scanResult.ObjectCounts.OrderBy(p => p.Key, StringComparer.Ordinal))
+            && scanAgain.RelationLinkCounts.OrderBy(p => p.Key, StringComparer.Ordinal).SequenceEqual(scanResult.RelationLinkCounts.OrderBy(p => p.Key, StringComparer.Ordinal))
             && scanAgain.RuleFindings.SequenceEqual(scanResult.RuleFindings)
             && scanAgain.Violations.Count == scanResult.Violations.Count,
-            "repeated depa_scan should report identical entity/relation counts, findings and violations");
-        Assert((await scanOm.FindByTypeAsync("depa_contract")).Count == 1
-            && (await scanOm.FindByTypeAsync("depa_capsule")).Count == 1
+            "repeated depa_scan should report identical object/relation counts, findings and violations");
+        Assert((await scanOm.FindByClassAsync("depa_contract")).Count == 1
+            && (await scanOm.FindByClassAsync("depa_capsule")).Count == 1
             && (await scanOm.GetNeighborsAsync(capsuleId, "capsule_contains", OmDirection.Outgoing)).Outgoing.Count == containsOut.Outgoing.Count
             && (await scanOm.GetNeighborsAsync(contractId, "contract_implemented_by", OmDirection.Outgoing)).Outgoing.Count == 1,
-            "repeated depa_scan should upsert in place — no duplicate depa entities or relation rows");
+            "repeated depa_scan should upsert in place — no duplicate depa objects or relation rows");
 
         // --- heuristic-annotation (delta case): no depa-map.json, Contracts/ interface →
         // depa_contract with assigned_by=heuristic and confidence <= 0.7 ---
@@ -1463,14 +1463,14 @@ HarnessDiagnostics.Start("DEPA observation and scan");
         var heurResult = await heurOm.DepaScanAsync();
         Assert(heurResult.AnnotatedFromConfig == 0 && heurResult.AnnotatedFromHeuristic >= 1,
             "without a config file the heuristic fallback should still fire");
-        Assert(AsString(await heurOm.GetPropertyAsync(contractId, "assigned_by")) == "heuristic"
-            && (await heurOm.GetPropertyAsync(contractId, "confidence"))?.GetDouble() <= 0.7,
+        Assert(AsString(await heurOm.GetFieldValueAsync(contractId, "assigned_by")) == "heuristic"
+            && (await heurOm.GetFieldValueAsync(contractId, "confidence"))?.GetDouble() <= 0.7,
             "Contracts/-directory interface should be judged as depa_contract with assigned_by=heuristic and confidence <= 0.7");
-        Assert((await heurOm.FindByTypeAsync("depa_capsule")).Count == 0,
+        Assert((await heurOm.FindByClassAsync("depa_capsule")).Count == 0,
             "heuristics must not invent capsules — only depa-map.json declares them");
 
         // --- blocked-not-guess (delta case): zero annotations → BLOCKED rows explaining the
-        // missing inputs, zero materialized entities, zero guessed violations ---
+        // missing inputs, zero materialized objects, zero guessed violations ---
         using var blockedDb = new CozoDb(engine: "mem", path: "");
         var blockedOm = new CozoOm(blockedDb);
         await blockedOm.InitCodeKnowledgeAsync();
@@ -1480,7 +1480,7 @@ HarnessDiagnostics.Start("DEPA observation and scan");
             Symbols: [new CodeSymbolFact("sym:widget", "file:p1", "Widget", "class", 1, 9, SymKey: "csharp:App.Widget#0")]));
         var blockedResult = await blockedOm.DepaScanAsync();
         Assert(blockedResult.AnnotatedFromConfig == 0 && blockedResult.AnnotatedFromHeuristic == 0
-            && blockedResult.EntityCounts.Count == 0 && blockedResult.RelationCounts.Count == 0,
+            && blockedResult.ObjectCounts.Count == 0 && blockedResult.RelationLinkCounts.Count == 0,
             "zero annotations should materialize nothing");
         string[] annotationDependentRules =
         [
@@ -1500,10 +1500,10 @@ HarnessDiagnostics.Start("DEPA observation and scan");
             "annotation-dependent rules and all eight detectors should each report BLOCKED with the missing-input explanation (BLOCKED != PASS, no guessing)");
         Assert(detectionRules.All(rule => blockedResult.DetectionVerdicts[rule] == "BLOCKED") && blockedResult.Violations.Count == 0,
             "zero annotations should block every detector without guessing violations");
-        Assert((await blockedOm.FindByTypeAsync("depa_violation")).Count == 0
-            && (await blockedOm.FindByTypeAsync("depa_contract")).Count == 0
-            && (await blockedOm.FindByTypeAsync("depa_capsule")).Count == 0,
-            "a blocked scan must not produce speculative depa entities or violations");
+        Assert((await blockedOm.FindByClassAsync("depa_violation")).Count == 0
+            && (await blockedOm.FindByClassAsync("depa_contract")).Count == 0
+            && (await blockedOm.FindByClassAsync("depa_capsule")).Count == 0,
+            "a blocked scan must not produce speculative depa objects or violations");
 
         // === DEPA scan explicitness (track fix-om-depa-conformance-gaps, T2.1) ===
 
@@ -1529,11 +1529,11 @@ HarnessDiagnostics.Start("DEPA observation and scan");
         Assert(injResult.AnnotatedFromConfig == 5 && injResult.AnnotatedFromHeuristic == 1,
             "an injected pre-parsed map should drive the scan exactly like the file it was parsed from "
             + $"(got config={injResult.AnnotatedFromConfig}, heuristic={injResult.AnnotatedFromHeuristic})");
-        Assert((await injOm.FindByTypeAsync("depa_capsule")).Count == 1
-            && AsString(await injOm.GetPropertyAsync("depa:capsule:Om.Core", "assigned_by")) == "config",
+        Assert((await injOm.FindByClassAsync("depa_capsule")).Count == 1
+            && AsString(await injOm.GetFieldValueAsync("depa:capsule:Om.Core", "assigned_by")) == "config",
             "the injected Map must win over MapPath — the decoy file's capsule must not materialize");
-        Assert(AsString(await injOm.GetPropertyAsync("depa:effectapi:Injected.Only.**", "category")) == "io_file"
-            && (await injOm.FindByTypeAsync("depa_effect_api")).Count == DepaEffectCatalog.BuiltIn.Count + 1,
+        Assert(AsString(await injOm.GetFieldValueAsync("depa:effectapi:Injected.Only.**", "category")) == "io_file"
+            && (await injOm.FindByClassAsync("depa_effect_api")).Count == DepaEffectCatalog.BuiltIn.Count + 1,
             "the injected Effects list must win over the (nonexistent) EffectsPath and merge with the built-ins");
 
         // --- timeprovider-indexed-at (delta case): ck_meta.indexed_at flows from
@@ -1734,7 +1734,7 @@ HarnessDiagnostics.Start("DEPA red-light detection");
         Assert(detResult.Violations.Count > 0
             && detResult.Violations.All(v => v.Evidence.Count > 0 && v.Evidence.All(e => e.Path.Length > 0 && e.Line > 0)),
             "every materialized violation must carry path:line evidence entries");
-        Assert((await detOm.FindByTypeAsync("depa_violation")).Count == detResult.Violations.Count,
+        Assert((await detOm.FindByClassAsync("depa_violation")).Count == detResult.Violations.Count,
             "the store should hold exactly the reported violations");
 
         const string coreImplId = "depa:impl:csharp:Det.CoreLogic#0";
@@ -1742,19 +1742,19 @@ HarnessDiagnostics.Start("DEPA red-light detection");
 
         // --- effect-leak-detected (delta case): V-E1 GAP + path:line + effect_leaks_through ---
         var e1 = detResult.Violations.Single(v => v.RuleId == "V-E1");
-        Assert(e1.SubjectEntityId == coreImplId && e1.Dimension == "effect"
+        Assert(e1.SubjectObjectId == coreImplId && e1.Dimension == "effect"
             && e1.Evidence[0].Path == "src/CapA/CoreLogic.cs" && e1.Evidence[0].Line == 88
             && e1.Evidence[0].Detail.Contains("System.IO.File.WriteAllText", StringComparison.Ordinal)
             && e1.Evidence[0].Detail.Contains("count=3", StringComparison.Ordinal),
-            $"V-E1 should blame the leaky core with the first-call-site evidence (got {e1.SubjectEntityId} {e1.Evidence[0].Path}:{e1.Evidence[0].Line} '{e1.Evidence[0].Detail}')");
+            $"V-E1 should blame the leaky core with the first-call-site evidence (got {e1.SubjectObjectId} {e1.Evidence[0].Path}:{e1.Evidence[0].Line} '{e1.Evidence[0].Detail}')");
         var leakEdges = await detOm.GetNeighborsAsync(coreImplId, "effect_leaks_through", OmDirection.Outgoing);
-        Assert(leakEdges.Outgoing.Single().EntityId == "depa:effectapi:System.IO.**",
+        Assert(leakEdges.Outgoing.Single().ObjectId == "depa:effectapi:System.IO.**",
             "V-E1 should materialize an effect_leaks_through edge onto the matched whitelist entry");
-        var e1Json = await detOm.GetPropertyAsync(e1.ViolationId, "evidence_json");
+        var e1Json = await detOm.GetFieldValueAsync(e1.ViolationId, "evidence_json");
         Assert(e1Json is not null
             && e1Json.Value.GetProperty("rule_id").GetString() == "V-E1"
             && e1Json.Value.GetProperty("verdict").GetString() == "GAP"
-            && e1Json.Value.GetProperty("subject").GetProperty("entity_id").GetString() == coreImplId
+            && e1Json.Value.GetProperty("subject").GetProperty("object_id").GetString() == coreImplId
             && e1Json.Value.GetProperty("scan_commit").GetString() == "c0ffee01"
             && e1Json.Value.GetProperty("detected_at").GetString()!.Length > 0
             && e1Json.Value.GetProperty("evidence").EnumerateArray().All(e =>
@@ -1762,7 +1762,7 @@ HarnessDiagnostics.Start("DEPA red-light detection");
             "evidence_json should follow the design §5.2 schema with scan_commit/detected_at and path:line entries");
 
         // --- compliant-no-leak (delta case): the clean core stays clean ---
-        Assert(!detResult.Violations.Any(v => v.RuleId == "V-E1" && v.SubjectEntityId == cleanImplId)
+        Assert(!detResult.Violations.Any(v => v.RuleId == "V-E1" && v.SubjectObjectId == cleanImplId)
             && (await detOm.GetNeighborsAsync(cleanImplId, "effect_leaks_through", OmDirection.Outgoing)).Outgoing.Count == 0,
             "a core that only effects through the contract must not be reported by V-E1 (compliant sample distinguishable)");
 
@@ -1779,7 +1779,7 @@ HarnessDiagnostics.Start("DEPA red-light detection");
 
         // --- internals-crossing (delta case): V-L1, one evidence per crossing edge ---
         var l1 = detResult.Violations.Single(v => v.RuleId == "V-L1");
-        Assert(l1.SubjectEntityId == "depa:capsule:CapA" && l1.Dimension == "layering"
+        Assert(l1.SubjectObjectId == "depa:capsule:CapA" && l1.Dimension == "layering"
             && l1.Evidence.Count == 1
             && l1.Evidence[0].Path == "src/CapA/CoreLogic.cs" && l1.Evidence[0].Line == 95
             && l1.Message.Contains("CapB", StringComparison.Ordinal),
@@ -1798,15 +1798,15 @@ HarnessDiagnostics.Start("DEPA red-light detection");
         var s1 = detResult.Violations.Single(v => v.RuleId == "V-S1");
         const string projectionId = "depa:projection:csharp:Det.ReportView#0";
         const string eventLogId = "depa:factsource:csharp:Det.Ledger.EventLog#0";
-        Assert(s1.SubjectEntityId == projectionId && s1.Dimension == "fact_source"
+        Assert(s1.SubjectObjectId == projectionId && s1.Dimension == "fact_source"
             && s1.Evidence.Single().Line == 40,
             "V-S1 should flag the projection's write path into the grade<=2 upstream");
-        Assert((await detOm.GetNeighborsAsync(projectionId, "backwrites", OmDirection.Outgoing)).Outgoing.Single().EntityId == eventLogId,
+        Assert((await detOm.GetNeighborsAsync(projectionId, "backwrites", OmDirection.Outgoing)).Outgoing.Single().ObjectId == eventLogId,
             "V-S1 should materialize the backwrites signal edge");
 
         // --- V-E2 positive: core touches a static mutable field of another capsule ---
         var e2 = detResult.Violations.Single(v => v.RuleId == "V-E2");
-        Assert(e2.SubjectEntityId == coreImplId
+        Assert(e2.SubjectObjectId == coreImplId
             && e2.Evidence.Single().Path == "src/CapA/CoreLogic.cs" && e2.Evidence.Single().Line == 97
             && e2.Evidence.Single().Detail.Contains("Cache", StringComparison.Ordinal),
             "V-E2 should report the ACCESSES site of the static mutable field");
@@ -1848,7 +1848,7 @@ HarnessDiagnostics.Start("DEPA red-light detection");
 
         // --- V-L3 positive: contract file imports the impl file ---
         var l3 = detResult.Violations.Single(v => v.RuleId == "V-L3");
-        Assert(l3.SubjectEntityId == "depa:contract:csharp:Det.IStore#0" && l3.Dimension == "layering"
+        Assert(l3.SubjectObjectId == "depa:contract:csharp:Det.IStore#0" && l3.Dimension == "layering"
             && l3.Evidence.Single().Path == "src/CapA/Contracts/IStore.cs" && l3.Evidence.Single().Line == 1,
             "V-L3 should flag the reverse dependency at the import site of the contract file");
 
@@ -1891,7 +1891,7 @@ HarnessDiagnostics.Start("DEPA red-light detection");
         Assert(detAgain.Violations.Count == detResult.Violations.Count
             && detAgain.Violations.Select(v => v.ViolationId).OrderBy(v => v, StringComparer.Ordinal)
                 .SequenceEqual(detResult.Violations.Select(v => v.ViolationId).OrderBy(v => v, StringComparer.Ordinal))
-            && (await detOm.FindByTypeAsync("depa_violation")).Count == detResult.Violations.Count,
+            && (await detOm.FindByClassAsync("depa_violation")).Count == detResult.Violations.Count,
             "re-scanning unchanged code must upsert violations in place (stable ids, no duplicates)");
         Assert((await detOm.GetNeighborsAsync(coreImplId, "effect_leaks_through", OmDirection.Outgoing)).Outgoing.Count == 1,
             "signal edges must not duplicate across scans");
@@ -1907,35 +1907,35 @@ HarnessDiagnostics.Start("DEPA red-light detection");
             && !detFixed.Violations.Any(v => v.RuleId == "V-E1")
             && detFixed.Violations.Count == detResult.Violations.Count - 1,
             "after the fix V-E1 should turn PASS and only its violation should disappear");
-        Assert(!(await detOm.FindByTypeAsync("depa_violation")).Any(v => v.Id == e1.ViolationId),
+        Assert(!(await detOm.FindByClassAsync("depa_violation")).Any(v => v.Id == e1.ViolationId),
             "the fixed violation should be expired from the store at scan end (rebuildable projection)");
         Assert((await detOm.GetNeighborsAsync(coreImplId, "effect_leaks_through", OmDirection.Outgoing)).Outgoing.Count == 0,
             "the stale effect_leaks_through edge should be retracted with its violation");
         Assert(detFixed.DetectionVerdicts["V-D1"] == "GAP"
-            && (await detOm.FindByTypeAsync("depa_violation")).Count == detResult.Violations.Count - 1,
+            && (await detOm.FindByClassAsync("depa_violation")).Count == detResult.Violations.Count - 1,
             "violations that still hold must survive the cleanup");
 
         // --- depa-cleanup-no-orphans (delta case, track fix-om-depa-conformance-gaps T1.1):
-        // expiry goes through DeleteEntityAsync, so the expired violation leaves no orphan
-        // om_property rows (evidence_json/... used to linger after the raw ':rm om_entity').
+        // expiry goes through DeleteObjectAsync, so the expired violation leaves no orphan
+        // om_field_value rows (evidence_json/... used to linger after the raw ':rm om_object').
         var expiredProps = await detOm.Runtime.Store.RunAsync(
             """
-            ?[attr_name, valid_time] :=
-              *om_property{ entity_id: $entity_id, attr_name, valid_time, value: _v, tx_time: _tx }
+            ?[field_name, valid_time] :=
+              *om_field_value{ object_id: $object_id, field_name, valid_time, value: _v, tx_time: _tx }
             """,
-            new Dictionary<string, object?> { ["entity_id"] = e1.ViolationId });
+            new Dictionary<string, object?> { ["object_id"] = e1.ViolationId });
         Assert(expiredProps.Rows.Count == 0,
-            "the expired violation must leave zero om_property rows behind, got "
+            "the expired violation must leave zero om_field_value rows behind, got "
             + string.Join("; ", expiredProps.Rows.Select(r => r[0].ToString())));
         var orphanProps = await detOm.Runtime.Store.RunAsync(
             """
-            ?[entity_id, attr_name] :=
-              *om_property{ entity_id, attr_name, valid_time: _vt, value: _v, tx_time: _tx },
-              starts_with(entity_id, "depa:violation:"),
-              not *om_entity{ id: entity_id, type_name: _tn, label: _lb }
+            ?[object_id, field_name] :=
+              *om_field_value{ object_id, field_name, valid_time: _vt, value: _v, tx_time: _tx },
+              starts_with(object_id, "depa:violation:"),
+              not *om_object{ id: object_id, class_name: _tn, label: _lb }
             """);
         Assert(orphanProps.Rows.Count == 0,
-            "no depa:violation om_property row may exist without its om_entity row: "
+            "no depa:violation om_field_value row may exist without its om_object row: "
             + string.Join("; ", orphanProps.Rows.Select(r => $"{r[0]}/{r[1]}")));
     }
     finally
@@ -1944,80 +1944,80 @@ HarnessDiagnostics.Start("DEPA red-light detection");
     }
 }
 
-// === DeleteEntityAsync — single-transaction cascade + idempotency
-HarnessDiagnostics.Start("OM delete entity cascade");
+// === DeleteObjectAsync — single-transaction cascade + idempotency
+HarnessDiagnostics.Start("OM delete object cascade");
 // (track fix-om-depa-conformance-gaps T1.1; delta delete-cascades / delete-idempotent) ===
 {
-    static async Task<(int Entities, int Properties, int OutEdges, int InEdges)> CountEntityRowsAsync(CozoOm om, string id)
+    static async Task<(int Objects, int FieldValues, int OutRelationLinks, int InRelationLinks)> CountObjectRowsAsync(CozoOm om, string id)
     {
         var parameters = new Dictionary<string, object?> { ["id"] = id };
-        var entities = await om.Runtime.Store.RunAsync(
+        var objects = await om.Runtime.Store.RunAsync(
             """
-            ?[type_name] :=
-              *om_entity{ id: $id, type_name, label: _l }
+            ?[class_name] :=
+              *om_object{ id: $id, class_name, label: _l }
             """, parameters);
-        var properties = await om.Runtime.Store.RunAsync(
+        var fieldValues = await om.Runtime.Store.RunAsync(
             """
-            ?[attr_name, valid_time] :=
-              *om_property{ entity_id: $id, attr_name, valid_time, value: _v, tx_time: _tx }
+            ?[field_name, valid_time] :=
+              *om_field_value{ object_id: $id, field_name, valid_time, value: _v, tx_time: _tx }
             """, parameters);
         var outgoing = await om.Runtime.Store.RunAsync(
             """
-            ?[rel_name, to_id, valid_time] :=
-              *om_edge{ from_id: $id, rel_name, to_id, valid_time, props: _p, tx_time: _tx }
+            ?[relation_name, to_object_id, valid_time] :=
+              *om_relation_link{ from_object_id: $id, relation_name, to_object_id, valid_time, payload: _p, tx_time: _tx }
             """, parameters);
         var incoming = await om.Runtime.Store.RunAsync(
             """
-            ?[from_id, rel_name, valid_time] :=
-              *om_edge{ from_id, rel_name, to_id: $id, valid_time, props: _p, tx_time: _tx }
+            ?[from_object_id, relation_name, valid_time] :=
+              *om_relation_link{ from_object_id, relation_name, to_object_id: $id, valid_time, payload: _p, tx_time: _tx }
             """, parameters);
-        return (entities.Rows.Count, properties.Rows.Count, outgoing.Rows.Count, incoming.Rows.Count);
+        return (objects.Rows.Count, fieldValues.Rows.Count, outgoing.Rows.Count, incoming.Rows.Count);
     }
 
     using var delDb = new CozoDb(engine: "mem", path: "");
     var delOm = new CozoOm(delDb);
     await delOm.InitSchemaAsync();
-    await delOm.DefineTypeAsync("DelNode", "Delete-cascade test node");
-    await delOm.DefineAttributeAsync("DelNode", "name", OmValueType.String);
-    await delOm.DefineAttributeAsync("DelNode", "score", OmValueType.Number);
-    await delOm.DefineAttributeAsync("DelNode", "tags", OmValueType.Json);
-    await delOm.DefineRelationAsync("del_points_to", "DelNode", "DelNode");
+    await delOm.DefineClassAsync("DelNode", "Delete-cascade test node");
+    await delOm.DefineFieldAsync("DelNode", "name", OmValueType.String);
+    await delOm.DefineFieldAsync("DelNode", "score", OmValueType.Number);
+    await delOm.DefineFieldAsync("DelNode", "tags", OmValueType.Json);
+    await delOm.DefineRelationDefAsync("del_points_to", "DelNode", "DelNode");
 
-    await delOm.CreateEntityAsync("del-x", "DelNode", "Victim");
-    await delOm.CreateEntityAsync("del-a", "DelNode", "Bystander upstream");
-    await delOm.CreateEntityAsync("del-b", "DelNode", "Bystander downstream");
-    await delOm.SetPropertyAsync("del-x", "name", "victim");
-    await delOm.SetPropertyAsync("del-x", "score", 1, new WriteOptions(ValidTime: "2024-01-01T00:00:00Z"));
-    await delOm.SetPropertyAsync("del-x", "score", 2, new WriteOptions(ValidTime: "2025-01-01T00:00:00Z"));
-    await delOm.SetPropertyAsync("del-x", "tags", new[] { "t1", "t2" });
-    await delOm.SetPropertyAsync("del-a", "name", "bystander");
-    await delOm.LinkEntitiesAsync("del-x", "del_points_to", "del-b");
-    await delOm.LinkEntitiesAsync("del-a", "del_points_to", "del-x");
-    await delOm.LinkEntitiesAsync("del-a", "del_points_to", "del-b");
+    await delOm.CreateObjectAsync("del-x", "DelNode", "Victim");
+    await delOm.CreateObjectAsync("del-a", "DelNode", "Bystander upstream");
+    await delOm.CreateObjectAsync("del-b", "DelNode", "Bystander downstream");
+    await delOm.SetFieldValueAsync("del-x", "name", "victim");
+    await delOm.SetFieldValueAsync("del-x", "score", 1, new WriteOptions(ValidTime: "2024-01-01T00:00:00Z"));
+    await delOm.SetFieldValueAsync("del-x", "score", 2, new WriteOptions(ValidTime: "2025-01-01T00:00:00Z"));
+    await delOm.SetFieldValueAsync("del-x", "tags", new[] { "t1", "t2" });
+    await delOm.SetFieldValueAsync("del-a", "name", "bystander");
+    await delOm.CreateRelationLinkAsync("del-x", "del_points_to", "del-b");
+    await delOm.CreateRelationLinkAsync("del-a", "del_points_to", "del-x");
+    await delOm.CreateRelationLinkAsync("del-a", "del_points_to", "del-b");
 
-    var before = await CountEntityRowsAsync(delOm, "del-x");
-    Assert(before is { Entities: 1, Properties: 4, OutEdges: 1, InEdges: 1 },
-        $"fixture should stage 1 entity / 4 property rows (score has 2 temporal versions) / 1 out + 1 in edge, got {before}");
+    var before = await CountObjectRowsAsync(delOm, "del-x");
+    Assert(before is { Objects: 1, FieldValues: 4, OutRelationLinks: 1, InRelationLinks: 1 },
+        $"fixture should stage 1 object / 4 field-value rows (score has 2 temporal versions) / 1 out + 1 in relation link, got {before}");
 
-    // delete-cascades: entity row, every temporal property row and every touching edge go in one call.
-    await delOm.DeleteEntityAsync("del-x");
-    var after = await CountEntityRowsAsync(delOm, "del-x");
-    Assert(after is { Entities: 0, Properties: 0, OutEdges: 0, InEdges: 0 },
-        $"DeleteEntityAsync must cascade to om_entity/om_property/om_edge with zero residue, got {after}");
-    Assert(await delOm.GetEntityViewAsync("del-x") is null,
-        "a deleted entity must be invisible to GetEntityViewAsync");
+    // delete-cascades: object row, every temporal field-value row and every touching relation link go in one call.
+    await delOm.DeleteObjectAsync("del-x");
+    var after = await CountObjectRowsAsync(delOm, "del-x");
+    Assert(after is { Objects: 0, FieldValues: 0, OutRelationLinks: 0, InRelationLinks: 0 },
+        $"DeleteObjectAsync must cascade to om_object/om_field_value/om_relation_link with zero residue, got {after}");
+    Assert(await delOm.GetObjectViewAsync("del-x") is null,
+        "a deleted object must be invisible to GetObjectViewAsync");
 
-    // Bystanders keep their rows: del-a keeps its property and its edge to del-b.
-    var bystander = await CountEntityRowsAsync(delOm, "del-a");
-    Assert(bystander is { Entities: 1, Properties: 1, OutEdges: 1, InEdges: 0 },
-        $"deleting del-x must not disturb other entities' rows, got {bystander}");
-    Assert((await delOm.GetNeighborsAsync("del-a", "del_points_to", OmDirection.Outgoing)).Outgoing.Single().EntityId == "del-b",
+    // Bystanders keep their rows: del-a keeps its field value and its relation link to del-b.
+    var bystander = await CountObjectRowsAsync(delOm, "del-a");
+    Assert(bystander is { Objects: 1, FieldValues: 1, OutRelationLinks: 1, InRelationLinks: 0 },
+        $"deleting del-x must not disturb other objects' rows, got {bystander}");
+    Assert((await delOm.GetNeighborsAsync("del-a", "del_points_to", OmDirection.Outgoing)).Outgoing.Single().ObjectId == "del-b",
         "the third-party edge del-a -> del-b must survive the cascade");
 
     // delete-idempotent: re-deleting and deleting a never-existing id are harmless no-ops.
-    await delOm.DeleteEntityAsync("del-x");
-    await delOm.DeleteEntityAsync("del-never-existed");
-    Assert((await CountEntityRowsAsync(delOm, "del-a")).Entities == 1,
+    await delOm.DeleteObjectAsync("del-x");
+    await delOm.DeleteObjectAsync("del-never-existed");
+    Assert((await CountObjectRowsAsync(delOm, "del-a")).Objects == 1,
         "idempotent deletes must leave the store untouched");
 }
 
@@ -2368,19 +2368,19 @@ HarnessDiagnostics.Start("DEPA report aggregation");
         // --- fact-grade-map (delta tools case, API backing): nodes + adjacency, manual links included ---
         const string ledgerId = "depa:factsource:csharp:Rep.Ledger.SchemaLedger#0";
         const string eventLogId = "depa:factsource:csharp:Rep.Ledger.EventLog#0";
-        await repOm.UpsertEntityAsync("depa:projection:ManualView", "depa_projection", "ManualView");
-        await repOm.LinkEntitiesAsync("depa:projection:ManualView", "projection_derived_from", eventLogId);
+        await repOm.UpsertObjectAsync("depa:projection:ManualView", "depa_projection", "ManualView");
+        await repOm.CreateRelationLinkAsync("depa:projection:ManualView", "projection_derived_from", eventLogId);
         var gradeMap = await repOm.GetFactGradeMapAsync();
-        var ledgerNode = gradeMap.FactSources.Single(n => n.EntityId == ledgerId);
+        var ledgerNode = gradeMap.FactSources.Single(n => n.ObjectId == ledgerId);
         Assert(ledgerNode.Grade == 1 && ledgerNode.GradeId == "authoritative_fact"
             && ledgerNode.Path == "src/CapA/Ledger.cs" && ledgerNode.Line == 7,
             $"the grade map node should carry grade/grade_id and the anchor path:line (got {ledgerNode})");
         Assert(gradeMap.FactSources.Select(n => n.Grade).SequenceEqual([1, 2]),
             "grade map nodes should be ordered by grade");
-        Assert(gradeMap.Edges.Count(e => e.Relation == "fact_written_by" && e.FromId == ledgerId) == 2,
+        Assert(gradeMap.Edges.Count(e => e.Relation == "fact_written_by" && e.FromObjectId == ledgerId) == 2,
             "both observed ledger writers should appear as fact_written_by adjacency");
         var derived = gradeMap.Edges.Single(e => e.Relation == "projection_derived_from");
-        Assert(derived.FromId == "depa:projection:ManualView" && derived.ToId == eventLogId,
+        Assert(derived.FromObjectId == "depa:projection:ManualView" && derived.ToObjectId == eventLogId,
             "manually asserted projection_derived_from links should appear in the grade map");
     }
     finally
@@ -2484,13 +2484,13 @@ HarnessDiagnostics.Start("DEPA batch-1 detectors");
                 "all L-group rules belong to the layering dimension per rule-map.md");
 
             var l4 = b1lR.Violations.Single(v => v.RuleId == "V-L4");
-            Assert(l4.SubjectEntityId == "depa:capsule:CapA"
+            Assert(l4.SubjectObjectId == "depa:capsule:CapA"
                 && l4.Evidence.Count == 2
                 && l4.Evidence.All(e => e.Path == "src/CapA/Api.cs")
                 && l4.Evidence.Select(e => e.Line).OrderBy(l => l).SequenceEqual([6, 12])
                 && l4.Message.Contains("2", StringComparison.Ordinal),
-                $"V-L4 should flag CapA's two exposed entries with both entry sites (got {l4.SubjectEntityId}: {string.Join(", ", l4.Evidence.Select(e => $"{e.Path}:{e.Line}"))})");
-            Assert(!b1lR.Violations.Any(v => v.RuleId == "V-L4" && v.SubjectEntityId != "depa:capsule:CapA"),
+                $"V-L4 should flag CapA's two exposed entries with both entry sites (got {l4.SubjectObjectId}: {string.Join(", ", l4.Evidence.Select(e => $"{e.Path}:{e.Line}"))})");
+            Assert(!b1lR.Violations.Any(v => v.RuleId == "V-L4" && v.SubjectObjectId != "depa:capsule:CapA"),
                 "single-entry capsules (CapB/CapC) must not be flagged by V-L4");
 
             var l2 = b1lR.Violations.Single(v => v.RuleId == "V-L2");
@@ -2502,10 +2502,10 @@ HarnessDiagnostics.Start("DEPA batch-1 detectors");
                 $"V-L2 should report the CapB<->CapC cycle with one crossing-edge evidence per direction (got '{l2.Message}': {string.Join(", ", l2.Evidence.Select(e => $"{e.Path}:{e.Line}"))})");
 
             var l5 = b1lR.Violations.Single(v => v.RuleId == "V-L5");
-            Assert(l5.SubjectEntityId == "depa:contract:csharp:L.IPort#0"
+            Assert(l5.SubjectObjectId == "depa:contract:csharp:L.IPort#0"
                 && l5.Message.Contains("SecretRec", StringComparison.Ordinal)
                 && l5.Evidence.Single().Path == "src/CapA/Contracts/IPort.cs" && l5.Evidence.Single().Line == 5,
-                $"V-L5 should flag the contract member whose signature references CapB's internal type (got {l5.SubjectEntityId} '{l5.Message}')");
+                $"V-L5 should flag the contract member whose signature references CapB's internal type (got {l5.SubjectObjectId} '{l5.Message}')");
             Assert(!b1lR.Violations.Any(v => v.RuleId == "V-L5" && v.Message.Contains("IClean", StringComparison.Ordinal)),
                 "a contract with internal-free signatures must not be flagged by V-L5");
 
@@ -2635,16 +2635,16 @@ HarnessDiagnostics.Start("DEPA batch-1 detectors");
                 + string.Join("; ", r1s.Select(v => $"{v.Confidence}:{v.Message}@{v.Evidence[0].Path}:{v.Evidence[0].Line}")));
 
             var c1 = b1fR.Violations.Single(v => v.RuleId == "V-C1");
-            Assert(c1.SubjectEntityId == "depa:impl:csharp:F.Engine#0" && c1.Dimension == "processor"
+            Assert(c1.SubjectObjectId == "depa:impl:csharp:F.Engine#0" && c1.Dimension == "processor"
                 && c1.Message.Contains("runtime", StringComparison.Ordinal) && c1.Message.Contains("input", StringComparison.Ordinal)
                 && c1.Evidence[0].Path == "src/CapF/Engine.cs" && c1.Evidence[0].Line > 0,
-                $"V-C1 should flag the core whose fn(runtime,input,config) role coverage is incomplete, naming the missing roles (got {c1.SubjectEntityId} '{c1.Message}')");
-            Assert(!b1fR.Violations.Any(v => v.RuleId == "V-C1" && v.SubjectEntityId.Contains("GoodCore", StringComparison.Ordinal)),
+                $"V-C1 should flag the core whose fn(runtime,input,config) role coverage is incomplete, naming the missing roles (got {c1.SubjectObjectId} '{c1.Message}')");
+            Assert(!b1fR.Violations.Any(v => v.RuleId == "V-C1" && v.SubjectObjectId.Contains("GoodCore", StringComparison.Ordinal)),
                 "a core with full runtime/input/config role coverage must not be flagged by V-C1");
 
             var a1 = b1fR.Violations.Single(v => v.RuleId == "V-A1");
             Assert(a1.Dimension == "actor" && a1.Confidence <= 0.6
-                && a1.SubjectEntityId == "depa:capsule:CapF"
+                && a1.SubjectObjectId == "depa:capsule:CapF"
                 && a1.Evidence.Any(e => e.Path == "src/CapF/SharedState.cs" && e.Line == 9)
                 && a1.Evidence.All(e => e.Detail.Contains("heuristic", StringComparison.Ordinal)),
                 $"V-A1 should flag the lock-density phenomenon at conf<=0.6 with heuristic-marked evidence (got conf={a1.Confidence} '{a1.Message}')");
@@ -2750,11 +2750,11 @@ HarnessDiagnostics.Start("DEPA batch-1 detectors");
                 "every S/D-group violation must carry path:line evidence");
 
             var s1 = b1sR.Violations.Single(v => v.RuleId == "V-S1");
-            Assert(s1.SubjectEntityId == "depa:factsource:csharp:S.ViewCache#0" && s1.Dimension == "fact_source"
+            Assert(s1.SubjectObjectId == "depa:factsource:csharp:S.ViewCache#0" && s1.Dimension == "fact_source"
                 && s1.Message.Contains("ControlFlag", StringComparison.Ordinal)
                 && s1.Evidence.Single().Path == "src/CapS/ViewCache.cs" && s1.Evidence.Single().Line == 10,
-                $"V-S1 extension should flag the grade-6 node writing the grade-3 control fact (got {s1.SubjectEntityId} '{s1.Message}')");
-            Assert(!b1sR.Violations.Any(v => v.RuleId == "V-S1" && v.SubjectEntityId.Contains("CleanCache", StringComparison.Ordinal)),
+                $"V-S1 extension should flag the grade-6 node writing the grade-3 control fact (got {s1.SubjectObjectId} '{s1.Message}')");
+            Assert(!b1sR.Violations.Any(v => v.RuleId == "V-S1" && v.SubjectObjectId.Contains("CleanCache", StringComparison.Ordinal)),
                 "a grade-6 node that only reads upstream must not be flagged by V-S1");
 
             var s3 = b1sR.Violations.Single(v => v.RuleId == "V-S3");
@@ -2767,7 +2767,7 @@ HarnessDiagnostics.Start("DEPA batch-1 detectors");
 
             var s4s = b1sR.Violations.Where(v => v.RuleId == "V-S4").ToArray();
             Assert(s4s.Length == 2
-                && s4s.All(v => v.SubjectEntityId == "depa:impl:csharp:S.Watcher#0" && v.Dimension == "fact_source"
+                && s4s.All(v => v.SubjectObjectId == "depa:impl:csharp:S.Watcher#0" && v.Dimension == "fact_source"
                     && v.Confidence <= 0.6 && v.Evidence[0].Detail.Contains("heuristic", StringComparison.Ordinal))
                 && s4s.Any(v => v.Evidence[0].Line == 10) && s4s.Any(v => v.Evidence[0].Line == 12)
                 && !s4s.Any(v => v.Message.Contains("ReadAllText", StringComparison.Ordinal)),
@@ -2843,15 +2843,15 @@ HarnessDiagnostics.Start("DEPA batch-1 detectors");
                 "every E/G-group violation must carry path:line evidence");
 
             var e3 = b1eR.Violations.Single(v => v.RuleId == "V-E3");
-            Assert(e3.SubjectEntityId == "depa:contract:csharp:E.IMailer#0" && e3.Dimension == "effect"
+            Assert(e3.SubjectObjectId == "depa:contract:csharp:E.IMailer#0" && e3.Dimension == "effect"
                 && e3.Message.Contains("SendAll", StringComparison.Ordinal) && e3.Message.Contains("Fmt", StringComparison.Ordinal)
                 && e3.Evidence.Single().Path == "src/CapE/Contracts/IMailer.cs" && e3.Evidence.Single().Line == 8,
-                $"V-E3 should flag the orchestrating contract member at its call site (got {e3.SubjectEntityId} '{e3.Message}')");
+                $"V-E3 should flag the orchestrating contract member at its call site (got {e3.SubjectObjectId} '{e3.Message}')");
             Assert(!b1eR.Violations.Any(v => v.RuleId == "V-E3" && v.Message.Contains("IPlain", StringComparison.Ordinal)),
                 "a declaration-only contract must not be flagged by V-E3");
 
             var g1 = b1eR.Violations.Single(v => v.RuleId == "V-G1");
-            Assert(g1.Dimension == "overdesign" && g1.SubjectEntityId == "depa:capsule:CapE"
+            Assert(g1.Dimension == "overdesign" && g1.SubjectObjectId == "depa:capsule:CapE"
                 && g1.Confidence <= 0.7
                 && g1.Message.Contains("IStrategy", StringComparison.Ordinal)
                 && g1.Evidence.Single().Path == "src/CapE/Strategy.cs" && g1.Evidence.Single().Line == 3,
@@ -2968,24 +2968,24 @@ HarnessDiagnostics.Start("DEPA batch-2 detectors");
         // V-S2a positive: the live-path read of the grade-5 checkpoint, phenomenon-level
         // conf<=0.7 with heuristic-marked evidence; the recovery-path read is exempt.
         var s2a = b2R.Violations.Single(v => v.RuleId == "V-S2a");
-        Assert(s2a.SubjectEntityId == "depa:factsource:csharp:T.Store.Ckpt#0" && s2a.Dimension == "fact_source"
+        Assert(s2a.SubjectObjectId == "depa:factsource:csharp:T.Store.Ckpt#0" && s2a.Dimension == "fact_source"
             && s2a.Confidence <= 0.7
             && s2a.Message.Contains("Gate", StringComparison.Ordinal)
             && s2a.Evidence.Single().Path == "src/CapT/App/LiveGate.cs" && s2a.Evidence.Single().Line == 10
             && s2a.Evidence.Single().Detail.Contains("heuristic", StringComparison.Ordinal),
-            $"V-S2a should flag the live-path checkpoint read at conf<=0.7 (got conf={s2a.Confidence} {s2a.SubjectEntityId} '{s2a.Message}' @{s2a.Evidence[0].Path}:{s2a.Evidence[0].Line})");
+            $"V-S2a should flag the live-path checkpoint read at conf<=0.7 (got conf={s2a.Confidence} {s2a.SubjectObjectId} '{s2a.Message}' @{s2a.Evidence[0].Path}:{s2a.Evidence[0].Line})");
         Assert(!b2R.Violations.Any(v => v.RuleId == "V-S2a" && v.Message.Contains("Restore", StringComparison.Ordinal)),
             "a reader inside a declared recovery path must not be flagged by V-S2a");
 
         // V-S2b positive: the live-path read of the grade-4 journal; the projection's
         // derivation read is exempt (journal→projection is the normal chain).
         var s2b = b2R.Violations.Single(v => v.RuleId == "V-S2b");
-        Assert(s2b.SubjectEntityId == "depa:factsource:csharp:T.Store.Journal#0" && s2b.Dimension == "fact_source"
+        Assert(s2b.SubjectObjectId == "depa:factsource:csharp:T.Store.Journal#0" && s2b.Dimension == "fact_source"
             && s2b.Confidence <= 0.7
             && s2b.Message.Contains("Poll", StringComparison.Ordinal)
             && s2b.Evidence.Single().Path == "src/CapT/App/LiveGate.cs" && s2b.Evidence.Single().Line == 17
             && s2b.Evidence.Single().Detail.Contains("heuristic", StringComparison.Ordinal),
-            $"V-S2b should flag the live-path journal read at conf<=0.7 (got conf={s2b.Confidence} {s2b.SubjectEntityId} '{s2b.Message}' @{s2b.Evidence[0].Path}:{s2b.Evidence[0].Line})");
+            $"V-S2b should flag the live-path journal read at conf<=0.7 (got conf={s2b.Confidence} {s2b.SubjectObjectId} '{s2b.Message}' @{s2b.Evidence[0].Path}:{s2b.Evidence[0].Line})");
         Assert(!b2R.Violations.Any(v => v.RuleId == "V-S2b" && v.Message.Contains("View", StringComparison.Ordinal)),
             "a projection deriving from the journal must not be flagged by V-S2b");
 
@@ -2993,11 +2993,11 @@ HarnessDiagnostics.Start("DEPA batch-2 detectors");
         // the app→kernel direction stays clean (layers are declared low→high, catalog C4).
         var p2s = b2R.Violations.Where(v => v.RuleId == "V-P2").ToArray();
         var p2 = p2s.Single(v => v.Message.Contains("KCall", StringComparison.Ordinal));
-        Assert(p2.Dimension == "processor" && p2.SubjectEntityId == "depa:capsule:CapT"
+        Assert(p2.Dimension == "processor" && p2.SubjectObjectId == "depa:capsule:CapT"
             && p2.Confidence == 1.0
             && p2.Message.Contains("kernel", StringComparison.Ordinal) && p2.Message.Contains("app", StringComparison.Ordinal)
             && p2.Evidence.Single().Path == "src/CapT/Kernel/KHelper.cs" && p2.Evidence.Single().Line == 10,
-            $"V-P2 should flag the kernel→app upward reach at its call site (got {p2.SubjectEntityId} conf={p2.Confidence} '{p2.Message}' @{p2.Evidence[0].Path}:{p2.Evidence[0].Line})");
+            $"V-P2 should flag the kernel→app upward reach at its call site (got {p2.SubjectObjectId} conf={p2.Confidence} '{p2.Message}' @{p2.Evidence[0].Path}:{p2.Evidence[0].Line})");
         // Rescan-adjudication counterexample (T3.1): an upward reach observed only through a
         // name-only ambiguous CALLS resolution keeps the edge's own confidence (0.5) and
         // heuristic-marked evidence — reported honestly, never inflated to config grade.
@@ -3142,9 +3142,9 @@ file sealed class RunHookOmStore(ICozoOmStore inner) : ICozoOmStore
 
 file sealed record BehaviorMetadataProbe(
     BehaviorCatalogKind Kind,
-    string OwnerType,
+    string OwnerClass,
     string Name,
-    string? ConstraintType,
+    string? ConstraintKind,
     string? Message,
     string? Description,
     string? InterceptorPhase,
@@ -3152,7 +3152,7 @@ file sealed record BehaviorMetadataProbe(
 
 file sealed record BehaviorReadinessProbe(
     BehaviorCatalogKind Kind,
-    string OwnerType,
+    string OwnerClass,
     string Name,
     string? InterceptorPhase,
     int? InterceptorSeq,
@@ -3162,7 +3162,7 @@ file sealed record BehaviorReadinessProbe(
 
 file sealed record RegistryBindingProbe(
     BehaviorCatalogKind Kind,
-    string OwnerType,
+    string OwnerClass,
     string Name,
     BehaviorCatalogCallbackSlot Slot,
     string? Phase,

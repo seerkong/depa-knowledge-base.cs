@@ -1,4 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<ObjectType fqn="ontology.invalid.association-inline-endpoint.object-types.tool" id="Invalid.Tool" kind="entity">
-  <Description>Minimal tool type.</Description>
-</ObjectType>

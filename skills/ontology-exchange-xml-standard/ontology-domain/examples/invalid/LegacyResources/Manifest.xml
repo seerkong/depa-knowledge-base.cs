@@ -2,6 +2,6 @@
 <Ontology fqn="ontology.invalid.legacy-resources" id="Invalid.LegacyResources" version="1.0.0">
   <Description>Invalid legacy Resources assembly.</Description>
   <Resources>
-    <Type href="vfs://@/TypeSystem/ObjectTypes/Resource/ObjectType.xml" />
+    <Type href="vfs://@/TypeSystem/Classes/Resource/Class.xml" />
   </Resources>
 </Ontology>

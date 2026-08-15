@@ -1,4 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<Relation fqn="ontology.invalid.association-inline-endpoint.relations.reserves-tool" id="Invalid.Relation.ReservesTool" name="reservesTool" fromTypeRef="Invalid.Reservation" toTypeRef="Invalid.Tool" directed="true">
-  <Description>Support relation for association endpoint negative case.</Description>
-</Relation>

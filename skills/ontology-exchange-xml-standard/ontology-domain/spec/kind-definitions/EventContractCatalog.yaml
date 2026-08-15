@@ -27,11 +27,11 @@ spec:
       - EventContract
     referencesLowerFactsOnly: true
   crossResourceRules:
-    - eventTypeRef-resolves-to-ObjectType
-    - subjects-reference-TypeRef-or-Relation
+    - eventTypeRef-resolves-to-Class
+    - subjects-reference-TypeRef-or-RelationDef
     - lifecycle-module-does-not-reference-events-directly
   diagnostics:
     - code: EVENT_CONTRACT_CATALOG_DESCRIPTION_MISSING
       message: EventContractCatalog must declare a non-empty Description.
     - code: EVENT_CONTRACT_SUBJECT_KIND_MISMATCH
-      message: Event subjects must resolve to type-reference or Relation declarations.
+      message: Event subjects must resolve to type-reference or RelationDef declarations.

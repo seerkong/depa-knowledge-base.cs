@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Ontology fqn="ontology.invalid.non-file-ontology-child-catalog" id="Invalid.NonFileCatalog" version="1.0.0">
-  <Description>Invalid directory catalog for a manifest-only ObjectType kind.</Description>
-  <DirectoryResourceCatalog id="object-types" kind="ObjectType" root="vfs://@/TypeSystem/ObjectTypes/" entry="ObjectType.xml" />
+  <Description>Invalid directory catalog for a manifest-only Class kind.</Description>
+  <DirectoryResourceCatalog id="classes" kind="Class" root="vfs://@/TypeSystem/Classes/" entry="Class.xml" />
 </Ontology>

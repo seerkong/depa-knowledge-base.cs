@@ -21,7 +21,7 @@ public static class CozoOmDepaExtensions
     /// <summary>
     /// Materializes the effective effect-API whitelist (built-in table merged with an optional
     /// depa-effects.json; user entries are matched first, identical patterns override) as
-    /// depa_effect_api entities. Requires <see cref="InitDepaOntologyAsync"/> to have run.
+    /// depa_effect_api objects. Requires <see cref="InitDepaOntologyAsync"/> to have run.
     /// Idempotent upsert; returns the number of whitelist entries materialized.
     /// Internal (design public-surface list): <see cref="DepaScanAsync"/> runs this sync
     /// automatically before annotation sync, so the public workflow never needs it directly;

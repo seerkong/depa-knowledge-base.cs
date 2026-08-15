@@ -27,7 +27,7 @@ spec:
       - BusinessProcess
     referencesLowerFactsOnly: true
   crossResourceRules:
-    - participants-reference-TypeRef-Relation-or-StateMachine
+    - participants-reference-TypeRef-RelationDef-or-StateMachine
     - policies-reference-Rule-not-DomainPolicy
   diagnostics:
     - code: BUSINESS_PROCESS_CATALOG_DESCRIPTION_MISSING

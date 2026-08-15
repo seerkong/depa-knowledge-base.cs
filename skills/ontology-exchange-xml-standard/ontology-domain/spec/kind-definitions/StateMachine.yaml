@@ -10,7 +10,7 @@ spec:
       entry: StateMachine.xml
   descriptorSchema:
     rootElement: StateMachine
-    requiredAttributes: [fqn, id, subjectTypeRef, statePropertyRef, initial]
+    requiredAttributes: [fqn, id, subjectTypeRef, stateFieldRef, initial]
     requiredChildren: [Description, States, Transitions]
   identity:
     fqn: { from: "@fqn", required: true }
@@ -19,9 +19,9 @@ spec:
     owns: [State, Transition, Derivation, declarative effect]
     subjectMayBeBusinessObject: true
   crossResourceRules:
-    - subjectTypeRef-resolves-to-entity-ObjectType-or-BusinessObject
-    - statePropertyRef-resolves-to-subject-property
+    - subjectTypeRef-resolves-to-entity-Class-or-BusinessObject
+    - stateFieldRef-resolves-to-subject-property
     - transitions-reference-declared-states
   diagnostics:
     - code: LIFECYCLE_SUBJECT_KIND_MISMATCH
-      message: StateMachine subjects must resolve to entity ObjectType or BusinessObject declarations.
+      message: StateMachine subjects must resolve to entity Class or BusinessObject declarations.

@@ -3,12 +3,12 @@
   <Description>Tool business-object resource.</Description>
   <Purpose>Represents a reservable physical workshop tool.</Purpose>
   <Identity>
-    <Property name="toolCode" typeRef="MakerSpace.Type.ToolCode" required="true" />
+    <Field name="toolCode" typeRef="MakerSpace.Type.ToolCode" required="true" />
   </Identity>
-  <Properties>
-    <Property name="displayName" typeRef="builtin:String" required="true" role="display-name" />
-    <Property name="toolState" typeRef="MakerSpace.Type.ToolState" required="true" role="state" />
-  </Properties>
+  <Fields>
+    <Field name="displayName" typeRef="builtin:String" required="true" role="display-name" />
+    <Field name="toolState" typeRef="MakerSpace.Type.ToolState" required="true" role="state" />
+  </Fields>
   <Evidences>
     <Evidence ref="manual:makerspace-policy" />
   </Evidences>

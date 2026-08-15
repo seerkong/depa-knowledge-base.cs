@@ -9,11 +9,11 @@ The root entry is named exact PascalCase `Manifest.xml` and contains exactly one
   <ManifestResourceCatalog id="scalar-types" kind="ScalarType" root="vfs://@/TypeSystem/ScalarTypes/" entry="ScalarType.xml" />
   <ManifestResourceCatalog id="enum-types" kind="EnumType" root="vfs://@/TypeSystem/EnumTypes/" entry="EnumType.xml" />
   <ManifestResourceCatalog id="mixins" kind="Mixin" root="vfs://@/TypeSystem/Mixins/" entry="Mixin.xml" />
-  <ManifestResourceCatalog id="object-types" kind="ObjectType" root="vfs://@/TypeSystem/ObjectTypes/" entry="ObjectType.xml" />
+  <ManifestResourceCatalog id="classes" kind="Class" root="vfs://@/TypeSystem/Classes/" entry="Class.xml" />
   <ManifestResourceCatalog id="union-types" kind="UnionType" root="vfs://@/TypeSystem/TypeExpressions/UnionTypes/" entry="UnionType.xml" />
   <ManifestResourceCatalog id="collection-types" kind="CollectionType" root="vfs://@/TypeSystem/TypeExpressions/CollectionTypes/" entry="CollectionType.xml" />
   <ManifestResourceCatalog id="business-objects" kind="BusinessObject" root="vfs://@/DomainModel/BusinessObjects/" entry="BusinessObject.xml" />
-  <ManifestResourceCatalog id="relations" kind="Relation" root="vfs://@/DomainModel/Relations/" entry="Relation.xml" />
+  <ManifestResourceCatalog id="relation-defs" kind="RelationDef" root="vfs://@/DomainModel/RelationDefs/" entry="RelationDef.xml" />
   <ManifestResourceCatalog id="rules" kind="Rule" root="vfs://@/DomainModel/Rules/" entry="Rule.xml" />
   <ManifestResourceCatalog id="state-machines" kind="StateMachine" root="vfs://@/DomainModel/StateMachines/" entry="StateMachine.xml" />
   <FileResourceCatalog id="associations" kind="AssociationCatalog" root="vfs://@/DomainSemantics/Associations/" />
@@ -23,11 +23,11 @@ The root entry is named exact PascalCase `Manifest.xml` and contains exactly one
 
 ## Grammar
 
-- `Ontology` requires `fqn`, semantic `id`, and non-empty `version`; no other ontology-domain attributes are allowed.
+- `Ontology` requires `fqn`, semantic `id`, and non-empty `version`; no other ontology-domain fields are allowed.
 - `fqn` is the FS-native resource identity. `id` is the semantic domain-context identity and maps to `ExecuteOperationRequest.context.id`.
 - `version` is the semantic schema version for one coherent meaning. It is not a source revision, build number, timestamp, generation counter, or runtime schema version.
 - Direct children are exactly one `Description` followed by one or more direct FS-native `FileResourceCatalog`, `DirectoryResourceCatalog`, or `ManifestResourceCatalog` elements.
-- `Description` contains non-empty plain text and no attributes or child elements.
+- `Description` contains non-empty plain text and no fields or child elements.
 - Every catalog follows the generic FS-native catalog grammar from `system/spec/canonical-grammar.xml`.
 - Catalog shape must match the KindDefinition. TypeSystem declarations, DomainModel manifest declarations, and `BusinessObject`-owned members are manifest-shaped resources. Catalog/governance aggregate resources remain file-shaped.
 - `Ontology` and every TypeSystem or DomainModel manifest declaration allow the `manifest` source shape. The registry currently contains 28 ontology-domain KindDefinitions.
@@ -41,14 +41,14 @@ TypeSystem resources:
 - `ScalarType`
 - `EnumType`
 - `Mixin`
-- `ObjectType`
+- `Class`
 - `UnionType`
 - `CollectionType`
 
 DomainModel resources:
 
 - `BusinessObject`
-- `Relation`
+- `RelationDef`
 - `Rule`
 - `StateMachine`
 
@@ -63,7 +63,7 @@ DomainSemantics resources:
 
 BusinessObject-owned file resources:
 
-- `Action`
+- `Operation`
 - `Mutation`
 - `Interceptor`
 - `ComputedFunction`
@@ -81,7 +81,7 @@ Projection and governance resources:
 - `ImplementationMappingCatalog`
 - `SchemaEvolutionModule`
 
-At least one `ObjectType` catalog is required for a bundle that declares DomainSemantics resources, operations, rules, lifecycles, mappings, or bindings. A bundle may have no DomainSemantics or operations, but all references must resolve in the same compiled Resource Registry.
+At least one `Class` catalog is required for a bundle that declares DomainSemantics resources, operations, rules, lifecycles, mappings, or bindings. A bundle may have no DomainSemantics or operations, but all references must resolve in the same compiled Resource Registry.
 
 At most one `SchemaEvolutionModule` is allowed in a bundle version. Its generation snapshots and each `Migration@toVersion` must name the same `Ontology@version`; `Migration@fromVersion` names an earlier explicit semantic version.
 

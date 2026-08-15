@@ -1,0 +1,28 @@
+apiVersion: fs-native/v1
+kind: KindDefinition
+metadata:
+  name: relation-def
+spec:
+  resourceKind: RelationDef
+  sourceShapes: [manifest]
+  entries:
+    manifest:
+      entry: RelationDef.xml
+  descriptorSchema:
+    rootElement: RelationDef
+    requiredAttributes: [fqn, id, name, fromClassRef, toClassRef, directed]
+    requiredChildren: [Description]
+  identity:
+    fqn: { from: "@fqn", required: true }
+  description: { path: Description, required: true, nonEmpty: true }
+  internalContract:
+    owns: [RelationDef endpoints, cardinality, edge Field]
+    forbidsUpperLayerRefs: true
+  crossResourceRules:
+    - relation-def-endpoint-types-resolve-to-entity-Class-or-BusinessObject
+    - relation-cardinality-is-valid
+    - edge-fields-are-embedded-local-members-without-id-or-ref
+    - relation-link-fields-are-scalar-enum-value-or-json-compatible
+  diagnostics:
+    - code: RELATION_ENDPOINT_KIND_MISMATCH
+      message: RelationDef endpoints must resolve to entity Class or BusinessObject declarations.

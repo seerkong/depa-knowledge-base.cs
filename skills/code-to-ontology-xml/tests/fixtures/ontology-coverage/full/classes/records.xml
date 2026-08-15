@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ClassModule id="ExampleCatalog.Classes.Records">
+  <Classes>
+    <Class id="ExampleCatalog.Record">
+      <Fields>
+        <Field name="name" type="String" required="true" />
+        <Field name="status" type="String" required="true" />
+      </Fields>
+      <EvidenceRefs><EvidenceRef ref="backend:record-type" /></EvidenceRefs>
+    </Class>
+  </Classes>
+</ClassModule>

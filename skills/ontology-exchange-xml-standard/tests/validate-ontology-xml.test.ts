@@ -64,10 +64,10 @@ const expectedKinds = [
   "ScalarType",
   "EnumType",
   "Mixin",
-  "ObjectType",
+  "Class",
   "UnionType",
   "CollectionType",
-  "Relation",
+  "RelationDef",
   "Rule",
   "StateMachine",
   "BusinessObject",
@@ -82,7 +82,7 @@ const expectedKinds = [
   "RuntimeBindingCatalog",
   "ImplementationMappingCatalog",
   "SchemaEvolutionModule",
-  "Action",
+  "Operation",
   "Mutation",
   "Interceptor",
   "ComputedFunction",
@@ -94,14 +94,14 @@ const expectedManifestKinds = [
   "ScalarType",
   "EnumType",
   "Mixin",
-  "ObjectType",
+  "Class",
   "UnionType",
   "CollectionType",
-  "Relation",
+  "RelationDef",
   "Rule",
   "StateMachine",
   "BusinessObject",
-  "Action",
+  "Operation",
   "Mutation",
   "Interceptor",
   "ComputedFunction",
@@ -113,10 +113,10 @@ const expectedDiscoveredKinds = [
   "ScalarType",
   "EnumType",
   "Mixin",
-  "ObjectType",
+  "Class",
   "UnionType",
   "CollectionType",
-  "Relation",
+  "RelationDef",
   "Rule",
   "StateMachine",
   "BusinessObject",
@@ -131,7 +131,7 @@ const expectedDiscoveredKinds = [
   "RuntimeBindingCatalog",
   "ImplementationMappingCatalog",
   "SchemaEvolutionModule",
-  "Action",
+  "Operation",
   "Mutation",
 ];
 
@@ -382,16 +382,16 @@ function declaredCallableExports(declaration: string): string[] {
     .sort();
 }
 
-function behaviorManifest(ownerType: string, name: string, bindingId: string): string {
+function behaviorManifest(ownerClass: string, name: string, bindingId: string): string {
   return JSON.stringify({
     version: 1,
     behaviors: [{
-      kind: "action",
-      ownerType,
+      kind: "operation",
+      ownerClass,
       name,
       constraintType: null,
       message: null,
-      description: "Portable action metadata.",
+      description: "Portable operation metadata.",
       interceptorPhase: null,
       interceptorSeq: null,
       callbacks: [{ slot: "handler", bindingId, readiness: "unresolved" }],
@@ -502,7 +502,7 @@ describe("Generic FS-native system specification and examples", () => {
   });
 
   test("uses a neutral ResourceLab example that minimally covers all source shapes", () => {
-    const forbiddenFixtureTerms = /\b(Ontology|BusinessObject|ObjectType|ScalarType|EnumType|Relation|StateMachine|Operation|Evidence|RuntimeBinding|ImplementationMapping|SchemaEvolution|DomainPolicy|Association|MakerSpace|IT[- ]?Asset|Asset)\b/;
+    const forbiddenFixtureTerms = /\b(Ontology|BusinessObject|Class|ScalarType|EnumType|RelationDef|StateMachine|Operation|Evidence|RuntimeBinding|ImplementationMapping|SchemaEvolution|DomainPolicy|Association|MakerSpace|IT[- ]?Asset|Asset)\b/;
     for (const file of filesUnder(join(systemRoot, "examples"))) {
       const relativeFile = relative(systemRoot, file);
       expect(relativeFile).not.toContain("assets/examples");
@@ -633,7 +633,7 @@ describe("Generic FS-native system specification and examples", () => {
   });
 
   test("keeps ontology-domain fields out of generic system grammar", () => {
-    const forbiddenTerms = /\b(BusinessObject|ObjectType|ScalarType|EnumType|StateMachine|OperationCatalog|Operation|EvidenceCatalog|Evidence|RuntimeBinding|ImplementationMapping|SchemaEvolution|DomainPolicy|AssociationCatalog|Association|MakerSpace|depa-ontology|Cozo|IT[- ]?Asset|Asset)\b/;
+    const forbiddenTerms = /\b(BusinessObject|Class|ScalarType|EnumType|StateMachine|OperationCatalog|Operation|EvidenceCatalog|Evidence|RuntimeBinding|ImplementationMapping|SchemaEvolution|DomainPolicy|AssociationCatalog|Association|MakerSpace|depa-ontology|Cozo|IT[- ]?Asset|Asset)\b/;
     for (const file of filesUnder(systemRoot)) {
       const relativeFile = relative(systemRoot, file);
       expect(readFileSync(file, "utf8"), relativeFile).not.toMatch(forbiddenTerms);
@@ -643,7 +643,7 @@ describe("Generic FS-native system specification and examples", () => {
     for (const field of [
       "ownerRef",
       "typeRef",
-      "propertyRef",
+      "fieldRef",
       "operationRef",
       "behavior",
       "subject",
@@ -880,30 +880,30 @@ describe("FS-native MakerSpace resource discovery", () => {
 
   test("treats nested files below catalog roots as invisible to first-level discovery", () => {
     const tree = makeTempTree("nested-invisible");
-    mkdirSync(join(tree, "TypeSystem", "ObjectTypes", "Resource", "nested"));
+    mkdirSync(join(tree, "TypeSystem", "Classes", "Resource", "nested"));
     writeFileSync(
-      join(tree, "TypeSystem", "ObjectTypes", "Resource", "nested", "ObjectType.xml"),
-      '<ObjectType fqn="ontology.maker-space.object-types.shadow" id="MakerSpace.Shadow" kind="entity"><Description>Invisible nested object type.</Description></ObjectType>',
+      join(tree, "TypeSystem", "Classes", "Resource", "nested", "Class.xml"),
+      '<Class fqn="ontology.maker-space.classes.shadow" id="MakerSpace.Shadow" kind="entity"><Description>Invisible nested class.</Description></Class>',
     );
 
     const discovered = resourceFiles(tree);
     expect(discovered).toHaveLength(34);
-    expect(discovered.some((file) => file.includes("nested/ObjectType.xml"))).toBe(false);
+    expect(discovered.some((file) => file.includes("nested/Class.xml"))).toBe(false);
   });
 
   test("discovers BusinessObject-owned members only from their declared first-level catalogs", () => {
     const tree = makeTempTree("business-object-member-discovery");
-    mkdirSync(join(tree, "DomainModel", "BusinessObjects", "Reservation", "Actions", "Approve", "nested"));
+    mkdirSync(join(tree, "DomainModel", "BusinessObjects", "Reservation", "Operations", "Approve", "nested"));
     writeFileSync(
-      join(tree, "DomainModel", "BusinessObjects", "Reservation", "Actions", "Approve", "nested", "Action.xml"),
-      '<Action fqn="ontology.maker-space.shadow-action" id="MakerSpace.Reservation.Action.Shadow" ownerRef="MakerSpace.Reservation" portability="portable"><Description>Invisible nested action.</Description></Action>',
+      join(tree, "DomainModel", "BusinessObjects", "Reservation", "Operations", "Approve", "nested", "Operation.xml"),
+      '<Operation fqn="ontology.maker-space.shadow-operation" id="MakerSpace.Reservation.Operation.Shadow" ownerRef="MakerSpace.Reservation" portability="portable"><Description>Invisible nested operation.</Description></Operation>',
     );
 
     const docs = docsByRootKind(tree);
     expect(docs.get("BusinessObject")).toHaveLength(3);
-    expect(docs.get("Action")).toHaveLength(1);
+    expect(docs.get("Operation")).toHaveLength(1);
     expect(docs.get("Mutation")).toHaveLength(1);
-    expect((docs.get("Action") ?? []).some((action) => action["@_id"] === "MakerSpace.Reservation.Action.Shadow")).toBe(false);
+    expect((docs.get("Operation") ?? []).some((operation) => operation["@_id"] === "MakerSpace.Reservation.Operation.Shadow")).toBe(false);
   });
 });
 
@@ -974,14 +974,14 @@ describe("Ontology XML latest validator integration RED targets", () => {
   });
 
   test.each([
-    ["AssociationInlineEndpoint", /ASSOCIATION_INLINE_RELATION_FACT|Association.*DomainModel relation endpoints|Association.*relation endpoint/i],
-    ["BoPropertyRef", /BUSINESS_OBJECT_PROPERTY_REF_REJECTED|Property.*does not allow attribute @ref|BusinessObject.*Property@ref/i],
+    ["AssociationInlineEndpoint", /ASSOCIATION_INLINE_RELATION_FACT|Association.*DomainModel relation-def endpoints|Association.*relation-def endpoint/i],
+    ["BoFieldRef", /BUSINESS_OBJECT_PROPERTY_REF_REJECTED|Field.*does not allow attribute @ref|BusinessObject.*Field@ref/i],
     ["CatalogKindMismatch", /RESOURCE_CATALOG_MEMBER_KIND_MISMATCH/i],
     ["DomainPolicyInlinePredicate", /DOMAIN_POLICY.*INLINE|DomainPolicy.*inline.*predicate|predicate.*inline/i],
     ["LegacyModules", /ONTOLOGY_LEGACY_ASSEMBLY_REJECTED|Modules.*retired|Modules.*rejected/i],
     ["LegacyResources", /ONTOLOGY_LEGACY_ASSEMBLY_REJECTED|Resources.*retired|Resources.*rejected/i],
     ["MissingResourceIdentity", /RESOURCE_IDENTITY_MISSING|fqn.*required|identity.*fqn/i],
-    ["NonFileOntologyChildCatalog", /RESOURCE_SHAPE_MISMATCH|catalog .*ObjectType.*does not allow.*directory|DirectoryResourceCatalog.*rejected|non-file.*catalog/i],
+    ["NonFileOntologyChildCatalog", /RESOURCE_SHAPE_MISMATCH|catalog .*Class.*does not allow.*directory|DirectoryResourceCatalog.*rejected|non-file.*catalog/i],
     ["RequestDimensionVerbMismatch", /OPERATION_REQUEST_ENVELOPE_MISMATCH|behaviorKind.*must equal|verb.*must equal/i],
   ])("rejects invalid fixture %s with a stable latest diagnostic", (fixture, diagnostic) => {
     const tree = join(invalidRoot, fixture);
@@ -999,8 +999,8 @@ describe("Ontology XML latest validator integration RED targets", () => {
     replaceInTree(
       unknownKind,
       "Manifest.xml",
-      'kind="ObjectType" root="vfs://@/TypeSystem/ObjectTypes/" entry="ObjectType.xml"',
-      'kind="MissingKind" root="vfs://@/TypeSystem/ObjectTypes/" entry="ObjectType.xml"',
+      'kind="Class" root="vfs://@/TypeSystem/Classes/" entry="Class.xml"',
+      'kind="MissingKind" root="vfs://@/TypeSystem/Classes/" entry="Class.xml"',
     );
     expectRejected(
       runValidator(join(unknownKind, "Manifest.xml"), unknownKind),
@@ -1011,8 +1011,8 @@ describe("Ontology XML latest validator integration RED targets", () => {
     replaceInTree(
       duplicateMember,
       "Manifest.xml",
-      '<ManifestResourceCatalog id="relations" kind="Relation" root="vfs://@/DomainModel/Relations/" entry="Relation.xml" />',
-      '<ManifestResourceCatalog id="relations" kind="Relation" root="vfs://@/DomainModel/Relations/" entry="Relation.xml" />\n  <ManifestResourceCatalog id="relations-copy" kind="Relation" root="vfs://@/DomainModel/Relations/" entry="Relation.xml" />',
+      '<ManifestResourceCatalog id="relation-defs" kind="RelationDef" root="vfs://@/DomainModel/RelationDefs/" entry="RelationDef.xml" />',
+      '<ManifestResourceCatalog id="relation-defs" kind="RelationDef" root="vfs://@/DomainModel/RelationDefs/" entry="RelationDef.xml" />\n  <ManifestResourceCatalog id="relations-copy" kind="RelationDef" root="vfs://@/DomainModel/RelationDefs/" entry="RelationDef.xml" />',
     );
     expectRejected(
       runValidator(join(duplicateMember, "Manifest.xml"), duplicateMember),
@@ -1022,8 +1022,8 @@ describe("Ontology XML latest validator integration RED targets", () => {
     const duplicateFqn = makeTempTree("duplicate-fqn");
     replaceInTree(
       duplicateFqn,
-      "TypeSystem/ObjectTypes/Resource/ObjectType.xml",
-      'fqn="ontology.maker-space.object-types.resource"',
+      "TypeSystem/Classes/Resource/Class.xml",
+      'fqn="ontology.maker-space.classes.resource"',
       'fqn="ontology.maker-space.business-object.reservation"',
     );
     expectRejected(
@@ -1035,7 +1035,7 @@ describe("Ontology XML latest validator integration RED targets", () => {
     replaceInTree(
       unsafeRoot,
       "Manifest.xml",
-      'root="vfs://@/TypeSystem/ObjectTypes/"',
+      'root="vfs://@/TypeSystem/Classes/"',
       'root="vfs://@/../outside/types/"',
     );
     expectRejected(
@@ -1047,27 +1047,27 @@ describe("Ontology XML latest validator integration RED targets", () => {
   test.each([
     [
       "legacy Resources assembly",
-      '<ManifestResourceCatalog id="object-types" kind="ObjectType" root="vfs://@/TypeSystem/ObjectTypes/" entry="ObjectType.xml" />',
-      '<Resources><Type href="vfs://@/TypeSystem/ObjectTypes/Resource/ObjectType.xml" /></Resources>',
+      '<ManifestResourceCatalog id="classes" kind="Class" root="vfs://@/TypeSystem/Classes/" entry="Class.xml" />',
+      '<Resources><Type href="vfs://@/TypeSystem/Classes/Resource/Class.xml" /></Resources>',
       /Resources.*retired|Resources.*rejected|ONTOLOGY_LEGACY_ASSEMBLY_REJECTED/i,
     ],
     [
       "legacy Modules assembly",
-      '<ManifestResourceCatalog id="object-types" kind="ObjectType" root="vfs://@/TypeSystem/ObjectTypes/" entry="ObjectType.xml" />',
-      '<Modules><Module kind="ObjectType" href="TypeSystem/ObjectTypes/Resource/ObjectType.xml" /></Modules>',
+      '<ManifestResourceCatalog id="classes" kind="Class" root="vfs://@/TypeSystem/Classes/" entry="Class.xml" />',
+      '<Modules><Module kind="Class" href="TypeSystem/Classes/Resource/Class.xml" /></Modules>',
       /Modules.*retired|Modules.*rejected|ONTOLOGY_LEGACY_ASSEMBLY_REJECTED/i,
     ],
     [
-      "DirectoryResourceCatalog with a manifest-only ObjectType kind",
-      '<ManifestResourceCatalog id="object-types" kind="ObjectType" root="vfs://@/TypeSystem/ObjectTypes/" entry="ObjectType.xml" />',
-      '<DirectoryResourceCatalog id="object-types" kind="ObjectType" root="vfs://@/TypeSystem/ObjectTypes/" entry="ObjectType.xml" />',
-      /CATALOG_KIND_SHAPE_MISMATCH|ObjectType.*does not allow.*directory/i,
+      "DirectoryResourceCatalog with a manifest-only Class kind",
+      '<ManifestResourceCatalog id="classes" kind="Class" root="vfs://@/TypeSystem/Classes/" entry="Class.xml" />',
+      '<DirectoryResourceCatalog id="classes" kind="Class" root="vfs://@/TypeSystem/Classes/" entry="Class.xml" />',
+      /CATALOG_KIND_SHAPE_MISMATCH|Class.*does not allow.*directory/i,
     ],
     [
-      "FileResourceCatalog with a manifest-only ObjectType kind",
-      '<ManifestResourceCatalog id="object-types" kind="ObjectType" root="vfs://@/TypeSystem/ObjectTypes/" entry="ObjectType.xml" />',
-      '<FileResourceCatalog id="object-types" kind="ObjectType" root="vfs://@/TypeSystem/ObjectTypes/" />',
-      /CATALOG_KIND_SHAPE_MISMATCH|ObjectType.*does not allow.*file/i,
+      "FileResourceCatalog with a manifest-only Class kind",
+      '<ManifestResourceCatalog id="classes" kind="Class" root="vfs://@/TypeSystem/Classes/" entry="Class.xml" />',
+      '<FileResourceCatalog id="classes" kind="Class" root="vfs://@/TypeSystem/Classes/" />',
+      /CATALOG_KIND_SHAPE_MISMATCH|Class.*does not allow.*file/i,
     ],
   ])("rejects %s", (_label, search, replacement, diagnostic) => {
     const tree = makeTempTree("legacy-rejection");
@@ -1078,39 +1078,39 @@ describe("Ontology XML latest validator integration RED targets", () => {
   test.each([
     [
       "Resources",
-      '<Resources><Type href="vfs://@/TypeSystem/ObjectTypes/Resource/ObjectType.xml" /></Resources>',
+      '<Resources><Type href="vfs://@/TypeSystem/Classes/Resource/Class.xml" /></Resources>',
     ],
     [
       "Modules",
-      '<Modules><Module kind="ObjectType" href="TypeSystem/ObjectTypes/Resource/ObjectType.xml" /></Modules>',
+      '<Modules><Module kind="Class" href="TypeSystem/Classes/Resource/Class.xml" /></Modules>',
     ],
   ])("deterministically rejects legacy %s assembly without following href", (element, replacement) => {
     const tree = makeTempTree(`legacy-${String(element).toLowerCase()}-deterministic`);
     replaceInTree(
       tree,
       "Manifest.xml",
-      '<ManifestResourceCatalog id="object-types" kind="ObjectType" root="vfs://@/TypeSystem/ObjectTypes/" entry="ObjectType.xml" />',
+      '<ManifestResourceCatalog id="classes" kind="Class" root="vfs://@/TypeSystem/Classes/" entry="Class.xml" />',
       replacement as string,
     );
     writeFileSync(
-      join(tree, "TypeSystem", "ObjectTypes", "Resource", "ObjectType.xml"),
-      '<!DOCTYPE ObjectType><ObjectType fqn="ontology.invalid" id="Invalid.Target"><Description>Must remain unread.</Description></ObjectType>',
+      join(tree, "TypeSystem", "Classes", "Resource", "Class.xml"),
+      '<!DOCTYPE Class><Class fqn="ontology.invalid" id="Invalid.Target"><Description>Must remain unread.</Description></Class>',
     );
 
     const first = runValidator(join(tree, "Manifest.xml"), tree);
     const second = runValidator(join(tree, "Manifest.xml"), tree);
     expectRejected(first, new RegExp(`ONTOLOGY_LEGACY_ASSEMBLY_REJECTED: Ontology/${element} and href assembly are retired`, "i"));
     expect(second).toEqual(first);
-    expect(`${first.stdout}\n${first.stderr}`).not.toMatch(/ObjectType\.xml|DOCTYPE\/ENTITY declarations are forbidden/i);
+    expect(`${first.stdout}\n${first.stderr}`).not.toMatch(/Class\.xml|DOCTYPE\/ENTITY declarations are forbidden/i);
   });
 });
 
 describe("MakerSpace layered ontology semantics", () => {
   test("keeps TypeSystem, DomainModel, and DomainSemantics responsibilities separate", () => {
     const docs = docsByRootKind();
-    const types = docs.get("ObjectType") ?? [];
+    const types = docs.get("Class") ?? [];
     const businessObjects = docs.get("BusinessObject") ?? [];
-    const relations = docs.get("Relation") ?? [];
+    const relations = docs.get("RelationDef") ?? [];
     const rules = docs.get("Rule") ?? [];
     const lifecycles = docs.get("StateMachine") ?? [];
     expect(types.map((type) => type["@_id"])).toEqual(expect.arrayContaining([
@@ -1130,27 +1130,27 @@ describe("MakerSpace layered ontology semantics", () => {
       "MakerSpace.Tool",
     ]));
     for (const type of types) expect(type).not.toHaveProperty("BusinessObjects");
-    for (const relation of relations) expect(relation).not.toHaveProperty("Associations");
+    for (const relationDef of relations) expect(relationDef).not.toHaveProperty("Associations");
     for (const rule of rules) expect(rule).not.toHaveProperty("DomainPolicies");
     for (const lifecycle of lifecycles) expect(lifecycle).not.toHaveProperty("BusinessObjects");
 
     const reservationRule = rules
       .find((rule) => rule["@_id"] === "MakerSpace.Rule.ReservationWindowOrdered")!;
-    const compare = (reservationRule.Require as XmlNode).PropertyCompare as XmlNode;
-    expect(compare["@_propertyRef"]).toBe("MakerSpace.Reservation#startTime");
-    expect(compare["@_otherPropertyRef"]).toBe("MakerSpace.Reservation#endTime");
+    const compare = (reservationRule.Require as XmlNode).FieldCompare as XmlNode;
+    expect(compare["@_fieldRef"]).toBe("MakerSpace.Reservation#startTime");
+    expect(compare["@_otherFieldRef"]).toBe("MakerSpace.Reservation#endTime");
     expect(compare).not.toHaveProperty("@_value");
 
     const lifecycle = lifecycles[0]!;
     expect(lifecycle["@_subjectTypeRef"]).toBe("MakerSpace.Reservation");
-    expect(lifecycle["@_statePropertyRef"]).toBe("MakerSpace.Reservation#workflowState");
+    expect(lifecycle["@_stateFieldRef"]).toBe("MakerSpace.Reservation#workflowState");
   });
 
   test("models cozo-om types as language declarations with embedded local properties", () => {
     const docs = docsByRootKind();
     const mixin = (docs.get("Mixin") ?? [])
       .find((candidate) => candidate["@_id"] === "MakerSpace.Mixin.Auditable")!;
-    const types = docs.get("ObjectType") ?? [];
+    const types = docs.get("Class") ?? [];
     const businessObjects = docs.get("BusinessObject") ?? [];
     const resource = types.find((candidate) => candidate["@_id"] === "MakerSpace.Resource")!;
     const member = businessObjects.find((candidate) => candidate["@_id"] === "MakerSpace.Member")!;
@@ -1158,8 +1158,8 @@ describe("MakerSpace layered ontology semantics", () => {
     expect(member["@_parentRef"]).toBe("MakerSpace.Resource");
     expect(asArray((resource.Mixins as XmlNode).Mixin as XmlNode | XmlNode[])[0]?.["@_ref"]).toBe("MakerSpace.Mixin.Auditable");
     for (const property of [
-      ...asArray((mixin.Properties as XmlNode).Property as XmlNode | XmlNode[]),
-      ...types.flatMap((type) => asArray(((type.Properties as XmlNode | undefined)?.Property) as XmlNode | XmlNode[] | undefined)),
+      ...asArray((mixin.Fields as XmlNode).Field as XmlNode | XmlNode[]),
+      ...types.flatMap((type) => asArray(((type.Fields as XmlNode | undefined)?.Field) as XmlNode | XmlNode[] | undefined)),
     ]) {
       expect(property).toHaveProperty("@_name");
       expect(property).toHaveProperty("@_typeRef");
@@ -1167,8 +1167,8 @@ describe("MakerSpace layered ontology semantics", () => {
       expect(property).not.toHaveProperty("@_ref");
     }
     for (const property of businessObjects.flatMap((businessObject) => [
-      ...asArray(((businessObject.Identity as XmlNode | undefined)?.Property) as XmlNode | XmlNode[] | undefined),
-      ...asArray(((businessObject.Properties as XmlNode | undefined)?.Property) as XmlNode | XmlNode[] | undefined),
+      ...asArray(((businessObject.Identity as XmlNode | undefined)?.Field) as XmlNode | XmlNode[] | undefined),
+      ...asArray(((businessObject.Fields as XmlNode | undefined)?.Field) as XmlNode | XmlNode[] | undefined),
     ])) {
       expect(property).toHaveProperty("@_name");
       expect(property).toHaveProperty("@_typeRef");
@@ -1186,7 +1186,7 @@ describe("MakerSpace layered ontology semantics", () => {
     for (const businessObject of businessObjects) {
       expect(businessObject).not.toHaveProperty("@_typeRef");
       expect(businessObject["@_id"]).toMatch(/^MakerSpace\./);
-      for (const property of asArray(((businessObject.Properties as XmlNode | undefined)?.Property) as XmlNode | XmlNode[] | undefined)) {
+      for (const property of asArray(((businessObject.Fields as XmlNode | undefined)?.Field) as XmlNode | XmlNode[] | undefined)) {
         expect(property).toHaveProperty("@_name");
         expect(property).toHaveProperty("@_typeRef");
         expect(property).not.toHaveProperty("@_id");
@@ -1194,9 +1194,9 @@ describe("MakerSpace layered ontology semantics", () => {
       }
     }
     for (const association of associations) {
-      expect(association).toHaveProperty("@_relationRef");
-      expect(association).not.toHaveProperty("@_fromTypeRef");
-      expect(association).not.toHaveProperty("@_toTypeRef");
+      expect(association).toHaveProperty("@_relationDefRef");
+      expect(association).not.toHaveProperty("@_fromClassRef");
+      expect(association).not.toHaveProperty("@_toClassRef");
       expect(association).not.toHaveProperty("@_min");
       expect(association).not.toHaveProperty("@_max");
     }
@@ -1205,20 +1205,20 @@ describe("MakerSpace layered ontology semantics", () => {
     expect(handlers[0]?.["@_ownerRef"]).toBe("MakerSpace.Reservation");
   });
 
-  test("BusinessObject manifests directly declare object type members and own behavior resources", () => {
+  test("BusinessObject manifests directly declare class members and own behavior resources", () => {
     const docs = docsByRootKind();
     const reservation = (docs.get("BusinessObject") ?? [])
       .find((businessObject) => businessObject["@_id"] === "MakerSpace.Reservation")!;
-    const action = (docs.get("Action") ?? [])[0]!;
+    const operation = (docs.get("Operation") ?? [])[0]!;
     const mutation = (docs.get("Mutation") ?? [])[0]!;
 
     expect(reservation).not.toHaveProperty("@_typeRef");
     expect(reservation["@_parentRef"]).toBe("MakerSpace.Resource");
-    expect(asArray((reservation.Identity as XmlNode).Property as XmlNode | XmlNode[])[0]?.["@_name"]).toBe("reservationNumber");
+    expect(asArray((reservation.Identity as XmlNode).Field as XmlNode | XmlNode[])[0]?.["@_name"]).toBe("reservationNumber");
     expect(reservation).toHaveProperty("ManifestResourceCatalog");
-    expect(action["@_ownerRef"]).toBe(reservation["@_id"]);
+    expect(operation["@_ownerRef"]).toBe(reservation["@_id"]);
     expect(mutation["@_ownerRef"]).toBe(reservation["@_id"]);
-    expect(asArray((action.Mutations as XmlNode).Mutation as XmlNode | XmlNode[])[0]?.["@_ref"]).toBe(mutation["@_id"]);
+    expect(asArray((operation.Mutations as XmlNode).Mutation as XmlNode | XmlNode[])[0]?.["@_ref"]).toBe(mutation["@_id"]);
     expect(reservation).not.toHaveProperty("Types");
   });
 
@@ -1266,7 +1266,7 @@ describe("Operation model and ExecuteOperationRequest contract", () => {
       "raw",
     ]));
     expect(new Set([...operations.values()].map((operation) => operation["@_behavior"]))).toEqual(new Set([
-      "action",
+      "operation",
       "mutation",
       "query",
       "transition",
@@ -1406,56 +1406,56 @@ describe("Operation model and ExecuteOperationRequest contract", () => {
 describe("Semantic and request mutation RED targets", () => {
   test.each([
     [
-      "PropertyCompare mixed RHS",
+      "FieldCompare mixed RHS",
       "DomainModel/Rules/ReservationWindowOrdered/Rule.xml",
-      'otherPropertyRef="MakerSpace.Reservation#endTime" />',
-      'otherPropertyRef="MakerSpace.Reservation#endTime" value="2026-08-03T00:00:00Z" />',
-      /PropertyCompare.*exactly one of @value or @otherPropertyRef/i,
+      'otherFieldRef="MakerSpace.Reservation#endTime" />',
+      'otherFieldRef="MakerSpace.Reservation#endTime" value="2026-08-03T00:00:00Z" />',
+      /FieldCompare.*exactly one of @value or @otherFieldRef/i,
     ],
     [
-      "Property declaration is promoted back to a global entity",
+      "Field declaration is promoted back to a global entity",
       "DomainModel/BusinessObjects/Reservation/BusinessObject.xml",
-      '<Property name="reservationNumber" typeRef="MakerSpace.Type.ReservationNumber" required="true" />',
-      '<Property id="MakerSpace.Property.Reservation.ReservationNumber" name="reservationNumber" typeRef="MakerSpace.Type.ReservationNumber" required="true" />',
-      /Property.*does not allow attribute @id/i,
+      '<Field name="reservationNumber" typeRef="MakerSpace.Type.ReservationNumber" required="true" />',
+      '<Field id="MakerSpace.Field.Reservation.ReservationNumber" name="reservationNumber" typeRef="MakerSpace.Type.ReservationNumber" required="true" />',
+      /Field.*does not allow attribute @id/i,
     ],
     [
       "Child loosens inherited required property",
       "DomainModel/BusinessObjects/Reservation/BusinessObject.xml",
-      '<Property name="reservationNumber" typeRef="MakerSpace.Type.ReservationNumber" required="true" />',
-      '<Property name="createdAt" typeRef="builtin:DateTime" required="false" />\n        <Property name="reservationNumber" typeRef="MakerSpace.Type.ReservationNumber" required="true" />',
-      /cannot loosen inherited required Property 'createdAt'/i,
+      '<Field name="reservationNumber" typeRef="MakerSpace.Type.ReservationNumber" required="true" />',
+      '<Field name="createdAt" typeRef="builtin:DateTime" required="false" />\n        <Field name="reservationNumber" typeRef="MakerSpace.Type.ReservationNumber" required="true" />',
+      /cannot loosen inherited required Field 'createdAt'/i,
     ],
     [
-      "Property uses a Mixin as its value type",
+      "Field uses a Mixin as its value type",
       "DomainModel/BusinessObjects/Member/BusinessObject.xml",
       'typeRef="MakerSpace.Type.MemberNumber"',
       'typeRef="MakerSpace.Mixin.Auditable"',
-      /Property.*references.*as scalar-type\|enum-type\|object-type\|union-type\|collection-type.*declared as mixin/i,
+      /Field.*references.*as scalar-type\|enum-type\|class\|union-type\|collection-type.*declared as mixin/i,
     ],
     [
       "Mixin application uses a builtin value type",
-      "TypeSystem/ObjectTypes/Resource/ObjectType.xml",
+      "TypeSystem/Classes/Resource/Class.xml",
       '<Mixin ref="MakerSpace.Mixin.Auditable" />',
       '<Mixin ref="builtin:String" />',
       /Mixin.*references builtin type.*where mixin is required/i,
     ],
     [
-      "Relation endpoint uses non-entity DomainSemantics resource",
-      "DomainModel/Relations/ReservesTool/Relation.xml",
-      'toTypeRef="MakerSpace.Tool"',
-      'toTypeRef="MakerSpace.Association.ReservedTool"',
-      /Relation.*endpoint.*entity ObjectType or BusinessObject|RELATION_ENDPOINT_KIND_MISMATCH/i,
+      "RelationDef endpoint uses non-entity DomainSemantics resource",
+      "DomainModel/RelationDefs/ReservesTool/RelationDef.xml",
+      'toClassRef="MakerSpace.Tool"',
+      'toClassRef="MakerSpace.Association.ReservedTool"',
+      /RelationDef.*endpoint.*entity Class or BusinessObject|RELATION_ENDPOINT_KIND_MISMATCH/i,
     ],
     [
-      "DomainPolicy ownerRef falls back to structural ObjectType",
+      "DomainPolicy ownerRef falls back to structural Class",
       "DomainSemantics/Policies/Core.xml",
       'ownerRef="MakerSpace.Reservation"',
       'ownerRef="MakerSpace.Resource"',
       /ownerRef.*owner resource|DOMAIN_POLICY_OWNER_KIND_MISMATCH|business-object.*BusinessObject/i,
     ],
     [
-      "Operation ownerRef falls back to structural ObjectType",
+      "Operation ownerRef falls back to structural Class",
       "Operations/Workbench.xml",
       'ownerRef="MakerSpace.Reservation" behavior="mutation"',
       'ownerRef="MakerSpace.Resource" behavior="mutation"',
@@ -1489,14 +1489,14 @@ describe("Semantic and request mutation RED targets", () => {
       `<?xml version="1.0" encoding="UTF-8"?>
 <Mixin fqn="ontology.maker-space.mixins.optionally-auditable" id="MakerSpace.Mixin.OptionallyAuditable">
   <Description>Conflicts with the required audit property.</Description>
-  <Properties>
-    <Property name="createdAt" typeRef="builtin:DateTime" required="false" />
-  </Properties>
+  <Fields>
+    <Field name="createdAt" typeRef="builtin:DateTime" required="false" />
+  </Fields>
 </Mixin>`,
     );
     replaceInTree(
       tree,
-      "TypeSystem/ObjectTypes/Resource/ObjectType.xml",
+      "TypeSystem/Classes/Resource/Class.xml",
       '<Mixin ref="MakerSpace.Mixin.Auditable" />',
       '<Mixin ref="MakerSpace.Mixin.Auditable" />\n        <Mixin ref="MakerSpace.Mixin.OptionallyAuditable" />',
     );
@@ -1636,10 +1636,10 @@ describe("depa-ontology.ts source authority and projection contract", () => {
 
     expect(contract.importStages).toEqual([
       { stage: "mixins", api: "defineMixin" },
-      { stage: "mixin-properties", api: "defineAttribute" },
-      { stage: "types-parent-before-child", api: "defineType" },
-      { stage: "type-properties-parent-before-child", api: "defineAttribute" },
-      { stage: "relations", api: "defineRelation" },
+      { stage: "mixin-fields", api: "defineField" },
+      { stage: "types-parent-before-child", api: "defineClass" },
+      { stage: "type-fields-parent-before-child", api: "defineField" },
+      { stage: "relation-defs", api: "defineRelationDef" },
       { stage: "behaviors", api: "importBehaviorManifestJson" },
     ]);
     expect(contract.callbackTransport).toBe("binding-id-only");
@@ -1650,17 +1650,17 @@ describe("depa-ontology.ts source authority and projection contract", () => {
     const runtime = om.createOmRuntime(db);
     try {
       await om.initSchema(runtime);
-      await expect(om.defineType(runtime, "Child", "Child.", { parentType: "Parent" }))
+      await expect(om.defineClass(runtime, "Child", "Child.", { parentClass: "Parent" }))
         .rejects.toThrow(/Parent type 'Parent' does not exist/);
-      await expect(om.defineType(runtime, "Owner", "Owner.", { mixins: ["Auditable"] }))
+      await expect(om.defineClass(runtime, "Owner", "Owner.", { mixins: ["Auditable"] }))
         .rejects.toThrow(/Mixin 'Auditable' does not exist/);
 
       await om.defineMixin(runtime, "Auditable", "Audit fields.");
-      await om.defineAttribute(runtime, "Auditable", "createdAt", "String", true, "Created timestamp.");
-      await om.defineType(runtime, "Parent", "Parent.");
-      await om.defineType(runtime, "Owner", "Owner.", { parentType: "Parent", mixins: ["Auditable"] });
-      await om.defineAttribute(runtime, "Owner", "displayName", "String", true, "Display name.");
-      await om.defineRelation(runtime, "owns", "Owner", "Parent", true, "Ownership.");
+      await om.defineField(runtime, "Auditable", "createdAt", "String", true, "Created timestamp.");
+      await om.defineClass(runtime, "Parent", "Parent.");
+      await om.defineClass(runtime, "Owner", "Owner.", { parentClass: "Parent", mixins: ["Auditable"] });
+      await om.defineField(runtime, "Owner", "displayName", "String", true, "Display name.");
+      await om.defineRelationDef(runtime, "owns", "Owner", "Parent", true, "Ownership.");
 
       const missingOwner = await om.importBehaviorManifestJson(
         runtime,
@@ -1689,7 +1689,7 @@ describe("depa-ontology.ts source authority and projection contract", () => {
       const ready = await om.importBehaviorManifestJson(
         runtime,
         behaviorManifest("Owner", "ready", "host:ready"),
-        { actions: [{ bindingId: "host:ready", callback: () => [] }] },
+        { operations: [{ bindingId: "host:ready", callback: () => [] }] },
         { requireReady: true },
       );
       expect(ready.applied).toBe(true);
@@ -1710,7 +1710,7 @@ describe("depa-ontology.ts source authority and projection contract", () => {
 
     expect(contract.profileRequiredXmlKinds).toEqual([
       "BusinessObject",
-      "Action",
+      "Operation",
       "Mutation",
       "ComputedFunction",
       "ConstraintHandler",
@@ -1735,8 +1735,8 @@ describe("depa-ontology.ts source authority and projection contract", () => {
     const runtime = om.createOmRuntime(db);
     try {
       await om.initSchema(runtime);
-      await om.defineType(runtime, "RuntimeOwner", "Native runtime owner.");
-      await om.defineAction(runtime, "RuntimeOwner", "run", () => [], "Native action.");
+      await om.defineClass(runtime, "RuntimeOwner", "Native runtime owner.");
+      await om.defineOperation(runtime, "RuntimeOwner", "run", () => [], "Native operation.");
 
       const behaviorJson = JSON.parse(
         new TextDecoder().decode(await om.exportBehaviorManifestJson(runtime)),
@@ -1745,7 +1745,7 @@ describe("depa-ontology.ts source authority and projection contract", () => {
       const behavior = (behaviorJson.behaviors as JsonObject[])[0]!;
       expectExactKeys(behavior, [
         "kind",
-        "ownerType",
+        "ownerClass",
         "name",
         "constraintType",
         "message",
@@ -1754,13 +1754,13 @@ describe("depa-ontology.ts source authority and projection contract", () => {
         "interceptorSeq",
         "callbacks",
       ]);
-      expect(behavior.kind).toBe("action");
-      expect(behavior.ownerType).toBe("RuntimeOwner");
+      expect(behavior.kind).toBe("operation");
+      expect(behavior.ownerClass).toBe("RuntimeOwner");
       expectExactKeys((behavior.callbacks as JsonObject[])[0], ["slot", "bindingId", "readiness"]);
 
       const snapshot = await om.writeSchemaSnapshot(runtime, 1);
-      expect(snapshot.schema.om_type).toContainEqual(["RuntimeOwner", "Native runtime owner.", null]);
-      expect(snapshot.behavior.om_action_def).toContainEqual(["RuntimeOwner", "run", "Native action."]);
+      expect(snapshot.schema.om_class_def).toContainEqual(["RuntimeOwner", "Native runtime owner.", null]);
+      expect(snapshot.behavior.om_operation_def).toContainEqual(["RuntimeOwner", "run", "Native operation."]);
       expect(snapshot).not.toHaveProperty("resourceKind");
       expect(snapshot).not.toHaveProperty("fqn");
       expect(projection).toMatch(/`perm\.policies` rows are runtime access-control data, not `DomainPolicy` XML facts/);
@@ -1775,19 +1775,19 @@ describe("Validator security and CLI RED targets", () => {
   test.each([
     [
       "absolute catalog root",
-      'root="vfs://@/TypeSystem/ObjectTypes/"',
+      'root="vfs://@/TypeSystem/Classes/"',
       `root="${resolve(tmpdir(), "outside-types")}"`,
       /absolute path|catalog root.*unsafe|VFS/i,
     ],
     [
       "dot-dot catalog root",
-      'root="vfs://@/TypeSystem/ObjectTypes/"',
+      'root="vfs://@/TypeSystem/Classes/"',
       'root="vfs://@/../outside/types/"',
       /\.\.|escapes workspace root|catalog root.*unsafe/i,
     ],
     [
       "percent encoded traversal",
-      'root="vfs://@/TypeSystem/ObjectTypes/"',
+      'root="vfs://@/TypeSystem/Classes/"',
       'root="vfs://@/%2e%2e/outside/types/"',
       /percent|decode|\.\.|escapes workspace root|catalog root.*unsafe/i,
     ],
@@ -1814,9 +1814,9 @@ describe("Validator security and CLI RED targets", () => {
     const outside = join(dirname(tree), "outside-types");
     mkdirSync(outside, { recursive: true });
     mkdirSync(join(outside, "Resource"), { recursive: true });
-    writeFileSync(join(outside, "Resource", "ObjectType.xml"), readFileSync(join(tree, "TypeSystem", "ObjectTypes", "Resource", "ObjectType.xml"), "utf8"));
-    rmSync(join(tree, "TypeSystem", "ObjectTypes"), { recursive: true, force: true });
-    symlinkSync(outside, join(tree, "TypeSystem", "ObjectTypes"));
+    writeFileSync(join(outside, "Resource", "Class.xml"), readFileSync(join(tree, "TypeSystem", "Classes", "Resource", "Class.xml"), "utf8"));
+    rmSync(join(tree, "TypeSystem", "Classes"), { recursive: true, force: true });
+    symlinkSync(outside, join(tree, "TypeSystem", "Classes"));
     expectRejected(runValidator(join(tree, "Manifest.xml"), tree), /symbolic link|escapes workspace root|catalog root.*unsafe/i);
   });
 
@@ -1842,7 +1842,7 @@ describe("Validator security and CLI RED targets", () => {
     const tree = makeTempTree("encoding-limit");
     writeFileSync(
       join(tree, "Manifest.xml"),
-      '<?xml version="1.0" encoding="UTF-7"?><Ontology fqn="ontology.security" id="Security.Ontology" version="1.0.0"><Description>+ADw-script+AD4-</Description><ManifestResourceCatalog id="object-types" kind="ObjectType" root="vfs://@/TypeSystem/ObjectTypes/" entry="ObjectType.xml" /></Ontology>',
+      '<?xml version="1.0" encoding="UTF-7"?><Ontology fqn="ontology.security" id="Security.Ontology" version="1.0.0"><Description>+ADw-script+AD4-</Description><ManifestResourceCatalog id="classes" kind="Class" root="vfs://@/TypeSystem/Classes/" entry="Class.xml" /></Ontology>',
     );
     expectRejected(runValidator(join(tree, "Manifest.xml"), tree), /Unsupported XML encoding 'UTF-7'/i);
   });

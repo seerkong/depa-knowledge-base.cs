@@ -81,7 +81,7 @@ bun run skills/code-to-ontology-xml/scripts/audit-generated-ontology.ts \
   --report <run-dir>/generated-ontology-audit.json
 ```
 
-This single entrypoint runs strict generated XML validation first and runs the existing coverage validator only after that stage passes. Its stable report records both stage outcomes, and either failure returns nonzero. The coverage stage checks anchors, revisions, references, dispositions, counts, and signal accounting. Every canonical Type, Relation, Rule, StateMachine, and ImplementationMapping must be covered by a mapped candidate's `ontologyRefs`; a Transition may instead be covered by its owning StateMachine candidate. It is a useful omission detector and audit accelerator.
+This single entrypoint runs strict generated XML validation first and runs the existing coverage validator only after that stage passes. Its stable report records both stage outcomes, and either failure returns nonzero. The coverage stage checks anchors, revisions, references, dispositions, counts, and signal accounting. Every canonical Class, RelationDef, Rule, StateMachine, and ImplementationMapping must be covered by a mapped candidate's `ontologyRefs`; a Transition may instead be covered by its owning StateMachine candidate. It is a useful omission detector and audit accelerator.
 
 Its pass does not prove that:
 
@@ -168,4 +168,4 @@ Report `PASS` only when:
 8. semantic coverage review finds no unaccounted core area or thin skeleton; and
 9. all exclusion and oracle-independence boundaries hold.
 
-Otherwise report `FAIL` or `PARTIAL` with stable, actionable gaps. Do not declare success because XML is valid, an inventory is deterministic, or every script exits zero.
+Otherwise report `FAIL` or `PARTIAL` with stable, operationable gaps. Do not declare success because XML is valid, an inventory is deterministic, or every script exits zero.

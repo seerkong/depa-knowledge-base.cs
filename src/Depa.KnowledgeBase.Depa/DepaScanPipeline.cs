@@ -21,8 +21,8 @@ internal sealed record CkEdge(string FromId, string ToId, string Kind, string Ev
 /// ④ existential-rule check.
 ///
 /// Discipline (design §5): zero annotations produce BLOCKED findings — never guesses. Heuristic
-/// judgements carry assigned_by=heuristic and confidence &lt;= 0.7. Every write is a put-style
-/// upsert and every link is deduplicated per (from, rel, to), so repeated scans over the same
+/// judgements carry assigned_by=heuristic and confidence &lt;= 0.7. Every object write is a
+/// put-style upsert and every relation link is deduplicated per (from, rel, to), so repeated scans over the same
 /// observation data are idempotent.
 /// </summary>
 internal static class DepaScanPipeline
@@ -48,7 +48,7 @@ internal static class DepaScanPipeline
         [7] = "surface_view",
     };
 
-    private sealed record DepaAnnotation(string EntityId, string TypeName, string AssignedBy, double Confidence);
+    private sealed record DepaAnnotation(string ObjectId, string ClassName, string AssignedBy, double Confidence);
 
     /// <summary>
     /// Core pipeline entry (track fix-om-depa-conformance-gaps REC-2): consumes resolved
@@ -63,36 +63,36 @@ internal static class DepaScanPipeline
 
         var symbols = await LoadSymbolsAsync(om, ct);
 
-        var entityCounts = new Dictionary<string, int>(StringComparer.Ordinal);
-        var relationCounts = new Dictionary<string, int>(StringComparer.Ordinal);
+        var objectCounts = new Dictionary<string, int>(StringComparer.Ordinal);
+        var relationLinkCounts = new Dictionary<string, int>(StringComparer.Ordinal);
         var linked = new HashSet<(string From, string Rel, string To)>();
         var materialized = new HashSet<string>(StringComparer.Ordinal);
         var bySymbolId = new Dictionary<string, DepaAnnotation>(StringComparer.Ordinal);
         var configCount = 0;
         var heuristicCount = 0;
 
-        async Task<string> UpsertAsync(string typeName, string idShort, string stableKey, string label, string assignedBy, double confidence, CkSymbol? anchor, params (string Attr, object? Value)[] props)
+        async Task<string> UpsertAsync(string className, string idShort, string stableKey, string label, string assignedBy, double confidence, CkSymbol? anchor, params (string Field, object? Value)[] fields)
         {
             var id = $"depa:{idShort}:{stableKey}";
-            await om.UpsertEntityAsync(id, typeName, label, ct);
+            await om.UpsertObjectAsync(id, className, label, ct);
             if (anchor is not null)
             {
-                await om.SetPropertyAsync(id, "symbol_id", anchor.SymbolId, cancellationToken: ct);
-                await om.SetPropertyAsync(id, "sym_key", anchor.SymKey, cancellationToken: ct);
-                await om.SetPropertyAsync(id, "path", anchor.Path, cancellationToken: ct);
-                await om.SetPropertyAsync(id, "line", anchor.StartLine, cancellationToken: ct);
+                await om.SetFieldValueAsync(id, "symbol_id", anchor.SymbolId, cancellationToken: ct);
+                await om.SetFieldValueAsync(id, "sym_key", anchor.SymKey, cancellationToken: ct);
+                await om.SetFieldValueAsync(id, "path", anchor.Path, cancellationToken: ct);
+                await om.SetFieldValueAsync(id, "line", anchor.StartLine, cancellationToken: ct);
             }
 
-            await om.SetPropertyAsync(id, "assigned_by", assignedBy, cancellationToken: ct);
-            await om.SetPropertyAsync(id, "confidence", confidence, cancellationToken: ct);
-            foreach (var (attr, value) in props)
+            await om.SetFieldValueAsync(id, "assigned_by", assignedBy, cancellationToken: ct);
+            await om.SetFieldValueAsync(id, "confidence", confidence, cancellationToken: ct);
+            foreach (var (field, value) in fields)
             {
-                await om.SetPropertyAsync(id, attr, value, cancellationToken: ct);
+                await om.SetFieldValueAsync(id, field, value, cancellationToken: ct);
             }
 
             if (materialized.Add(id))
             {
-                entityCounts[typeName] = entityCounts.GetValueOrDefault(typeName) + 1;
+                objectCounts[className] = objectCounts.GetValueOrDefault(className) + 1;
                 if (assignedBy == "config")
                 {
                     configCount++;
@@ -106,15 +106,15 @@ internal static class DepaScanPipeline
             return id;
         }
 
-        async Task<DepaAnnotation> AnnotateAsync(string typeName, string idShort, CkSymbol sym, string assignedBy, double confidence, params (string Attr, object? Value)[] props)
+        async Task<DepaAnnotation> AnnotateAsync(string className, string idShort, CkSymbol sym, string assignedBy, double confidence, params (string Field, object? Value)[] fields)
         {
             if (bySymbolId.TryGetValue(sym.SymbolId, out var existing))
             {
                 return existing;
             }
 
-            var id = await UpsertAsync(typeName, idShort, StableKeyOf(sym), sym.Name, assignedBy, confidence, sym, props);
-            var annotation = new DepaAnnotation(id, typeName, assignedBy, confidence);
+            var id = await UpsertAsync(className, idShort, StableKeyOf(sym), sym.Name, assignedBy, confidence, sym, fields);
+            var annotation = new DepaAnnotation(id, className, assignedBy, confidence);
             bySymbolId[sym.SymbolId] = annotation;
             return annotation;
         }
@@ -214,11 +214,11 @@ internal static class DepaScanPipeline
             }
         }
 
-        var factSources = new List<(string EntityId, CkSymbol? Anchor, DepaFactSourceConfig Config)>();
+        var factSources = new List<(string ObjectId, CkSymbol? Anchor, DepaFactSourceConfig Config)>();
         foreach (var fact in map.FactSources)
         {
             var anchor = MatchSymbols(fact.SymbolOrPath).FirstOrDefault();
-            var props = new (string, object?)[]
+            var fields = new (string, object?)[]
             {
                 ("grade", fact.Grade),
                 ("grade_id", GradeIds.GetValueOrDefault(fact.Grade, "")),
@@ -227,21 +227,21 @@ internal static class DepaScanPipeline
             string id;
             if (anchor is not null && bySymbolId.ContainsKey(anchor.SymbolId))
             {
-                // The anchor symbol is already judged as another depa type (e.g. declared both
-                // projection AND fact source). Do NOT swallow the grading into that entity —
+                // The anchor symbol is already judged as another depa class (e.g. declared both
+                // projection AND fact source). Do NOT swallow the grading into that object —
                 // materialize a separate depa_fact_source so the entanglement stays observable
                 // (V-D3, track expand-depa-detection-rules T2.1).
-                id = await UpsertAsync("depa_fact_source", "factsource", StableKeyOf(anchor), anchor.Name, "config", 1.0, anchor, props);
+                id = await UpsertAsync("depa_fact_source", "factsource", StableKeyOf(anchor), anchor.Name, "config", 1.0, anchor, fields);
             }
             else if (anchor is not null)
             {
-                id = (await AnnotateAsync("depa_fact_source", "factsource", anchor, "config", 1.0, props)).EntityId;
+                id = (await AnnotateAsync("depa_fact_source", "factsource", anchor, "config", 1.0, fields)).ObjectId;
             }
             else
             {
                 // Config truth without an observable anchor: materialize anyway so the
                 // factsource_must_have_writer rule reports BLOCKED instead of silently passing.
-                id = await UpsertAsync("depa_fact_source", "factsource", fact.SymbolOrPath, fact.SymbolOrPath, "config", 1.0, anchor: null, props);
+                id = await UpsertAsync("depa_fact_source", "factsource", fact.SymbolOrPath, fact.SymbolOrPath, "config", 1.0, anchor: null, fields);
             }
 
             factSources.Add((id, anchor, fact));
@@ -281,7 +281,7 @@ internal static class DepaScanPipeline
                     + "cannot evaluate this rule without capsule/contract/fact-source judgements; not guessing."))
                 .Concat(detectorBlocked)
                 .ToArray();
-            return new DepaScanResult(entityCounts, relationCounts, blocked, configCount, heuristicCount)
+            return new DepaScanResult(objectCounts, relationLinkCounts, blocked, configCount, heuristicCount)
             {
                 DetectionVerdicts = detectorVerdicts,
             };
@@ -296,29 +296,29 @@ internal static class DepaScanPipeline
         {
             if (linked.Add((from, rel, to)))
             {
-                await om.LinkEntitiesAsync(from, rel, to, cancellationToken: ct);
-                relationCounts[rel] = relationCounts.GetValueOrDefault(rel) + 1;
+                await om.CreateRelationLinkAsync(from, rel, to, cancellationToken: ct);
+                relationLinkCounts[rel] = relationLinkCounts.GetValueOrDefault(rel) + 1;
             }
         }
 
         string? CapsuleOf(string path)
         {
-            (string EntityId, int Depth)? best = null;
+            (string ObjectId, int Depth)? best = null;
             foreach (var capsule in capsuleList)
             {
                 if (IsUnderPath(path, capsule.RootPath) && (best is null || capsule.RootPath.Length > best.Value.Depth))
                 {
-                    best = (capsule.EntityId, capsule.RootPath.Length);
+                    best = (capsule.ObjectId, capsule.RootPath.Length);
                 }
             }
 
-            return best?.EntityId;
+            return best?.ObjectId;
         }
 
         // contract_implemented_by: ck_edge{IMPLEMENTS | METHOD_IMPLEMENTS} onto the contract anchor.
         // Cross-file tree-sitter IMPLEMENTS targets degrade to typeref:<lang>:<name> nodes, so the
         // name-based fallback keeps real repositories covered (recorded as a known low-fidelity path).
-        var contracts = bySymbolId.Where(p => p.Value.TypeName == "depa_contract").ToArray();
+        var contracts = bySymbolId.Where(p => p.Value.ClassName == "depa_contract").ToArray();
         foreach (var (contractSymbolId, contract) in contracts)
         {
             var contractName = symbolById[contractSymbolId].Name;
@@ -332,9 +332,9 @@ internal static class DepaScanPipeline
                 }
 
                 var impl = await AnnotateAsync("depa_impl", "impl", implSym, contract.AssignedBy, contract.Confidence);
-                if (impl.TypeName == "depa_impl")
+                if (impl.ClassName == "depa_impl")
                 {
-                    await LinkAsync(contract.EntityId, "contract_implemented_by", impl.EntityId);
+                    await LinkAsync(contract.ObjectId, "contract_implemented_by", impl.ObjectId);
                 }
             }
         }
@@ -356,23 +356,23 @@ internal static class DepaScanPipeline
 
             var entryKind = group.Select(e => e.Kind).OrderBy(EntryKindPriority).First();
             var annotation = await AnnotateAsync("depa_entry", "entry", sym, "config", 1.0, ("entry_kind", entryKind));
-            if (annotation.TypeName != "depa_entry")
+            if (annotation.ClassName != "depa_entry")
             {
                 continue; // symbol already judged as another depa type — do not double-model.
             }
 
-            entryEntities[group.Key] = annotation.EntityId;
-            await LinkAsync(capsuleId, "capsule_exposes", annotation.EntityId);
+            entryEntities[group.Key] = annotation.ObjectId;
+            await LinkAsync(capsuleId, "capsule_exposes", annotation.ObjectId);
         }
 
         // entry_delegates_to: CALLS from an entry symbol into a materialized depa_impl.
-        foreach (var (entrySymbolId, entryEntityId) in entryEntities)
+        foreach (var (entrySymbolId, entryObjectId) in entryEntities)
         {
             foreach (var edge in edges.Where(e => e.Kind == "CALLS" && e.FromId == entrySymbolId))
             {
-                if (bySymbolId.TryGetValue(edge.ToId, out var target) && target.TypeName == "depa_impl")
+                if (bySymbolId.TryGetValue(edge.ToId, out var target) && target.ClassName == "depa_impl")
                 {
-                    await LinkAsync(entryEntityId, "entry_delegates_to", target.EntityId);
+                    await LinkAsync(entryObjectId, "entry_delegates_to", target.ObjectId);
                 }
             }
         }
@@ -394,16 +394,16 @@ internal static class DepaScanPipeline
                 }
 
                 var writer = await AnnotateAsync("depa_impl", "impl", writerSym, "heuristic", HeuristicConfidence);
-                if (writer.TypeName == "depa_impl")
+                if (writer.ClassName == "depa_impl")
                 {
-                    await LinkAsync(factId, "fact_written_by", writer.EntityId);
+                    await LinkAsync(factId, "fact_written_by", writer.ObjectId);
                 }
             }
         }
 
         // projection_derived_from: read-path ACCESSES from the projection onto a graded fact
         // anchor (design §2.1 — the derivation chain V-S1 later checks the reverse of).
-        foreach (var (projSymbolId, projection) in bySymbolId.Where(p => p.Value.TypeName == "depa_projection").ToArray())
+        foreach (var (projSymbolId, projection) in bySymbolId.Where(p => p.Value.ClassName == "depa_projection").ToArray())
         {
             foreach (var (factId, anchor, _) in factSources)
             {
@@ -411,17 +411,17 @@ internal static class DepaScanPipeline
                         e.Kind == "ACCESSES" && e.FromId == projSymbolId && e.ToId == anchor.SymbolId
                         && !e.Evidence.Contains("write", StringComparison.OrdinalIgnoreCase)))
                 {
-                    await LinkAsync(projection.EntityId, "projection_derived_from", factId);
+                    await LinkAsync(projection.ObjectId, "projection_derived_from", factId);
                 }
             }
         }
 
-        // capsule_contains: every anchored depa entity whose path falls under a capsule root.
+        // capsule_contains: every anchored depa object whose path falls under a capsule root.
         foreach (var (symbolId, annotation) in bySymbolId)
         {
             if (symbolById.TryGetValue(symbolId, out var sym) && CapsuleOf(sym.Path) is { } capsuleId)
             {
-                await LinkAsync(capsuleId, "capsule_contains", annotation.EntityId);
+                await LinkAsync(capsuleId, "capsule_contains", annotation.ObjectId);
             }
         }
 
@@ -451,14 +451,14 @@ internal static class DepaScanPipeline
             .Select(v => new DepaRuleFinding(
                 v.Rule,
                 v.Message.StartsWith("BLOCKED", StringComparison.Ordinal) ? "BLOCKED" : "GAP",
-                v.EntityId,
+                v.ObjectId,
                 v.Message))
             .Concat(detection.BlockedFindings)
             .OrderBy(f => f.RuleId, StringComparer.Ordinal)
-            .ThenBy(f => f.EntityId, StringComparer.Ordinal)
+            .ThenBy(f => f.ObjectId, StringComparer.Ordinal)
             .ToArray();
 
-        return new DepaScanResult(entityCounts, relationCounts, findings, configCount, heuristicCount)
+        return new DepaScanResult(objectCounts, relationLinkCounts, findings, configCount, heuristicCount)
         {
             Violations = detection.Violations,
             DetectionVerdicts = detection.Verdicts,

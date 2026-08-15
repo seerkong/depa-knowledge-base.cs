@@ -44,7 +44,7 @@ spec:
       businessObject: manifest
       catalogs: file
   crossResourceRules:
-    - at-least-one-ObjectType-catalog-when-semantic-references-exist
+    - at-least-one-Class-catalog-when-semantic-references-exist
     - SchemaEvolutionModule-at-most-one
     - no-legacy-Resources-Modules-or-href-assembly
   diagnostics:
