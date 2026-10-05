@@ -7,7 +7,7 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../Depa.KnowledgeBase.Wiki.Core/Depa.KnowledgeBase.Wiki.Core.csproj" />
-    <ProjectReference Include="../../../cozo/depa-cozo-csharp/Depa.Cozo.csproj" />
+    <PackageReference Include="Depa.Cozo" Version="0.1.0" />
     <ProjectReference Include="../../../depa-ontology.cs/src/Depa.Ontology/Depa.Ontology.csproj" />
     <PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.23.2" />
     <PackageReference Include="Microsoft.ML.Tokenizers" Version="2.0.0" />

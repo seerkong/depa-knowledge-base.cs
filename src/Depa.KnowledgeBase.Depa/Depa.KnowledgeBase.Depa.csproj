@@ -5,7 +5,7 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../Depa.KnowledgeBase.CodeKnowledge/Depa.KnowledgeBase.CodeKnowledge.csproj" />
-    <ProjectReference Include="../../../cozo/depa-cozo-csharp/Depa.Cozo.csproj" />
+    <PackageReference Include="Depa.Cozo" Version="0.1.0" />
     <ProjectReference Include="../../../depa-ontology.cs/src/Depa.Ontology/Depa.Ontology.csproj" />
   </ItemGroup>
   <ItemGroup>
